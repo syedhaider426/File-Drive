@@ -1,11 +1,10 @@
 import React from "react";
-import Cookies from "js-cookie";
+import Files from "../panel_middle/Files";
 
 const Home = () => {
-  console.log(Cookies.get());
   return (
     <div>
-      <h1>Home Screen</h1>
+      <Files />
     </div>
   );
 };

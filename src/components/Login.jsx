@@ -12,11 +12,17 @@ class Login extends Component {
   };
 
   handleEmailChange = ({ target }) => {
-    this.setState({ email: target.value });
+    const { errors } = this.state;
+    if (target.value === "") errors.email = "Email is required";
+    else delete errors.email;
+    this.setState({ email: target.value, errors });
   };
 
   handlePasswordChange = ({ target }) => {
-    this.setState({ password: target.value });
+    const { errors } = this.state;
+    if (target.value === "") errors.password = "Password is required";
+    else delete errors.password;
+    this.setState({ password: target.value, errors });
   };
 
   handleLogin = (e) => {
@@ -32,8 +38,9 @@ class Login extends Component {
       postData("/login", data).then((data) => {
         if (data.error) {
           errors.login = "Login failed. Please try again.";
-          this.setState({ errors });
+          this.setState({ email: "", password: "", errors });
         } else {
+          console.log("Logged in succesfully");
           this.props.history.push("/home");
         }
       });
@@ -63,8 +70,10 @@ class Login extends Component {
           {errors.password && <label>{errors.password}</label>}
           <Link to="/forgot-password">Forgot password?</Link>
           <button type="submit">Log In</button>
+          {errors.login && <label>{errors.login}</label>}
           <Link to="/register">Register</Link>
         </form>
+        <a href="/home">Home</a>
       </div>
     );
   }

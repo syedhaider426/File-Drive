@@ -10,3 +10,5 @@ async function putData(url = "", data = {}) {
   });
   return response.json();
 }
+
+export default putData;

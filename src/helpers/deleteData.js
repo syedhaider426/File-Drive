@@ -10,3 +10,5 @@ async function deleteData(url = "", data = {}) {
   });
   return response.json();
 }
+
+export default deleteData;
