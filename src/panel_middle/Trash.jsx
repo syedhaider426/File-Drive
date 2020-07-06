@@ -3,13 +3,14 @@ import { makeStyles } from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
 import Grid from "@material-ui/core/Grid";
 import getData from "../helpers/getData";
-import { Box } from "@material-ui/core";
-class Files extends Component {
+
+class Trash extends Component {
   state = { files: [], folders: [] };
 
   componentDidMount() {
-    getData("/api/files/getAll")
+    getData("/api/files/getTrash")
       .then((data) => {
+        console.log("Data", data);
         this.setState({ files: data.files, folders: data.folders });
       })
       .catch((err) => console.log("Err", err));
@@ -18,7 +19,7 @@ class Files extends Component {
     const { files, folders } = { ...this.state };
     return (
       <Fragment>
-        <h1>All</h1>
+        <h1>Trash</h1>
         <div>Folders</div>
         {folders.map((folder) => (
           <label key={folder._id}>{folder.foldername}</label>
@@ -32,4 +33,4 @@ class Files extends Component {
   }
 }
 
-export default Files;
+export default Trash;
