@@ -1,8 +1,6 @@
 import React, { Fragment, Component } from "react";
-import { makeStyles } from "@material-ui/core/styles";
-import Paper from "@material-ui/core/Paper";
-import Grid from "@material-ui/core/Grid";
 import getData from "../helpers/getData";
+import FileTable from "../components/FileTable";
 
 class Trash extends Component {
   state = { files: [], folders: [] };
@@ -17,19 +15,7 @@ class Trash extends Component {
   }
   render() {
     const { files, folders } = { ...this.state };
-    return (
-      <Fragment>
-        <h1>Trash</h1>
-        <div>Folders</div>
-        {folders.map((folder) => (
-          <label key={folder._id}>{folder.foldername}</label>
-        ))}
-        <div>Files</div>
-        {files.map((file) => (
-          <label key={file._id}>{file.filename}</label>
-        ))}
-      </Fragment>
-    );
+    return <FileTable files={files} folders={folders} />;
   }
 }
 

@@ -1,3 +1,13 @@
 .App {
   text-align: center;
 }
+
+.data {
+  color: #5f6368;
+  font-weight: 500;
+}
+
+.details {
+  color: rgba(0, 0, 0, 0.54);
+  fill: rgba(0, 0, 0, 0.54);
+}
