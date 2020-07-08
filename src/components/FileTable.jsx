@@ -21,6 +21,9 @@ const styles = (theme) => ({
       color: "#1967d2 !important",
     },
   },
+  table: {
+    minWidth: 650,
+  },
 });
 
 class FileTable extends Component {
@@ -70,10 +73,8 @@ class FileTable extends Component {
   handleFileCopy = () => {
     const { selectedFiles, handleSetState } = { ...this.props };
     const data = { selectedFiles };
-    console.log("copy", data);
     postData("/api/files/copy", data)
       .then((data) => {
-        console.log(data);
         const { files } = { ...this.props };
         for (let file of data.files) {
           files.push(file);
@@ -83,50 +84,28 @@ class FileTable extends Component {
       .catch((err) => console.log("Err", err));
   };
 
-  handleDelete = () => {
+  handleTrash = () => {
     let { selectedFolders, selectedFiles } = { ...this.props };
-    console.log(selectedFiles);
     const data = { selectedFolders, selectedFiles };
     postData("/api/files/trash", data)
       .then((data) => {
         const { files, folders } = { ...data };
-        //Deleted files and folders
-        if (files.length > 0 && folders.length > 0)
-          this.props.handleSetState({
-            files,
-            folders,
-            selectedFiles: [],
-            selectedFolders: [],
-          });
-        //Deleted only folders
-        else if (folders.length > 0)
-          this.props.handleSetState({
-            folders,
-            selectedFiles: [],
-            selectedFolders: [],
-          });
-        //Deleted only files
-        else {
-          this.props.handleSetState({
-            files,
-            selectedFiles: [],
-            selectedFolders: [],
-          });
-        }
+        this.props.handleSetState({
+          files,
+          folders,
+          selectedFiles: [],
+          selectedFolders: [],
+        });
       })
       .catch((err) => console.log("Err", err));
   };
 
   handleDeleteForever = () => {
-    console.log("Clicked");
     let { selectedFolders, selectedFiles } = { ...this.props };
     const data = { selectedFolders, selectedFiles };
-    console.log(data);
     postData("/api/files/delete", data)
       .then((data) => {
         const { files, folders } = { ...data };
-        console.log(files);
-        console.log(folders);
         //Trashed files and folders
         if (files.length > 0 && folders.length > 0)
           this.props.handleSetState({
@@ -144,7 +123,6 @@ class FileTable extends Component {
           });
         //Trashed only files
         else {
-          console.log("files", files);
           this.props.handleSetState({
             files,
             selectedFiles: [],
@@ -158,34 +136,15 @@ class FileTable extends Component {
   handleRestore = () => {
     let { selectedFolders, selectedFiles } = { ...this.props };
     const data = { selectedFolders, selectedFiles };
-    console.log(data);
     postData("/api/files/restore", data)
       .then((data) => {
         const { files, folders } = { ...data };
-        //Trashed files and folders
-        if (files.length > 0 && folders.length > 0)
-          this.props.handleSetState({
-            files,
-            folders,
-            selectedFiles: [],
-            selectedFolders: [],
-          });
-        //Trashed only folders
-        else if (folders.length > 0)
-          this.props.handleSetState({
-            folders,
-            selectedFiles: [],
-            selectedFolders: [],
-          });
-        //Trashed only files
-        else {
-          console.log("files", files);
-          this.props.handleSetState({
-            files,
-            selectedFiles: [],
-            selectedFolders: [],
-          });
-        }
+        this.props.handleSetState({
+          files,
+          folders,
+          selectedFiles: [],
+          selectedFolders: [],
+        });
       })
       .catch((err) => console.log("Err", err));
   };
@@ -206,13 +165,17 @@ class FileTable extends Component {
         <ActionHeader
           selectedFiles={selectedFiles}
           selectedFolders={selectedFolders}
-          handleDelete={this.handleDelete}
+          handleTrash={this.handleTrash}
           handleFileCopy={this.handleFileCopy}
           handleDeleteForever={this.handleDeleteForever}
           handleRestore={this.handleRestore}
           currentMenu={currentMenu}
         />
-        <Table>
+        <Table
+          className={classes.table}
+          size="medium"
+          aria-label="a dense table"
+        >
           <TableHead>
             <TableRow>
               <TableCell>Name</TableCell>

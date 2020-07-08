@@ -10,6 +10,7 @@ import FileCopyIcon from "@material-ui/icons/FileCopy";
 import MoveToInboxIcon from "@material-ui/icons/MoveToInbox";
 import Tooltip from "@material-ui/core/Tooltip";
 import { Dialog, TextField } from "@material-ui/core";
+import RestoreIcon from "@material-ui/icons/Restore";
 // import StarOutlineOutlinedIcon from "@material-ui/icons/StarOutlineOutlined";
 
 const styles = {
@@ -39,7 +40,7 @@ class ActionHeader extends Component {
     const {
       selectedFiles,
       selectedFolders,
-      handleDelete,
+      handleTrash,
       handleDeleteForever,
       handleFileCopy,
       currentMenu,
@@ -67,7 +68,7 @@ class ActionHeader extends Component {
                   <IconButton
                     color="inherit"
                     aria-label="Delete"
-                    onClick={handleDelete}
+                    onClick={handleTrash}
                   >
                     <DeleteIcon />
                   </IconButton>
@@ -96,6 +97,18 @@ class ActionHeader extends Component {
               )}
             {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
               currentMenu === "trash" && (
+                <Tooltip title="Restore">
+                  <IconButton
+                    color="inherit"
+                    aria-label="Restore"
+                    onClick={handleRestore}
+                  >
+                    <RestoreIcon />
+                  </IconButton>
+                </Tooltip>
+              )}
+            {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
+              currentMenu === "trash" && (
                 <Tooltip title="Delete Forever">
                   <IconButton
                     color="inherit"
@@ -106,18 +119,7 @@ class ActionHeader extends Component {
                   </IconButton>
                 </Tooltip>
               )}
-            {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
-              currentMenu === "trash" && (
-                <Tooltip title="Restore">
-                  <IconButton
-                    color="inherit"
-                    aria-label="Restore"
-                    onClick={handleRestore}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Tooltip>
-              )}
+
             {/* <Tooltip title="More Options">
               <IconButton color="inherit" aria-label="More Options">
                 <MoreVertIcon />

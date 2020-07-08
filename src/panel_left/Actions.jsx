@@ -56,9 +56,12 @@ class Actions extends Component {
     for (let i = 0; i < files.length; i++) {
       form.append("files", files[i], files[i].name);
     }
-    fetch("/api/files/upload", { method: "POST" })
+    fetch("/api/files/upload", { method: "POST", body: form })
       .then((res) => res.json())
-      .then((data) => console.log(data))
+      .then((data) => {
+        console.log(data);
+        this.setState({ open: false });
+      })
       .catch((err) => console.log("Errasdasdsa", err));
   };
 
@@ -121,7 +124,7 @@ class Actions extends Component {
           onChange={(e) => this.handleFileUpload(e)}
         />
         <List>
-          <ListItem button>
+          <ListItem>
             <Link to="/home">
               <Button>
                 <span>My Drive</span>
