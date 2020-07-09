@@ -1,15 +1,14 @@
 import React, { Fragment, Component } from "react";
 import getData from "../helpers/getData";
 import FileTable from "../components/FileTable";
-import ActionHeader from "../components/ActionHeader";
 
-class Starred extends Component {
+class Favorites extends Component {
   state = {
     files: [],
     folders: [],
     selectedFiles: [],
     selectedFolders: [],
-    currentMenu: "starred",
+    currentMenu: "favorites",
   };
 
   componentDidMount() {
@@ -41,4 +40,4 @@ class Starred extends Component {
   }
 }
 
-export default Starred;
+export default Favorites;

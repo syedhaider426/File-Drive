@@ -1,7 +1,6 @@
 import React, { Fragment, Component } from "react";
 import getData from "../helpers/getData";
 import FileTable from "../components/FileTable";
-import ActionHeader from "../components/ActionHeader";
 
 class Trash extends Component {
   state = {

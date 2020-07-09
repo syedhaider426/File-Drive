@@ -11,7 +11,10 @@ import StarIcon from "@material-ui/icons/Star";
 import HomeIcon from "@material-ui/icons/Home";
 import DeleteIcon from "@material-ui/icons/Delete";
 import CloudUploadIcon from "@material-ui/icons/CloudUpload";
-import { Grid } from "@material-ui/core";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
+import ListItemText from "@material-ui/core/ListItemText";
+import DashboardIcon from "@material-ui/icons/Dashboard";
+import { Grid, Divider } from "@material-ui/core";
 
 class Actions extends Component {
   state = { open: false, newFolderOpen: false, folder: "" };
@@ -102,6 +105,15 @@ class Actions extends Component {
       </Dialog>
     );
 
+    const HomeLink = React.forwardRef((props, ref) => (
+      <Link to={"/home"} {...props} ref={ref} />
+    ));
+    const FavoritesLink = React.forwardRef((props, ref) => (
+      <Link to={"/favorites"} {...props} ref={ref} />
+    ));
+    const TrashLink = React.forwardRef((props, ref) => (
+      <Link to={"/trash"} {...props} ref={ref} />
+    ));
     return (
       <Grid item xs={2}>
         <Button
@@ -123,29 +135,30 @@ class Actions extends Component {
           multiple="multiple"
           onChange={(e) => this.handleFileUpload(e)}
         />
+
         <List>
-          <ListItem>
-            <Link to="/home">
-              <Button>
-                <span>My Drive</span>
-              </Button>
-            </Link>
+          <ListItem button component={HomeLink}>
+            <ListItemIcon>
+              <HomeIcon />
+            </ListItemIcon>
+            <ListItemText primary="Home" />
           </ListItem>
-          <ListItem>
-            <Link to="/favorites">
-              <Button>
-                <span>Starred</span>
-              </Button>
-            </Link>
+
+          <ListItem button component={FavoritesLink}>
+            <ListItemIcon>
+              <StarIcon />
+            </ListItemIcon>
+            <ListItemText primary="Favorites" />
           </ListItem>
-          <ListItem>
-            <Link to="/trash">
-              <Button>
-                <span>Trash</span>
-              </Button>
-            </Link>
+
+          <ListItem button component={TrashLink}>
+            <ListItemIcon>
+              <DeleteIcon />
+            </ListItemIcon>
+            <ListItemText primary="Trash" />
           </ListItem>
         </List>
+        <Divider />
       </Grid>
     );
   }
