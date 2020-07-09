@@ -1,8 +1,7 @@
-import React, { Fragment, Component } from "react";
-import { Link } from "react-router-dom";
+import React, { Component } from "react";
+import { Link, withRouter } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
-import DialogTitle from "@material-ui/core/DialogTitle";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import TextField from "@material-ui/core/TextField";
@@ -13,7 +12,6 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import CloudUploadIcon from "@material-ui/icons/CloudUpload";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
-import DashboardIcon from "@material-ui/icons/Dashboard";
 import { Grid, Divider } from "@material-ui/core";
 
 class Actions extends Component {
@@ -111,6 +109,7 @@ class Actions extends Component {
     const FavoritesLink = React.forwardRef((props, ref) => (
       <Link to={"/favorites"} {...props} ref={ref} />
     ));
+
     const TrashLink = React.forwardRef((props, ref) => (
       <Link to={"/trash"} {...props} ref={ref} />
     ));
@@ -143,14 +142,12 @@ class Actions extends Component {
             </ListItemIcon>
             <ListItemText primary="Home" />
           </ListItem>
-
           <ListItem button component={FavoritesLink}>
             <ListItemIcon>
               <StarIcon />
             </ListItemIcon>
-            <ListItemText primary="Favorites" />
+            <ListItemText primary="Starred" />
           </ListItem>
-
           <ListItem button component={TrashLink}>
             <ListItemIcon>
               <DeleteIcon />
@@ -164,4 +161,4 @@ class Actions extends Component {
   }
 }
 
-export default Actions;
+export default withRouter(Actions);

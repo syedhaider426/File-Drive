@@ -9,9 +9,8 @@ import RenameIcon from "@material-ui/icons/Edit";
 import FileCopyIcon from "@material-ui/icons/FileCopy";
 import MoveToInboxIcon from "@material-ui/icons/MoveToInbox";
 import Tooltip from "@material-ui/core/Tooltip";
-import { Dialog, TextField } from "@material-ui/core";
 import RestoreIcon from "@material-ui/icons/Restore";
-// import StarOutlineOutlinedIcon from "@material-ui/icons/StarOutlineOutlined";
+import StarOutlineOutlinedIcon from "@material-ui/icons/StarOutlined";
 
 const styles = {
   // This group of buttons will be aligned to the right
@@ -36,7 +35,6 @@ class ActionHeader extends Component {
   };
 
   render() {
-    const { renameOpen, moveOpen } = this.state;
     const {
       selectedFiles,
       selectedFolders,
@@ -44,18 +42,20 @@ class ActionHeader extends Component {
       handleDeleteForever,
       handleFileCopy,
       currentMenu,
+      handleFavorites,
       handleRestore,
+      handleUnfavorited,
     } = this.props;
     const { classes } = this.props;
     return (
       <AppBar position="static" color="transparent" elevation={3}>
         <Toolbar variant="dense">
-          <Typography color="inherit">My Drive</Typography>
+          <Typography color="inherit">{currentMenu}</Typography>
 
           <section className={classes.rightToolbar}>
             {(selectedFiles.length === 1 || selectedFolders.length === 1) &&
               !(selectedFolders.length === 1 && selectedFiles.length === 1) &&
-              currentMenu !== "trash" && (
+              currentMenu !== "Trash" && (
                 <Tooltip title="Rename">
                   <IconButton color="inherit" aria-label="Rename">
                     <RenameIcon />
@@ -63,7 +63,7 @@ class ActionHeader extends Component {
                 </Tooltip>
               )}
             {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
-              currentMenu !== "trash" && (
+              currentMenu !== "Trash" && (
                 <Tooltip title="Delete">
                   <IconButton
                     color="inherit"
@@ -76,7 +76,7 @@ class ActionHeader extends Component {
               )}
             {selectedFiles.length >= 1 &&
               selectedFolders.length === 0 &&
-              currentMenu !== "trash" && (
+              currentMenu !== "Trash" && (
                 <Tooltip title="Copy">
                   <IconButton
                     color="inherit"
@@ -88,7 +88,7 @@ class ActionHeader extends Component {
                 </Tooltip>
               )}
             {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
-              currentMenu !== "trash" && (
+              currentMenu !== "Trash" && (
                 <Tooltip title="Move">
                   <IconButton color="inherit" aria-label="Move">
                     <MoveToInboxIcon />
@@ -96,7 +96,7 @@ class ActionHeader extends Component {
                 </Tooltip>
               )}
             {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
-              currentMenu === "trash" && (
+              currentMenu === "Trash" && (
                 <Tooltip title="Restore">
                   <IconButton
                     color="inherit"
@@ -108,7 +108,31 @@ class ActionHeader extends Component {
                 </Tooltip>
               )}
             {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
-              currentMenu === "trash" && (
+              currentMenu === "Home" && (
+                <Tooltip title="Add to Starred">
+                  <IconButton
+                    color="inherit"
+                    aria-label="Add to Starred"
+                    onClick={handleFavorites}
+                  >
+                    <StarOutlineOutlinedIcon />
+                  </IconButton>
+                </Tooltip>
+              )}
+            {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
+              currentMenu === "Favorites" && (
+                <Tooltip title="Remove from Starred">
+                  <IconButton
+                    color="inherit"
+                    aria-label="Remove from Starred"
+                    onClick={handleUnfavorited}
+                  >
+                    <StarOutlineOutlinedIcon />
+                  </IconButton>
+                </Tooltip>
+              )}
+            {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
+              currentMenu === "Trash" && (
                 <Tooltip title="Delete Forever">
                   <IconButton
                     color="inherit"
@@ -119,7 +143,6 @@ class ActionHeader extends Component {
                   </IconButton>
                 </Tooltip>
               )}
-
             {/* <Tooltip title="More Options">
               <IconButton color="inherit" aria-label="More Options">
                 <MoreVertIcon />

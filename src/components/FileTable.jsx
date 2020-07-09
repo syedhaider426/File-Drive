@@ -1,8 +1,7 @@
 import React, { Fragment, Component } from "react";
-import { makeStyles, withStyles } from "@material-ui/core/styles";
-import Paper from "@material-ui/core/Paper";
+import { withStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
-import getData from "../helpers/getData";
+
 import convertISODate from "../helpers/convertISODate";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
@@ -16,6 +15,7 @@ import postData from "../helpers/postData";
 import returnFileSize from "../helpers/returnFileSize";
 import PrimarySearchAppBar from "./PrimarySearchAppBar";
 import Actions from "../panel_left/Actions";
+import { CircularProgress } from "@material-ui/core";
 const styles = (theme) => ({
   tableRow: {
     "&:hover": {
@@ -142,6 +142,22 @@ class FileTable extends Component {
       .catch((err) => console.log("Err", err));
   };
 
+  handleUnfavorited = () => {
+    let { selectedFolders, selectedFiles } = { ...this.props };
+    const data = { selectedFolders, selectedFiles };
+    postData("/api/files/unfavorite", data)
+      .then((data) => {
+        const { files, folders } = { ...data };
+        this.props.handleSetState({
+          files,
+          folders,
+          selectedFiles: [],
+          selectedFolders: [],
+        });
+      })
+      .catch((err) => console.log("Err", err));
+  };
+
   render() {
     const {
       files,
@@ -150,6 +166,7 @@ class FileTable extends Component {
       selectedFolders,
       selectedFiles,
       currentMenu,
+      loaded,
     } = {
       ...this.props,
     };
@@ -169,6 +186,8 @@ class FileTable extends Component {
             handleFileCopy={this.handleFileCopy}
             handleDeleteForever={this.handleDeleteForever}
             handleRestore={this.handleRestore}
+            handleFavorites={this.handleFavorites}
+            handleUnfavorited={this.handleUnfavorited}
             currentMenu={currentMenu}
           />
           <Table

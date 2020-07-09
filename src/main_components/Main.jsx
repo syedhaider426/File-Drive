@@ -2,21 +2,21 @@ import Login from "../components/Login";
 import React, { Fragment } from "react";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import ForgotPassword from "../components/ForgotPassword";
-import Actions from "../panel_left/Actions";
-import Favorites from "../panel_middle/Favorites";
-import Trash from "../panel_middle/Trash";
-import PrimarySearchAppBar from "../components/PrimarySearchAppBar";
-import { makeStyles } from "@material-ui/core/styles";
-import Paper from "@material-ui/core/Paper";
 import Grid from "@material-ui/core/Grid";
 import Files from "../panel_middle/Files";
 import SignInSide from "../components/Login";
 import Dashboard from "../panel_left/Dashboard";
 
-const useStyles = makeStyles((theme) => ({}));
-
+/***
+ * If the same component is used as the child of multiple <Route>s at the
+ * same point in the component tree, React will see this as the same
+ * component instance and the component’s state will be preserved between
+ * route changes. If this isn’t desired, a unique key prop added to each
+ * route component will cause React to recreate the component
+ * instance when the route changes.
+ *
+ */
 const Main = () => {
-  const classes = useStyles();
   return (
     <Fragment>
       <Router>
@@ -27,21 +27,19 @@ const Main = () => {
           <Route path="/forgot-password">
             <ForgotPassword />
           </Route>
-          <Route path="/home">
-            <div className={classes.root}>
-              <Grid container spacing={0}>
-                <Files />
-              </Grid>
-            </div>
-          </Route>
-          <Route path="/favorites">
+          <Route path="/home" key={1234}>
             <Grid container spacing={0}>
-              <Favorites />
+              <Files path={"Home"} />
             </Grid>
           </Route>
-          <Route path="/trash">
+          <Route path="/favorites" key={2345}>
             <Grid container spacing={0}>
-              <Trash />
+              <Files path={"Favorites"} />
+            </Grid>
+          </Route>
+          <Route path="/trash" key={3456}>
+            <Grid container spacing={0}>
+              <Files path={"Trash"} />
             </Grid>
           </Route>
           <Route path="/dashboard">

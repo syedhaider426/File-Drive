@@ -1,4 +1,4 @@
-import React, { Fragment, Component } from "react";
+import React, { Component } from "react";
 import getData from "../helpers/getData";
 import FileTable from "../components/FileTable";
 
@@ -8,13 +8,19 @@ class Files extends Component {
     folders: [],
     selectedFiles: [],
     selectedFolders: [],
-    currentMenu: "files",
+    currentMenu: this.props.path,
+    loaded: false,
   };
 
   componentDidMount() {
-    getData("/api/files/getAll")
+    console.log(`/api/files/${this.props.path}`);
+    getData(`/api/files/${this.props.path}`)
       .then((data) => {
-        this.setState({ files: data.files, folders: data.folders });
+        console.log(data);
+        this.setState({
+          files: data.files,
+          folders: data.folders,
+        });
       })
       .catch((err) => console.log("Err", err));
   }
@@ -24,10 +30,17 @@ class Files extends Component {
   };
 
   render() {
-    const { files, folders, selectedFiles, selectedFolders, currentMenu } = {
+    const {
+      files,
+      folders,
+      selectedFiles,
+      selectedFolders,
+      currentMenu,
+      loaded,
+    } = {
       ...this.state,
     };
-    console.log("folders", folders);
+    console.log(this.props.path);
     return (
       <FileTable
         files={files}
@@ -36,6 +49,7 @@ class Files extends Component {
         selectedFolders={selectedFolders}
         handleSetState={this.handleSetState}
         currentMenu={currentMenu}
+        loaded={loaded}
       />
     );
   }

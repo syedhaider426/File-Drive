@@ -100,7 +100,6 @@ class Login extends Component {
   };
 
   render() {
-    const { email, password, errors } = { ...this.state };
     const { classes } = this.props;
     return (
       <Grid container component="main" className={classes.root}>
