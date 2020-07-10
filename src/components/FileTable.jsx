@@ -111,7 +111,7 @@ class FileTable extends Component {
 
   handleTrash = () => {
     let { selectedFolders, selectedFiles } = { ...this.props };
-    const data = { selectedFolders, selectedFiles };
+    const data = { selectedFolders, selectedFiles, isFavorited: [false, true] };
     postData("/api/files/trash", data)
       .then((data) => {
         const { files, folders } = { ...data };
@@ -127,7 +127,7 @@ class FileTable extends Component {
 
   handleFavoritesTrash = () => {
     let { selectedFolders, selectedFiles } = { ...this.props };
-    const data = { selectedFolders, selectedFiles, isFavorited: true };
+    const data = { selectedFolders, selectedFiles, isFavorited: [true] };
     postData("/api/files/trash", data)
       .then((data) => {
         const { files, folders } = { ...data };
@@ -142,11 +142,8 @@ class FileTable extends Component {
   };
 
   handleDeleteForever = () => {
-    let { selectedFolders, selectedFiles, tempFiles } = { ...this.props };
-    let data;
-    if (tempFiles.length > 0) data = { selectedFolders, tempFiles };
-    else data = { selectedFolders, selectedFiles };
-    console.log("Tempfiles", tempFiles);
+    let { selectedFolders, selectedFiles } = { ...this.props };
+    const data = { selectedFolders, selectedFiles };
     postData("/api/files/delete", data)
       .then((data) => {
         const { files, folders } = { ...data };
@@ -157,8 +154,20 @@ class FileTable extends Component {
           folders,
           selectedFiles: [],
           selectedFolders: [],
+        });
+      })
+      .catch((err) => console.log("Err", err));
+  };
+
+  handleUndoCopy = () => {
+    const { tempFiles } = { ...this.props };
+    const data = { selectedFiles: tempFiles };
+    postData("/api/files/undoCopy", data)
+      .then((data) => {
+        const { files } = { ...data };
+        this.props.handleSetState({
+          files,
           tempFiles: [],
-          tempFolders: [],
         });
       })
       .catch((err) => console.log("Err", err));
@@ -214,7 +223,11 @@ class FileTable extends Component {
 
   handleSnackbarExit = () => {
     if (this.props.tempFiles) {
-      this.props.handleSetState({ tempFiles: [], tempFolders: [] });
+      this.props.handleSetState({
+        tempFiles: [],
+        tempFolders: [],
+        snackBarMessage: "",
+      });
     }
     return;
   };
@@ -231,6 +244,7 @@ class FileTable extends Component {
       snackbarOpen,
       filesModified,
       foldersModified,
+      handleUndoCopy,
     } = {
       ...this.props,
     };
@@ -249,7 +263,7 @@ class FileTable extends Component {
         action={
           <React.Fragment>
             <Button
-              onClick={this.handleDeleteForever}
+              onClick={this.handleUndoCopy}
               color="secondary"
               size="small"
             >

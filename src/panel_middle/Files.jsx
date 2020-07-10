@@ -15,13 +15,12 @@ class Files extends Component {
     foldersModified: 0,
     tempFiles: [],
     tempFolders: [],
+    snackBarMessage: "",
   };
 
   componentDidMount() {
-    console.log(`/api/files/${this.props.path}`);
     getData(`/api/files/${this.props.path}`)
       .then((data) => {
-        console.log(data);
         this.setState({
           files: data.files,
           folders: data.folders,
@@ -47,6 +46,7 @@ class Files extends Component {
       foldersModified,
       tempFiles,
       tempFolders,
+      snackBarMessage,
     } = {
       ...this.state,
     };
@@ -65,6 +65,7 @@ class Files extends Component {
         foldersModified={foldersModified}
         tempFiles={tempFiles}
         tempFolders={tempFolders}
+        snackBarMessage={snackBarMessage}
       />
     );
   }
