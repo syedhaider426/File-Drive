@@ -1,7 +1,10 @@
-import React, { Component } from "react";
+import React, { Component, Fragment } from "react";
 import { Link, withRouter } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
+import DialogTitle from "@material-ui/core/DialogTitle";
+import DialogContent from "@material-ui/core/DialogContent";
+import DialogActions from "@material-ui/core/DialogActions";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import TextField from "@material-ui/core/TextField";
@@ -13,9 +16,17 @@ import CloudUploadIcon from "@material-ui/icons/CloudUpload";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import { Grid, Divider } from "@material-ui/core";
+import CreateNewFolderOutlinedIcon from "@material-ui/icons/CreateNewFolderOutlined";
+import FolderOpenOutlinedIcon from "@material-ui/icons/FolderOpenOutlined";
+import FileIcon from "@material-ui/icons/InsertDriveFile";
 
 class Actions extends Component {
-  state = { open: false, newFolderOpen: false, folder: "" };
+  state = {
+    open: false,
+    newFolderOpen: false,
+    folder: "",
+    folderButtonDisabled: true,
+  };
   handleClickOpen = (e) => {
     this.setState({ open: true });
   };
@@ -33,7 +44,8 @@ class Actions extends Component {
   };
 
   handleFolderOnChange = (e) => {
-    this.setState({ folder: e.target.value });
+    if (e.target.value === "") this.setState({ folderButtonDisabled: true });
+    else this.setState({ folder: e.target.value, folderButtonDisabled: false });
   };
 
   handleCreateFolder = (e) => {
@@ -60,45 +72,78 @@ class Actions extends Component {
     fetch("/api/files/upload", { method: "POST", body: form })
       .then((res) => res.json())
       .then((data) => {
-        console.log(data);
         this.setState({ open: false });
       })
       .catch((err) => console.log("Errasdasdsa", err));
   };
 
   render() {
-    const { open, newFolderOpen } = { ...this.state };
+    const { open, newFolderOpen, folderButtonDisabled } = { ...this.state };
+    const {
+      handleClose,
+      handleClickOpen,
+      handleFileUploadOpen,
+      handleCreateFolderOpen,
+      handleFolderUpload,
+      handleCreateFolderClose,
+      handleCreateFolder,
+      handleFolderOnChange,
+      handleFileUpload,
+    } = { ...this };
+
     const actionsDialog = (
       <Dialog
         open={open}
-        onClose={this.handleClose}
+        onClose={handleClose}
         BackdropProps={{ style: { backgroundColor: "transparent" } }}
       >
         <List>
-          <ListItem button onClick={this.handleCreateFolderOpen}>
-            New Folder
+          <ListItem button onClick={handleCreateFolderOpen}>
+            <CreateNewFolderOutlinedIcon />
+            <ListItemText primary="New Folder" />
           </ListItem>
-          <ListItem button onClick={this.handleFileUploadOpen}>
-            File upload
+          <ListItem button onClick={handleFileUploadOpen}>
+            <FileIcon />
+            <ListItemText primary="File Upload" />
           </ListItem>
-          <ListItem button onClick={this.handleFolderUpload}>
-            Folder Upload
+          <ListItem button onClick={handleFolderUpload}>
+            <FolderOpenOutlinedIcon />
+            <ListItemText primary="Folder Upload" />
           </ListItem>
         </List>
       </Dialog>
     );
 
     const newFolderDialog = (
-      <Dialog open={newFolderOpen} onClose={this.handleCreateFolderClose}>
-        <form onSubmit={this.handleCreateFolder} method="POST">
-          <TextField
-            autoFocus
-            id="folder"
-            label="Folder"
-            onChange={this.handleFolderOnChange}
-          />
-          <button onClick={this.handleCreateFolderClose}>Cancel</button>
-          <button type="submit">Submit</button>
+      <Dialog
+        open={newFolderOpen}
+        onClose={handleCreateFolderClose}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogTitle id="form-dialog-title">Create Folder</DialogTitle>
+        <form onSubmit={handleCreateFolder} method="POST">
+          <DialogContent>
+            <TextField
+              autoFocus
+              margin="dense"
+              id="folder"
+              label="Folder"
+              fullWidth
+              onChange={handleFolderOnChange}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCreateFolderClose} color="primary">
+              Cancel
+            </Button>
+            <Button
+              disabled={folderButtonDisabled}
+              onClick={handleCreateFolderClose}
+              color="primary"
+            >
+              Confirm
+            </Button>
+          </DialogActions>
         </form>
       </Dialog>
     );
@@ -114,16 +159,7 @@ class Actions extends Component {
       <Link to={"/trash"} {...props} ref={ref} />
     ));
     return (
-      <Grid item xs={2}>
-        <Button
-          variant="outlined"
-          onClick={this.handleClickOpen}
-          color="default"
-          elevation={3}
-          startIcon={<CloudUploadIcon />}
-        >
-          Upload
-        </Button>
+      <Fragment>
         {actionsDialog}
         {newFolderDialog}
         <input
@@ -132,10 +168,21 @@ class Actions extends Component {
           name="upload-file"
           type="file"
           multiple="multiple"
-          onChange={(e) => this.handleFileUpload(e)}
+          onChange={(e) => handleFileUpload(e)}
         />
 
         <List>
+          <ListItem>
+            <Button
+              variant="outlined"
+              onClick={handleClickOpen}
+              color="default"
+              elevation={3}
+              startIcon={<CloudUploadIcon />}
+            >
+              Upload
+            </Button>
+          </ListItem>
           <ListItem button component={HomeLink}>
             <ListItemIcon>
               <HomeIcon />
@@ -156,7 +203,7 @@ class Actions extends Component {
           </ListItem>
         </List>
         <Divider />
-      </Grid>
+      </Fragment>
     );
   }
 }

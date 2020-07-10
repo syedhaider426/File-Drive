@@ -10,6 +10,11 @@ class Files extends Component {
     selectedFolders: [],
     currentMenu: this.props.path,
     loaded: false,
+    snackbarOpen: false,
+    filesModified: 0,
+    foldersModified: 0,
+    tempFiles: [],
+    tempFolders: [],
   };
 
   componentDidMount() {
@@ -37,6 +42,11 @@ class Files extends Component {
       selectedFolders,
       currentMenu,
       loaded,
+      snackbarOpen,
+      filesModified,
+      foldersModified,
+      tempFiles,
+      tempFolders,
     } = {
       ...this.state,
     };
@@ -50,6 +60,11 @@ class Files extends Component {
         handleSetState={this.handleSetState}
         currentMenu={currentMenu}
         loaded={loaded}
+        snackbarOpen={snackbarOpen}
+        filesModified={filesModified}
+        foldersModified={foldersModified}
+        tempFiles={tempFiles}
+        tempFolders={tempFolders}
       />
     );
   }

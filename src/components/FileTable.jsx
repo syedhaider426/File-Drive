@@ -1,7 +1,7 @@
 import React, { Fragment, Component } from "react";
 import { withStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
-
+import { withRouter } from "react-router-dom";
 import convertISODate from "../helpers/convertISODate";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
@@ -10,17 +10,23 @@ import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import FileIcon from "@material-ui/icons/InsertDriveFile";
 import FolderIcon from "@material-ui/icons/Folder";
+import CloseIcon from "@material-ui/icons/Close";
 import ActionHeader from "./ActionHeader";
 import postData from "../helpers/postData";
 import returnFileSize from "../helpers/returnFileSize";
 import PrimarySearchAppBar from "./PrimarySearchAppBar";
 import Actions from "../panel_left/Actions";
-import { CircularProgress } from "@material-ui/core";
+import StarIcon from "@material-ui/icons/Star";
+import deleteData from "../helpers/deleteData";
+import { Button, IconButton, Snackbar } from "@material-ui/core";
+
 const styles = (theme) => ({
   tableRow: {
-    "&:hover": {
-      backgroundColor: "#e8f0fe !important",
-      color: "#1967d2 !important",
+    tableRow: {
+      "&$selected, &$selected:hover": {
+        backgroundColor: "#e8f0fe",
+        color: "#1967d2",
+      },
     },
   },
   table: {
@@ -29,6 +35,12 @@ const styles = (theme) => ({
 });
 
 class FileTable extends Component {
+  handleSnackbarClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    this.props.handleSetState({ snackbarOpen: false });
+  };
   handleFolderClick = (e, id, foldername) => {
     const { selectedFolders, handleSetState } = { ...this.props };
     if (selectedFolders.length === 0) {
@@ -37,6 +49,8 @@ class FileTable extends Component {
         selectedFiles: [],
         selectedFolders,
       });
+    } else if (selectedFolders[0].id === id) {
+      this.props.history.push(`/folder/${id}`);
     } else {
       selectedFolders[0] = { id, foldername };
       handleSetState({
@@ -54,6 +68,8 @@ class FileTable extends Component {
         selectedFolders: [],
         selectedFiles,
       });
+    } else if (selectedFiles[0].id === id) {
+      this.props.history.push(`/file/${id}`);
     } else {
       selectedFiles[0] = { id, filename };
       handleSetState({
@@ -68,11 +84,27 @@ class FileTable extends Component {
     const data = { selectedFiles };
     postData("/api/files/copy", data)
       .then((data) => {
-        const { files } = { ...this.props };
+        const { files, selectedFiles } = { ...this.props };
         for (let file of data.files) {
           files.push(file);
         }
-        handleSetState({ selectedFiles: [], files });
+        //Slice will clone the array and return reference to new array
+        const tempFiles = data.newFiles.slice();
+        const filesModified = tempFiles.length;
+        console.log("Copy", tempFiles);
+        /***
+         * Files - Updated files
+         * Files Modified - Length of selected files that were copied
+         * Snackbaropen - Open Snackbar
+         * TempFiles - Reference to selected files (if user chooses to undo, reference the tempfiles)
+         */
+        handleSetState({
+          snackbarOpen: true,
+          selectedFiles: [],
+          files,
+          filesModified,
+          tempFiles,
+        });
       })
       .catch((err) => console.log("Err", err));
   };
@@ -93,18 +125,40 @@ class FileTable extends Component {
       .catch((err) => console.log("Err", err));
   };
 
-  handleDeleteForever = () => {
+  handleFavoritesTrash = () => {
     let { selectedFolders, selectedFiles } = { ...this.props };
-    const data = { selectedFolders, selectedFiles };
-    postData("/api/files/delete", data)
+    const data = { selectedFolders, selectedFiles, isFavorited: true };
+    postData("/api/files/trash", data)
       .then((data) => {
         const { files, folders } = { ...data };
-        //Trashed files and folders
         this.props.handleSetState({
           files,
           folders,
           selectedFiles: [],
           selectedFolders: [],
+        });
+      })
+      .catch((err) => console.log("Err", err));
+  };
+
+  handleDeleteForever = () => {
+    let { selectedFolders, selectedFiles, tempFiles } = { ...this.props };
+    let data;
+    if (tempFiles.length > 0) data = { selectedFolders, tempFiles };
+    else data = { selectedFolders, selectedFiles };
+    console.log("Tempfiles", tempFiles);
+    postData("/api/files/delete", data)
+      .then((data) => {
+        const { files, folders } = { ...data };
+        //Trashed files and folders
+        console.log("made it here");
+        this.props.handleSetState({
+          files,
+          folders,
+          selectedFiles: [],
+          selectedFolders: [],
+          tempFiles: [],
+          tempFolders: [],
         });
       })
       .catch((err) => console.log("Err", err));
@@ -158,6 +212,13 @@ class FileTable extends Component {
       .catch((err) => console.log("Err", err));
   };
 
+  handleSnackbarExit = () => {
+    if (this.props.tempFiles) {
+      this.props.handleSetState({ tempFiles: [], tempFolders: [] });
+    }
+    return;
+  };
+
   render() {
     const {
       files,
@@ -167,9 +228,46 @@ class FileTable extends Component {
       selectedFiles,
       currentMenu,
       loaded,
+      snackbarOpen,
+      filesModified,
+      foldersModified,
     } = {
       ...this.props,
     };
+
+    const snack = (
+      <Snackbar
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "left",
+        }}
+        open={snackbarOpen}
+        autoHideDuration={6000}
+        onClose={this.handleSnackbarClose}
+        onExit={this.handleSnackbarExit}
+        message={`Copied ${filesModified} file(s).`}
+        action={
+          <React.Fragment>
+            <Button
+              onClick={this.handleDeleteForever}
+              color="secondary"
+              size="small"
+            >
+              Undo
+            </Button>
+            <IconButton
+              size="small"
+              aria-label="close"
+              color="inherit"
+              onClick={this.handleSnackbarClose}
+            >
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          </React.Fragment>
+        }
+      />
+    );
+
     return (
       <Fragment>
         <Grid item xs={12}>
@@ -188,6 +286,7 @@ class FileTable extends Component {
             handleRestore={this.handleRestore}
             handleFavorites={this.handleFavorites}
             handleUnfavorited={this.handleUnfavorited}
+            handleFavoritesTrash={this.handleFavoritesTrash}
             currentMenu={currentMenu}
           />
           <Table
@@ -210,6 +309,11 @@ class FileTable extends Component {
                   onClick={(e) =>
                     this.handleFolderClick(e, folder._id, folder.filename)
                   }
+                  selected={
+                    selectedFolders.length > 0
+                      ? selectedFolders[0].id === folder._id
+                      : false
+                  }
                 >
                   <TableCell>
                     <div
@@ -220,6 +324,9 @@ class FileTable extends Component {
                     >
                       <FolderIcon style={{ fill: "#5f6368" }} />
                       <span className="data">{folder.foldername}</span>
+                      {currentMenu === "Home" && folder.isFavorited && (
+                        <StarIcon className="data" />
+                      )}
                     </div>
                   </TableCell>
 
@@ -238,6 +345,11 @@ class FileTable extends Component {
                   onClick={(e) =>
                     this.handleFileClick(e, file._id, file.filename)
                   }
+                  selected={
+                    selectedFiles.length > 0
+                      ? selectedFiles[0].id === file._id
+                      : false
+                  }
                 >
                   <TableCell>
                     <div
@@ -248,6 +360,9 @@ class FileTable extends Component {
                     >
                       <FileIcon style={{ fill: "#5f6368" }} />
                       <span className="data">{file.filename}</span>
+                      {currentMenu === "Home" && file.isFavorited && (
+                        <StarIcon className="data" />
+                      )}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -264,10 +379,11 @@ class FileTable extends Component {
               ))}
             </TableBody>
           </Table>
+          {snack}
         </Grid>
       </Fragment>
     );
   }
 }
 
-export default withStyles(styles)(FileTable);
+export default withRouter(withStyles(styles)(FileTable));

@@ -1,5 +1,5 @@
 import { withStyles } from "@material-ui/styles";
-import React, { Component } from "react";
+import React, { Component, Fragment } from "react";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
@@ -45,6 +45,7 @@ class ActionHeader extends Component {
       handleFavorites,
       handleRestore,
       handleUnfavorited,
+      handleFavoritesTrash,
     } = this.props;
     const { classes } = this.props;
     return (
@@ -63,12 +64,24 @@ class ActionHeader extends Component {
                 </Tooltip>
               )}
             {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
-              currentMenu !== "Trash" && (
-                <Tooltip title="Delete">
+              currentMenu === "Home" && (
+                <Tooltip title="Trash">
                   <IconButton
                     color="inherit"
-                    aria-label="Delete"
+                    aria-label="Trash"
                     onClick={handleTrash}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </Tooltip>
+              )}
+            {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
+              currentMenu === "Favorites" && (
+                <Tooltip title="Trash">
+                  <IconButton
+                    color="inherit"
+                    aria-label="Trash"
+                    onClick={handleFavoritesTrash}
                   >
                     <DeleteIcon />
                   </IconButton>
@@ -95,18 +108,7 @@ class ActionHeader extends Component {
                   </IconButton>
                 </Tooltip>
               )}
-            {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
-              currentMenu === "Trash" && (
-                <Tooltip title="Restore">
-                  <IconButton
-                    color="inherit"
-                    aria-label="Restore"
-                    onClick={handleRestore}
-                  >
-                    <RestoreIcon />
-                  </IconButton>
-                </Tooltip>
-              )}
+
             {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
               currentMenu === "Home" && (
                 <Tooltip title="Add to Starred">
@@ -133,15 +135,26 @@ class ActionHeader extends Component {
               )}
             {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
               currentMenu === "Trash" && (
-                <Tooltip title="Delete Forever">
-                  <IconButton
-                    color="inherit"
-                    aria-label="Delete Forever"
-                    onClick={handleDeleteForever}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Tooltip>
+                <Fragment>
+                  <Tooltip title="Restore">
+                    <IconButton
+                      color="inherit"
+                      aria-label="Restore"
+                      onClick={handleRestore}
+                    >
+                      <RestoreIcon />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Delete Forever">
+                    <IconButton
+                      color="inherit"
+                      aria-label="Delete Forever"
+                      onClick={handleDeleteForever}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </Tooltip>
+                </Fragment>
               )}
             {/* <Tooltip title="More Options">
               <IconButton color="inherit" aria-label="More Options">

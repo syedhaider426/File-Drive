@@ -87,7 +87,7 @@ class Login extends Component {
       this.setState({ errors });
     } else {
       const data = { email, password };
-      postData("/login", data).then((data) => {
+      postData("/api/user/login", data).then((data) => {
         if (data.error) {
           errors.login = "Login failed. Please try again.";
           this.setState({ email: "", password: "", errors });
@@ -111,7 +111,7 @@ class Login extends Component {
               <LockOutlinedIcon />
             </Avatar>
             <Typography component="h1" variant="h5">
-              Sign in
+              G-Drive
             </Typography>
             <form
               className={classes.form}
@@ -129,6 +129,8 @@ class Login extends Component {
                 autoComplete="email"
                 autoFocus
                 onChange={this.handleEmailChange}
+                error={this.state.errors.email}
+                helperText={this.state.errors.email}
               />
               <TextField
                 variant="outlined"
@@ -140,11 +142,9 @@ class Login extends Component {
                 type="password"
                 id="password"
                 autoComplete="current-password"
+                error={this.state.errors.password}
+                helperText={this.state.errors.password}
                 onChange={this.handlePasswordChange}
-              />
-              <FormControlLabel
-                control={<Checkbox value="remember" color="primary" />}
-                label="Remember me"
               />
               <Button
                 type="submit"

@@ -31,27 +31,59 @@ const styles = (theme) => ({
     margin: theme.spacing(3, 0, 2),
   },
 });
-class ForgotPassword extends Component {
-  state = { email: "", errors: "", success: "" };
+class Register extends Component {
+  state = {
+    email: "",
+    password: "",
+    errors: {
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+    confirmPassword: "",
+  };
 
   handleEmailChange = ({ target }) => {
-    let { errors } = this.state;
-    if (target.value === "") errors = "Email is required";
-    else errors = "";
+    const { errors } = this.state;
+    if (target.value === "") errors.email = "Email is required";
+    else delete errors.email;
     this.setState({ email: target.value, errors });
+  };
+
+  handlePasswordChange = ({ target }) => {
+    const { errors } = this.state;
+    if (target.value === "") errors.password = "Password is required";
+    else delete errors.password;
+    this.setState({ password: target.value, errors });
+  };
+
+  handleConfirmPasswordChange = ({ target }) => {
+    const { errors, password } = this.state;
+    if (target.value === "") errors.confirmPassword = "Please confirm password";
+    if (target.value !== password)
+      errors.confirmPassword = "Passwords do not match";
+    else delete errors.confirmPassword;
+    this.setState({ confirmPassword: target.value, errors });
   };
 
   handleSubmit = (e) => {
     e.preventDefault();
-    let { email, errors } = { ...this.state };
-    if (email === "") {
-      errors = "Please enter your email address";
+    const { email, password, confirmPassword } = { ...this.state };
+    const errors = {};
+    if (email === "") errors.email = "Email is required.";
+    if (password === "") errors.password = "Password is required.";
+    if (confirmPassword === "")
+      errors.confirmPassword = "Please confirm password";
+    if (Object.keys(errors).length !== 0) {
       this.setState({ errors });
     } else {
-      const data = { email };
-      postData("/api/user/forgotPassword", data).then((data) => {
-        console.log(data);
-      });
+      const data = { email, password, confirmPassword };
+      postData("/api/user/register", data)
+        .then((data) => {
+          console.log("test");
+          this.props.history.push("/confirmRegistration");
+        })
+        .catch((err) => console.log("Err"));
     }
   };
 
@@ -66,7 +98,7 @@ class ForgotPassword extends Component {
             <LockOutlinedIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
-            Forgot Password
+            Register
           </Typography>
           <form
             className={classes.form}
@@ -84,8 +116,36 @@ class ForgotPassword extends Component {
               autoComplete="email"
               autoFocus
               onChange={this.handleEmailChange}
-              error={this.state.errors}
-              helperText={this.state.errors}
+              error={errors.email}
+              helperText={errors.email}
+            />
+            <TextField
+              variant="outlined"
+              margin="normal"
+              required
+              fullWidth
+              name="password"
+              label="Password"
+              type="password"
+              id="password"
+              autoComplete="current-password"
+              error={errors.password}
+              helperText={errors.password}
+              onChange={this.handlePasswordChange}
+            />
+            <TextField
+              variant="outlined"
+              margin="normal"
+              required
+              fullWidth
+              name="password"
+              label="Confirm Password"
+              type="password"
+              id="password"
+              autoComplete="current-password"
+              error={errors.confirmPassword}
+              helperText={errors.confirmPassword}
+              onChange={this.handleConfirmPasswordChange}
             />
             <Button
               type="submit"
@@ -96,13 +156,6 @@ class ForgotPassword extends Component {
             >
               Submit
             </Button>
-            <Grid container>
-              <Grid item>
-                <Link to="/register" variant="body2">
-                  {"Don't have an account? Sign Up"}
-                </Link>
-              </Grid>
-            </Grid>
             <Box mt={5}>
               <Typography variant="body2" color="textSecondary" align="center">
                 {"Copyright © "}
@@ -120,4 +173,4 @@ class ForgotPassword extends Component {
   }
 }
 
-export default withStyles(styles)(ForgotPassword);
+export default withRouter(withStyles(styles)(Register));

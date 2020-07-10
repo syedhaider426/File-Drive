@@ -6,6 +6,8 @@ import Grid from "@material-ui/core/Grid";
 import Files from "../panel_middle/Files";
 import SignInSide from "../components/Login";
 import Dashboard from "../panel_left/Dashboard";
+import Register from "../components/Register";
+import Confirmation from "../components/Confirmation";
 
 /***
  * If the same component is used as the child of multiple <Route>s at the
@@ -45,6 +47,29 @@ const Main = () => {
           <Route path="/dashboard">
             <Grid container spacing={0}>
               <Dashboard />
+            </Grid>
+          </Route>
+          <Route path="/register">
+            <Grid container spacing={0}>
+              <Register />
+            </Grid>
+          </Route>
+          <Route path="/confirmRegistration">
+            <Grid container spacing={0}>
+              <Confirmation
+                message={
+                  "Thank you for registering your account. Please check your email to confirm your account."
+                }
+              />
+            </Grid>
+          </Route>
+          <Route path="/verification">
+            <Grid container spacing={0}>
+              <Confirmation
+                message={
+                  "Thank you for verifiying your email. You can now login to your account."
+                }
+              />
             </Grid>
           </Route>
           <Route path="/" exact>
