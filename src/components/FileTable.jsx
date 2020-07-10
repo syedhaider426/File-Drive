@@ -19,6 +19,7 @@ import Actions from "../panel_left/Actions";
 import StarIcon from "@material-ui/icons/Star";
 import deleteData from "../helpers/deleteData";
 import { Button, IconButton, Snackbar } from "@material-ui/core";
+import Snack from "./Snack";
 
 const styles = (theme) => ({
   tableRow: {
@@ -35,12 +36,36 @@ const styles = (theme) => ({
 });
 
 class FileTable extends Component {
-  handleSnackbarClose = (event, reason) => {
+  handleFavoritesSnackClose = (event, reason) => {
     if (reason === "clickaway") {
       return;
     }
-    this.props.handleSetState({ snackbarOpen: false });
+    this.props.handleSetState({
+      favoritesSnackOpen: false,
+      snackbarMessage: "",
+    });
   };
+
+  handleCopySnackClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    this.props.handleSetState({
+      copySnackOpen: false,
+      snackbarMessage: "",
+    });
+  };
+
+  handleTrashSnackClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    this.props.handleSetState({
+      trashSnackOpen: false,
+      snackbarMessage: "",
+    });
+  };
+
   handleFolderClick = (e, id, foldername) => {
     const { selectedFolders, handleSetState } = { ...this.props };
     if (selectedFolders.length === 0) {
@@ -84,14 +109,13 @@ class FileTable extends Component {
     const data = { selectedFiles };
     postData("/api/files/copy", data)
       .then((data) => {
-        const { files, selectedFiles } = { ...this.props };
+        const { files } = { ...this.props };
         for (let file of data.files) {
           files.push(file);
         }
         //Slice will clone the array and return reference to new array
         const tempFiles = data.newFiles.slice();
         const filesModified = tempFiles.length;
-        console.log("Copy", tempFiles);
         /***
          * Files - Updated files
          * Files Modified - Length of selected files that were copied
@@ -99,11 +123,27 @@ class FileTable extends Component {
          * TempFiles - Reference to selected files (if user chooses to undo, reference the tempfiles)
          */
         handleSetState({
-          snackbarOpen: true,
+          copySnackOpen: true,
           selectedFiles: [],
           files,
           filesModified,
           tempFiles,
+        });
+      })
+      .catch((err) => console.log("Err", err));
+  };
+
+  handleUndoCopy = () => {
+    const { tempFiles } = { ...this.props };
+    const data = { selectedFiles: tempFiles };
+    postData("/api/files/undoCopy", data)
+      .then((data) => {
+        const { files } = { ...data };
+        this.props.handleSetState({
+          files,
+          tempFiles: [],
+          filesModified: 0,
+          copySnackOpen: false,
         });
       })
       .catch((err) => console.log("Err", err));
@@ -115,11 +155,44 @@ class FileTable extends Component {
     postData("/api/files/trash", data)
       .then((data) => {
         const { files, folders } = { ...data };
+        //Slice will clone the array and return reference to new array
+        const tempFiles = selectedFiles.slice();
+        const tempFolders = selectedFolders.slice();
+        const filesModified = tempFiles.length + tempFolders.length;
+        /***
+         * Files - Updated files
+         * Files Modified - Length of selected files that were copied
+         * Snackbaropen - Open Snackbar
+         * TempFiles - Reference to selected files (if user chooses to undo, reference the tempfiles)
+         */
+
         this.props.handleSetState({
           files,
           folders,
+          trashSnackOpen: true,
           selectedFiles: [],
           selectedFolders: [],
+          tempFiles,
+          tempFolders,
+          filesModified,
+        });
+      })
+      .catch((err) => console.log("Err", err));
+  };
+
+  handleUndoTrash = () => {
+    let { tempFolders, tempFiles } = { ...this.props };
+    const data = { selectedFolders: tempFolders, selectedFiles: tempFiles };
+    postData("/api/files/undoTrash", data)
+      .then((data) => {
+        const { files, folders } = { ...data };
+        this.props.handleSetState({
+          files,
+          folders,
+          tempFiles: [],
+          tempFolders: [],
+          filesModified: 0,
+          trashSnackOpen: false,
         });
       })
       .catch((err) => console.log("Err", err));
@@ -159,22 +232,8 @@ class FileTable extends Component {
       .catch((err) => console.log("Err", err));
   };
 
-  handleUndoCopy = () => {
-    const { tempFiles } = { ...this.props };
-    const data = { selectedFiles: tempFiles };
-    postData("/api/files/undoCopy", data)
-      .then((data) => {
-        const { files } = { ...data };
-        this.props.handleSetState({
-          files,
-          tempFiles: [],
-        });
-      })
-      .catch((err) => console.log("Err", err));
-  };
-
   handleRestore = () => {
-    let { selectedFolders, selectedFiles } = { ...this.props };
+    const { selectedFolders, selectedFiles } = { ...this.props };
     const data = { selectedFolders, selectedFiles };
     postData("/api/files/restore", data)
       .then((data) => {
@@ -195,11 +254,43 @@ class FileTable extends Component {
     postData("/api/files/favorite", data)
       .then((data) => {
         const { files, folders } = { ...data };
+        //Slice will clone the array and return reference to new array
+        const tempFiles = selectedFiles.slice();
+        const tempFolders = selectedFolders.slice();
+        const filesModified = tempFiles.length + tempFolders.length;
+        /***
+         * Files - Updated files
+         * Files Modified - Length of selected files that were copied
+         * Snackbaropen - Open Snackbar
+         * TempFiles - Reference to selected files (if user chooses to undo, reference the tempfiles)
+         */
         this.props.handleSetState({
           files,
           folders,
+          favoritesSnackOpen: true,
           selectedFiles: [],
           selectedFolders: [],
+          tempFiles,
+          tempFolders,
+          filesModified,
+        });
+      })
+      .catch((err) => console.log("Err", err));
+  };
+
+  handleUndoFavorite = () => {
+    const { tempFolders, tempFiles } = { ...this.props };
+    const data = { selectedFolders: tempFolders, selectedFiles: tempFiles };
+    postData("/api/files/undoFavorite", data)
+      .then((data) => {
+        const { files, folders } = { ...data };
+        this.props.handleSetState({
+          files,
+          folders,
+          tempFiles: [],
+          tempFolders: [],
+          filesModified: 0,
+          favoritesSnackOpen: false,
         });
       })
       .catch((err) => console.log("Err", err));
@@ -222,7 +313,7 @@ class FileTable extends Component {
   };
 
   handleSnackbarExit = () => {
-    if (this.props.tempFiles) {
+    if (this.props.tempFiles || this.props.tempFolders) {
       this.props.handleSetState({
         tempFiles: [],
         tempFolders: [],
@@ -245,40 +336,40 @@ class FileTable extends Component {
       filesModified,
       foldersModified,
       handleUndoCopy,
+      copySnackOpen,
+      trashSnackOpen,
+      favoritesSnackOpen,
     } = {
       ...this.props,
     };
 
-    const snack = (
-      <Snackbar
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "left",
-        }}
-        open={snackbarOpen}
-        autoHideDuration={6000}
-        onClose={this.handleSnackbarClose}
+    const copySnack = (
+      <Snack
+        open={copySnackOpen}
+        onClose={this.handleCopySnackClose}
         onExit={this.handleSnackbarExit}
         message={`Copied ${filesModified} file(s).`}
-        action={
-          <React.Fragment>
-            <Button
-              onClick={this.handleUndoCopy}
-              color="secondary"
-              size="small"
-            >
-              Undo
-            </Button>
-            <IconButton
-              size="small"
-              aria-label="close"
-              color="inherit"
-              onClick={this.handleSnackbarClose}
-            >
-              <CloseIcon fontSize="small" />
-            </IconButton>
-          </React.Fragment>
-        }
+        onClick={this.handleUndoCopy}
+      />
+    );
+
+    const trashSnack = (
+      <Snack
+        open={trashSnackOpen}
+        onClose={this.handleTrashSnackClose}
+        onExit={this.handleSnackbarExit}
+        message={`Trashed ${filesModified} item(s).`}
+        onClick={this.handleUndoTrash}
+      />
+    );
+    console.log("FAVORITE SNACK OPEN", favoritesSnackOpen);
+    const favoritesSnack = (
+      <Snack
+        open={favoritesSnackOpen}
+        onClose={this.handleFavoritesSnackClose}
+        onExit={this.handleSnackbarExit}
+        message={`Favorited ${filesModified} item(s).`}
+        onClick={this.handleUndoFavorite}
       />
     );
 
@@ -374,7 +465,7 @@ class FileTable extends Component {
                     >
                       <FileIcon style={{ fill: "#5f6368" }} />
                       <span className="data">{file.filename}</span>
-                      {currentMenu === "Home" && file.isFavorited && (
+                      {currentMenu === "Home" && file.metadata.isFavorited && (
                         <StarIcon className="data" />
                       )}
                     </div>
@@ -393,7 +484,9 @@ class FileTable extends Component {
               ))}
             </TableBody>
           </Table>
-          {snack}
+          {copySnack}
+          {trashSnack}
+          {favoritesSnack}
         </Grid>
       </Fragment>
     );

@@ -16,6 +16,9 @@ class Files extends Component {
     tempFiles: [],
     tempFolders: [],
     snackBarMessage: "",
+    copySnackOpen: false,
+    trashSnackOpen: false,
+    favoritesSnackOpen: false,
   };
 
   componentDidMount() {
@@ -47,6 +50,9 @@ class Files extends Component {
       tempFiles,
       tempFolders,
       snackBarMessage,
+      copySnackOpen,
+      trashSnackOpen,
+      favoritesSnackOpen,
     } = {
       ...this.state,
     };
@@ -66,6 +72,9 @@ class Files extends Component {
         tempFiles={tempFiles}
         tempFolders={tempFolders}
         snackBarMessage={snackBarMessage}
+        copySnackOpen={copySnackOpen}
+        trashSnackOpen={trashSnackOpen}
+        favoritesSnackOpen={favoritesSnackOpen}
       />
     );
   }
