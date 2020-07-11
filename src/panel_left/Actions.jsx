@@ -15,7 +15,7 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import CloudUploadIcon from "@material-ui/icons/CloudUpload";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
-import { Grid, Divider } from "@material-ui/core";
+import { Divider } from "@material-ui/core";
 import CreateNewFolderOutlinedIcon from "@material-ui/icons/CreateNewFolderOutlined";
 import FolderOpenOutlinedIcon from "@material-ui/icons/FolderOpenOutlined";
 import FileIcon from "@material-ui/icons/InsertDriveFile";

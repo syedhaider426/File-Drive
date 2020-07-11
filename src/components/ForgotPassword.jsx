@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Link, withRouter } from "react-router-dom";
+import { Link } from "react-router-dom";
 import postData from "../helpers/postData";
 import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
@@ -56,7 +56,6 @@ class ForgotPassword extends Component {
   };
 
   render() {
-    const { email, errors } = { ...this.state };
     const { classes } = this.props;
     return (
       <Container component="main" maxWidth="xs">

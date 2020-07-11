@@ -10,15 +10,12 @@ import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import FileIcon from "@material-ui/icons/InsertDriveFile";
 import FolderIcon from "@material-ui/icons/Folder";
-import CloseIcon from "@material-ui/icons/Close";
 import ActionHeader from "./ActionHeader";
 import postData from "../helpers/postData";
 import returnFileSize from "../helpers/returnFileSize";
 import PrimarySearchAppBar from "./PrimarySearchAppBar";
 import Actions from "../panel_left/Actions";
 import StarIcon from "@material-ui/icons/Star";
-import deleteData from "../helpers/deleteData";
-import { Button, IconButton, Snackbar } from "@material-ui/core";
 import Snack from "./Snack";
 
 const styles = (theme) => ({
@@ -42,7 +39,6 @@ class FileTable extends Component {
     }
     this.props.handleSetState({
       favoritesSnackOpen: false,
-      snackbarMessage: "",
     });
   };
 
@@ -52,7 +48,6 @@ class FileTable extends Component {
     }
     this.props.handleSetState({
       copySnackOpen: false,
-      snackbarMessage: "",
     });
   };
 
@@ -62,7 +57,6 @@ class FileTable extends Component {
     }
     this.props.handleSetState({
       trashSnackOpen: false,
-      snackbarMessage: "",
     });
   };
 
@@ -85,21 +79,33 @@ class FileTable extends Component {
     }
   };
 
-  handleFileClick = (e, id, filename) => {
+  handleFileClick = (e, file) => {
     const { selectedFiles, handleSetState } = { ...this.props };
     if (selectedFiles.length === 0) {
-      selectedFiles.push({ id, filename });
-      handleSetState({
-        selectedFolders: [],
-        selectedFiles,
+      selectedFiles.push({
+        id: file._id,
+        filename: file.filename,
+        isFavorited: file.metadata.isFavorited,
       });
-    } else if (selectedFiles[0].id === id) {
-      this.props.history.push(`/file/${id}`);
-    } else {
-      selectedFiles[0] = { id, filename };
+      const isFavorited = this.checkIsFavorited(selectedFiles);
       handleSetState({
         selectedFolders: [],
         selectedFiles,
+        isFavorited,
+      });
+    } else if (selectedFiles[0].id === file._id) {
+      this.props.history.push(`/file/${file._id}`);
+    } else {
+      selectedFiles[0] = {
+        id: file._id,
+        filename: file.filename,
+        isFavorited: file.metadata.isFavorited,
+      };
+      const isFavorited = this.checkIsFavorited(selectedFiles);
+      handleSetState({
+        selectedFolders: [],
+        selectedFiles,
+        isFavorited,
       });
     }
   };
@@ -317,10 +323,34 @@ class FileTable extends Component {
       this.props.handleSetState({
         tempFiles: [],
         tempFolders: [],
-        snackBarMessage: "",
       });
     }
     return;
+  };
+
+  checkIsFavorited = (items) => {
+    let isFavorited = 0;
+    for (let i = 0; i < items.length; ++i) {
+      if (items[i].isFavorited) isFavorited++;
+    }
+    if (isFavorited > 0 && isFavorited === items.length) return true;
+    return false;
+  };
+
+  handleHomeUnfavorited = () => {
+    let { selectedFolders, selectedFiles } = { ...this.props };
+    const data = { selectedFolders, selectedFiles };
+    postData("/api/files/homeUnfavorite", data)
+      .then((data) => {
+        const { files, folders } = { ...data };
+        this.props.handleSetState({
+          files,
+          folders,
+          selectedFiles: [],
+          selectedFolders: [],
+        });
+      })
+      .catch((err) => console.log("Err", err));
   };
 
   render() {
@@ -331,14 +361,11 @@ class FileTable extends Component {
       selectedFolders,
       selectedFiles,
       currentMenu,
-      loaded,
-      snackbarOpen,
       filesModified,
-      foldersModified,
-      handleUndoCopy,
       copySnackOpen,
       trashSnackOpen,
       favoritesSnackOpen,
+      isFavorited,
     } = {
       ...this.props,
     };
@@ -362,7 +389,6 @@ class FileTable extends Component {
         onClick={this.handleUndoTrash}
       />
     );
-    console.log("FAVORITE SNACK OPEN", favoritesSnackOpen);
     const favoritesSnack = (
       <Snack
         open={favoritesSnackOpen}
@@ -392,7 +418,9 @@ class FileTable extends Component {
             handleFavorites={this.handleFavorites}
             handleUnfavorited={this.handleUnfavorited}
             handleFavoritesTrash={this.handleFavoritesTrash}
+            handleHomeUnfavorited={this.handleHomeUnfavorited}
             currentMenu={currentMenu}
+            isFavorited={isFavorited}
           />
           <Table
             className={classes.table}
@@ -447,9 +475,7 @@ class FileTable extends Component {
                 <TableRow
                   key={file._id}
                   className={classes.tableRow}
-                  onClick={(e) =>
-                    this.handleFileClick(e, file._id, file.filename)
-                  }
+                  onClick={(e) => this.handleFileClick(e, file)}
                   selected={
                     selectedFiles.length > 0
                       ? selectedFiles[0].id === file._id

@@ -19,6 +19,7 @@ class Files extends Component {
     copySnackOpen: false,
     trashSnackOpen: false,
     favoritesSnackOpen: false,
+    isFavorited: false,
   };
 
   componentDidMount() {
@@ -53,6 +54,7 @@ class Files extends Component {
       copySnackOpen,
       trashSnackOpen,
       favoritesSnackOpen,
+      isFavorited,
     } = {
       ...this.state,
     };
@@ -75,6 +77,7 @@ class Files extends Component {
         copySnackOpen={copySnackOpen}
         trashSnackOpen={trashSnackOpen}
         favoritesSnackOpen={favoritesSnackOpen}
+        isFavorited={isFavorited}
       />
     );
   }

@@ -46,6 +46,8 @@ class ActionHeader extends Component {
       handleRestore,
       handleUnfavorited,
       handleFavoritesTrash,
+      isFavorited,
+      handleHomeUnfavorited,
     } = this.props;
     const { classes } = this.props;
     return (
@@ -109,18 +111,31 @@ class ActionHeader extends Component {
                 </Tooltip>
               )}
 
-            {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
-              currentMenu === "Home" && (
-                <Tooltip title="Add to Starred">
-                  <IconButton
-                    color="inherit"
-                    aria-label="Add to Starred"
-                    onClick={handleFavorites}
-                  >
-                    <StarOutlineOutlinedIcon />
-                  </IconButton>
-                </Tooltip>
-              )}
+            {!isFavorited
+              ? (selectedFiles.length > 0 || selectedFolders.length > 0) &&
+                currentMenu === "Home" && (
+                  <Tooltip title="Add to Starred">
+                    <IconButton
+                      color="inherit"
+                      aria-label="Add to Starred"
+                      onClick={handleFavorites}
+                    >
+                      <StarOutlineOutlinedIcon />
+                    </IconButton>
+                  </Tooltip>
+                )
+              : (selectedFiles.length > 0 || selectedFolders.length > 0) &&
+                currentMenu === "Home" && (
+                  <Tooltip title="Remove from Starred">
+                    <IconButton
+                      color="inherit"
+                      aria-label="Remove from Starred"
+                      onClick={handleHomeUnfavorited}
+                    >
+                      <StarOutlineOutlinedIcon />
+                    </IconButton>
+                  </Tooltip>
+                )}
             {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
               currentMenu === "Favorites" && (
                 <Tooltip title="Remove from Starred">
