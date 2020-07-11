@@ -129,7 +129,9 @@ class FileTable extends Component {
          * TempFiles - Reference to selected files (if user chooses to undo, reference the tempfiles)
          */
         handleSetState({
+          trashSnackOpen: false,
           copySnackOpen: true,
+          favoritesSnackOpen: false,
           selectedFiles: [],
           files,
           filesModified,
@@ -176,6 +178,8 @@ class FileTable extends Component {
           files,
           folders,
           trashSnackOpen: true,
+          copySnackOpen: false,
+          favoritesSnackOpen: false,
           selectedFiles: [],
           selectedFolders: [],
           tempFiles,
@@ -274,8 +278,6 @@ class FileTable extends Component {
           files,
           folders,
           favoritesSnackOpen: true,
-          selectedFiles: [],
-          selectedFolders: [],
           tempFiles,
           tempFolders,
           filesModified,
@@ -366,6 +368,7 @@ class FileTable extends Component {
       trashSnackOpen,
       favoritesSnackOpen,
       isFavorited,
+      handleSetState,
     } = {
       ...this.props,
     };
@@ -409,6 +412,8 @@ class FileTable extends Component {
         </Grid>
         <Grid item xs={10}>
           <ActionHeader
+            files={files}
+            folders={folders}
             selectedFiles={selectedFiles}
             selectedFolders={selectedFolders}
             handleTrash={this.handleTrash}
@@ -421,6 +426,9 @@ class FileTable extends Component {
             handleHomeUnfavorited={this.handleHomeUnfavorited}
             currentMenu={currentMenu}
             isFavorited={isFavorited}
+            handleSetState={handleSetState}
+            handleRenameFile={this.handleRenameFile}
+            handleRenameFolder={this.handleRenameFolder}
           />
           <Table
             className={classes.table}

@@ -11,6 +11,16 @@ import MoveToInboxIcon from "@material-ui/icons/MoveToInbox";
 import Tooltip from "@material-ui/core/Tooltip";
 import RestoreIcon from "@material-ui/icons/Restore";
 import StarOutlineOutlinedIcon from "@material-ui/icons/StarOutlined";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  TextField,
+  DialogActions,
+  Button,
+} from "@material-ui/core";
+import postData from "../helpers/postData";
+import Snack from "./Snack";
 
 const styles = {
   // This group of buttons will be aligned to the right
@@ -30,12 +40,113 @@ class ActionHeader extends Component {
     deleteOpen: false,
     copyOpen: false,
     moveOpen: false,
-    renamedFile: "",
-    renamedFolder: "",
+    filename: "",
+    foldername: "",
+    renamedFile: {},
+    renamedFolder: {},
+    fileButtonDisabled: true,
+    renamedSnack: false,
+    originalFileName: "",
+  };
+
+  handleRenameOpen = () => {
+    this.setState({ renameOpen: true });
+  };
+
+  handleRenameFileClose = () => {
+    this.setState({ renameOpen: false });
+  };
+
+  handleFileOnChange = (e) => {
+    if (e.target.value === "") this.setState({ fileButtonDisabled: true });
+    else this.setState({ filename: e.target.value, fileButtonDisabled: false });
+  };
+
+  handleRenameFile = (e) => {
+    e.preventDefault();
+    const { selectedFiles } = { ...this.props };
+    const { filename } = { ...this.state };
+    const data = {
+      id: selectedFiles[0].id,
+      newName: filename,
+    };
+    postData("/api/files/rename", data)
+      .then((data) => {
+        let files = this.props.files;
+        files.find((o, i, arr) => {
+          if (o._id === selectedFiles[0].id) {
+            arr[i].filename = filename;
+            return true;
+          }
+        });
+        this.setState(
+          {
+            renameOpen: false,
+            renamedFile: selectedFiles[0],
+            renamedSnack: true,
+          },
+          this.props.handleSetState({ files })
+        );
+      })
+      .catch((err) => console.log("Err", err));
+  };
+
+  handleUndoRenameFile = () => {
+    const { renamedFile } = { ...this.state };
+    const { selectedFiles } = { ...this.props };
+    const data = {
+      id: renamedFile.id,
+      newName: renamedFile.filename,
+    };
+
+    postData("/api/files/rename", data)
+      .then((data) => {
+        let files = this.props.files;
+        files.find((o, i, arr) => {
+          if (o._id === selectedFiles[0].id) {
+            arr[i].filename = selectedFiles[0].filename;
+            return true;
+          }
+        });
+        this.setState(
+          {
+            renameOpen: false,
+            renamedFile: {},
+            renamedSnack: false,
+            fileName: "",
+          },
+          this.props.handleSetState({ files })
+        );
+      })
+      .catch((err) => console.log("Err", err));
+  };
+
+  handleSnackbarExit = () => {
+    if (this.state.renamedFile || this.state.renamedFolder) {
+      this.setState({
+        renamedFile: {},
+        renamedFolder: {},
+      });
+    }
+    return;
+  };
+
+  /**
+   *
+   *{https://stackoverflow.com/questions/54416499/how-select-part-of-text-in-a-textfield-on-onfocus-event-with-material-ui-in-reac} event
+   */
+  handleFocus = (event) => {
+    event.preventDefault();
+    const { target } = event;
+    const extensionStarts = target.value.lastIndexOf(".");
+    target.focus();
+    target.setSelectionRange(0, extensionStarts);
   };
 
   render() {
     const {
+      files,
+      folders,
       selectedFiles,
       selectedFolders,
       handleTrash,
@@ -48,8 +159,69 @@ class ActionHeader extends Component {
       handleFavoritesTrash,
       isFavorited,
       handleHomeUnfavorited,
+      handleRenameOpen,
     } = this.props;
     const { classes } = this.props;
+
+    const {
+      renameOpen,
+      deleteOpen,
+      copyOpen,
+      moveOpen,
+      renamedFile,
+      renamedFolder,
+      fileButtonDisabled,
+      renamedSnack,
+    } = { ...this.state };
+
+    const renameSnack = (
+      <Snack
+        open={renamedSnack}
+        onClose={this.handleRenameSnackClose}
+        onExit={this.handleSnackbarExit}
+        message={`Renamed "${this.state.renamedFile.filename}" to "${this.state.filename}"`}
+        onClick={this.handleUndoRenameFile}
+      />
+    );
+
+    const renameFileDialog = (
+      <Dialog
+        open={renameOpen}
+        onClose={this.handleRenameFileClose}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogTitle id="form-dialog-title">Rename</DialogTitle>
+        <form onSubmit={this.handleRenameFile} method="POST">
+          <DialogContent>
+            <TextField
+              autoFocus
+              margin="dense"
+              onFocus={this.handleFocus}
+              id="file"
+              defaultValue={
+                selectedFiles[0] === undefined ? "" : selectedFiles[0].filename
+              }
+              fullWidth
+              onChange={this.handleFileOnChange}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={this.handleRenameFileClose} color="primary">
+              Cancel
+            </Button>
+            <Button
+              disabled={fileButtonDisabled}
+              onClick={this.handleRenameFileClose}
+              color="primary"
+              type="submit"
+            >
+              Confirm
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+    );
+
     return (
       <AppBar position="static" color="transparent" elevation={3}>
         <Toolbar variant="dense">
@@ -60,11 +232,16 @@ class ActionHeader extends Component {
               !(selectedFolders.length === 1 && selectedFiles.length === 1) &&
               currentMenu !== "Trash" && (
                 <Tooltip title="Rename">
-                  <IconButton color="inherit" aria-label="Rename">
+                  <IconButton
+                    color="inherit"
+                    aria-label="Rename"
+                    onClick={this.handleRenameOpen}
+                  >
                     <RenameIcon />
                   </IconButton>
                 </Tooltip>
               )}
+            {renameFileDialog}
             {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
               currentMenu === "Home" && (
                 <Tooltip title="Trash">
@@ -171,6 +348,7 @@ class ActionHeader extends Component {
                   </Tooltip>
                 </Fragment>
               )}
+            {renameSnack}
             {/* <Tooltip title="More Options">
               <IconButton color="inherit" aria-label="More Options">
                 <MoreVertIcon />

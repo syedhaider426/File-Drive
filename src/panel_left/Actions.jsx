@@ -140,6 +140,7 @@ class Actions extends Component {
               disabled={folderButtonDisabled}
               onClick={handleCreateFolderClose}
               color="primary"
+              type="submit"
             >
               Confirm
             </Button>
