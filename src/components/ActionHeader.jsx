@@ -11,16 +11,9 @@ import MoveToInboxIcon from "@material-ui/icons/MoveToInbox";
 import Tooltip from "@material-ui/core/Tooltip";
 import RestoreIcon from "@material-ui/icons/Restore";
 import StarOutlineOutlinedIcon from "@material-ui/icons/StarOutlined";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  TextField,
-  DialogActions,
-  Button,
-} from "@material-ui/core";
 import postData from "../helpers/postData";
-import Snack from "./Snack";
+import RenameFolder from "./RenameFolder";
+import RenameFile from "./RenameFile";
 
 const styles = {
   // This group of buttons will be aligned to the right
@@ -47,10 +40,26 @@ class ActionHeader extends Component {
     fileButtonDisabled: true,
     renamedSnack: false,
     originalFileName: "",
+    renameFolderDialogOpen: false,
+    renameFileDialogOpen: false,
+  };
+
+  handleRenameFileClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    this.setState({
+      renamedSnack: false,
+    });
   };
 
   handleRenameOpen = () => {
-    this.setState({ renameOpen: true });
+    this.setState({ renameFileDialogOpen: true });
+  };
+
+  handleRenameFolderOpen = () => {
+    console.log("set");
+    this.setState({ renameFolderDialogOpen: true });
   };
 
   handleRenameFileClose = () => {
@@ -131,6 +140,10 @@ class ActionHeader extends Component {
     return;
   };
 
+  handleDialog = (value) => {
+    this.setState(value);
+  };
+
   /**
    *
    *{https://stackoverflow.com/questions/54416499/how-select-part-of-text-in-a-textfield-on-onfocus-event-with-material-ui-in-reac} event
@@ -163,85 +176,50 @@ class ActionHeader extends Component {
     } = this.props;
     const { classes } = this.props;
 
-    const {
-      renameOpen,
-      deleteOpen,
-      copyOpen,
-      moveOpen,
-      renamedFile,
-      renamedFolder,
-      fileButtonDisabled,
-      renamedSnack,
-    } = { ...this.state };
-
-    const renameSnack = (
-      <Snack
-        open={renamedSnack}
-        onClose={this.handleRenameSnackClose}
-        onExit={this.handleSnackbarExit}
-        message={`Renamed "${this.state.renamedFile.filename}" to "${this.state.filename}"`}
-        onClick={this.handleUndoRenameFile}
-      />
-    );
-
-    const renameFileDialog = (
-      <Dialog
-        open={renameOpen}
-        onClose={this.handleRenameFileClose}
-        aria-labelledby="form-dialog-title"
-      >
-        <DialogTitle id="form-dialog-title">Rename</DialogTitle>
-        <form onSubmit={this.handleRenameFile} method="POST">
-          <DialogContent>
-            <TextField
-              autoFocus
-              margin="dense"
-              onFocus={this.handleFocus}
-              id="file"
-              defaultValue={
-                selectedFiles[0] === undefined ? "" : selectedFiles[0].filename
-              }
-              fullWidth
-              onChange={this.handleFileOnChange}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={this.handleRenameFileClose} color="primary">
-              Cancel
-            </Button>
-            <Button
-              disabled={fileButtonDisabled}
-              onClick={this.handleRenameFileClose}
-              color="primary"
-              type="submit"
-            >
-              Confirm
-            </Button>
-          </DialogActions>
-        </form>
-      </Dialog>
-    );
-
     return (
       <AppBar position="static" color="transparent" elevation={3}>
         <Toolbar variant="dense">
           <Typography color="inherit">{currentMenu}</Typography>
 
           <section className={classes.rightToolbar}>
-            {(selectedFiles.length === 1 || selectedFolders.length === 1) &&
-              !(selectedFolders.length === 1 && selectedFiles.length === 1) &&
-              currentMenu !== "Trash" && (
-                <Tooltip title="Rename">
-                  <IconButton
-                    color="inherit"
-                    aria-label="Rename"
-                    onClick={this.handleRenameOpen}
-                  >
-                    <RenameIcon />
-                  </IconButton>
-                </Tooltip>
-              )}
-            {renameFileDialog}
+            {selectedFiles.length === 1 && currentMenu !== "Trash" && (
+              <Tooltip title="Rename">
+                <IconButton
+                  color="inherit"
+                  aria-label="Rename"
+                  onClick={this.handleRenameOpen}
+                >
+                  <RenameIcon />
+                </IconButton>
+              </Tooltip>
+            )}
+            <RenameFile
+              renameFileDialogOpen={this.state.renameFileDialogOpen}
+              handleFileDialog={this.handleDialog}
+              files={files}
+              selectedFiles={selectedFiles}
+              handleSetState={this.props.handleSetState}
+              handleFocus={this.handleFocus}
+            />
+            {selectedFolders.length === 1 && currentMenu !== "Trash" && (
+              <Tooltip title="Rename">
+                <IconButton
+                  color="inherit"
+                  aria-label="Rename"
+                  onClick={this.handleRenameFolderOpen}
+                >
+                  <RenameIcon />
+                </IconButton>
+              </Tooltip>
+            )}
+            <RenameFolder
+              renameFolderDialogOpen={this.state.renameFolderDialogOpen}
+              handleFolderDialog={this.handleDialog}
+              folders={folders}
+              selectedFolders={selectedFolders}
+              handleSetState={this.props.handleSetState}
+              handleFocus={this.handleFocus}
+            />
             {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
               currentMenu === "Home" && (
                 <Tooltip title="Trash">
@@ -348,7 +326,6 @@ class ActionHeader extends Component {
                   </Tooltip>
                 </Fragment>
               )}
-            {renameSnack}
             {/* <Tooltip title="More Options">
               <IconButton color="inherit" aria-label="More Options">
                 <MoreVertIcon />

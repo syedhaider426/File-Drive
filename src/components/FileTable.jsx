@@ -448,7 +448,7 @@ class FileTable extends Component {
                   key={folder._id}
                   className={classes.tableRow}
                   onClick={(e) =>
-                    this.handleFolderClick(e, folder._id, folder.filename)
+                    this.handleFolderClick(e, folder._id, folder.foldername)
                   }
                   selected={
                     selectedFolders.length > 0

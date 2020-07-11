@@ -2,7 +2,7 @@ import React, { Fragment } from "react";
 import { Button, IconButton, Snackbar } from "@material-ui/core";
 import CloseIcon from "@material-ui/icons/Close";
 
-const Snack = ({ open, onClose, onExit, message, onClick }) => {
+const Snack = ({ open, onClose, onExited, message, onClick }) => {
   return (
     <Snackbar
       anchorOrigin={{
@@ -12,7 +12,7 @@ const Snack = ({ open, onClose, onExit, message, onClick }) => {
       open={open}
       autoHideDuration={6000}
       onClose={onClose}
-      onExit={onExit}
+      onExited={onExited}
       message={message}
       action={
         <Fragment>
