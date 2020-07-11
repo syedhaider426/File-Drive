@@ -60,7 +60,6 @@ class RenameFile extends Component {
         });
         this.setState(
           {
-            renameOpen: false,
             renamedFile: selectedFiles[0],
             renamedSnack: true,
           },
@@ -89,7 +88,6 @@ class RenameFile extends Component {
         });
         this.setState(
           {
-            renameOpen: false,
             renamedFile: {},
             renamedSnack: false,
             fileName: "",
@@ -109,7 +107,7 @@ class RenameFile extends Component {
     return;
   };
   render() {
-    const { renamedSnack, renameOpen, fileButtonDisabled } = {
+    const { renamedSnack, fileButtonDisabled } = {
       ...this.state,
     };
     const { selectedFiles } = { ...this.props };

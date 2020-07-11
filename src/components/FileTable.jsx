@@ -355,6 +355,34 @@ class FileTable extends Component {
       .catch((err) => console.log("Err", err));
   };
 
+  handleDeleteAll = () => {
+    document.body.style.cursor = "wait";
+    postData("/api/files/deleteAll")
+      .then((data) => {
+        document.body.style.cursor = "default";
+        const { files, folders } = { ...data };
+        this.props.handleSetState({
+          files,
+          folders,
+        });
+      })
+      .catch((err) => console.log("Err", err));
+  };
+
+  handleRestoreAll = () => {
+    document.body.style.cursor = "wait";
+    postData("/api/files/restoreAll")
+      .then((data) => {
+        document.body.style.cursor = "default";
+        const { files, folders } = { ...data };
+        this.props.handleSetState({
+          files,
+          folders,
+        });
+      })
+      .catch((err) => console.log("Err", err));
+  };
+
   render() {
     const {
       files,
@@ -377,7 +405,7 @@ class FileTable extends Component {
       <Snack
         open={copySnackOpen}
         onClose={this.handleCopySnackClose}
-        onExit={this.handleSnackbarExit}
+        onExited={this.handleSnackbarExit}
         message={`Copied ${filesModified} file(s).`}
         onClick={this.handleUndoCopy}
       />
@@ -387,7 +415,7 @@ class FileTable extends Component {
       <Snack
         open={trashSnackOpen}
         onClose={this.handleTrashSnackClose}
-        onExit={this.handleSnackbarExit}
+        onExited={this.handleSnackbarExit}
         message={`Trashed ${filesModified} item(s).`}
         onClick={this.handleUndoTrash}
       />
@@ -396,7 +424,7 @@ class FileTable extends Component {
       <Snack
         open={favoritesSnackOpen}
         onClose={this.handleFavoritesSnackClose}
-        onExit={this.handleSnackbarExit}
+        onExited={this.handleSnackbarExit}
         message={`Favorited ${filesModified} item(s).`}
         onClick={this.handleUndoFavorite}
       />
@@ -427,8 +455,8 @@ class FileTable extends Component {
             currentMenu={currentMenu}
             isFavorited={isFavorited}
             handleSetState={handleSetState}
-            handleRenameFile={this.handleRenameFile}
-            handleRenameFolder={this.handleRenameFolder}
+            handleDeleteAll={this.handleDeleteAll}
+            handleRestoreAll={this.handleRestoreAll}
           />
           <Table
             className={classes.table}

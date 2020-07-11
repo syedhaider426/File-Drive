@@ -29,28 +29,8 @@ const styles = {
 
 class ActionHeader extends Component {
   state = {
-    renameOpen: false,
-    deleteOpen: false,
-    copyOpen: false,
-    moveOpen: false,
-    filename: "",
-    foldername: "",
-    renamedFile: {},
-    renamedFolder: {},
-    fileButtonDisabled: true,
-    renamedSnack: false,
-    originalFileName: "",
     renameFolderDialogOpen: false,
     renameFileDialogOpen: false,
-  };
-
-  handleRenameFileClose = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    this.setState({
-      renamedSnack: false,
-    });
   };
 
   handleRenameOpen = () => {
@@ -58,86 +38,7 @@ class ActionHeader extends Component {
   };
 
   handleRenameFolderOpen = () => {
-    console.log("set");
     this.setState({ renameFolderDialogOpen: true });
-  };
-
-  handleRenameFileClose = () => {
-    this.setState({ renameOpen: false });
-  };
-
-  handleFileOnChange = (e) => {
-    if (e.target.value === "") this.setState({ fileButtonDisabled: true });
-    else this.setState({ filename: e.target.value, fileButtonDisabled: false });
-  };
-
-  handleRenameFile = (e) => {
-    e.preventDefault();
-    const { selectedFiles } = { ...this.props };
-    const { filename } = { ...this.state };
-    const data = {
-      id: selectedFiles[0].id,
-      newName: filename,
-    };
-    postData("/api/files/rename", data)
-      .then((data) => {
-        let files = this.props.files;
-        files.find((o, i, arr) => {
-          if (o._id === selectedFiles[0].id) {
-            arr[i].filename = filename;
-            return true;
-          }
-        });
-        this.setState(
-          {
-            renameOpen: false,
-            renamedFile: selectedFiles[0],
-            renamedSnack: true,
-          },
-          this.props.handleSetState({ files })
-        );
-      })
-      .catch((err) => console.log("Err", err));
-  };
-
-  handleUndoRenameFile = () => {
-    const { renamedFile } = { ...this.state };
-    const { selectedFiles } = { ...this.props };
-    const data = {
-      id: renamedFile.id,
-      newName: renamedFile.filename,
-    };
-
-    postData("/api/files/rename", data)
-      .then((data) => {
-        let files = this.props.files;
-        files.find((o, i, arr) => {
-          if (o._id === selectedFiles[0].id) {
-            arr[i].filename = selectedFiles[0].filename;
-            return true;
-          }
-        });
-        this.setState(
-          {
-            renameOpen: false,
-            renamedFile: {},
-            renamedSnack: false,
-            fileName: "",
-          },
-          this.props.handleSetState({ files })
-        );
-      })
-      .catch((err) => console.log("Err", err));
-  };
-
-  handleSnackbarExit = () => {
-    if (this.state.renamedFile || this.state.renamedFolder) {
-      this.setState({
-        renamedFile: {},
-        renamedFolder: {},
-      });
-    }
-    return;
   };
 
   handleDialog = (value) => {
@@ -173,6 +74,8 @@ class ActionHeader extends Component {
       isFavorited,
       handleHomeUnfavorited,
       handleRenameOpen,
+      handleDeleteAll,
+      handleRestoreAll,
     } = this.props;
     const { classes } = this.props;
 
@@ -214,7 +117,7 @@ class ActionHeader extends Component {
             )}
             <RenameFolder
               renameFolderDialogOpen={this.state.renameFolderDialogOpen}
-              handleFolderDialog={this.handleDialog}
+              handleDialog={this.handleDialog}
               folders={folders}
               selectedFolders={selectedFolders}
               handleSetState={this.props.handleSetState}
@@ -326,6 +229,28 @@ class ActionHeader extends Component {
                   </Tooltip>
                 </Fragment>
               )}
+            {currentMenu === "Trash" && (
+              <Fragment>
+                <Tooltip title="Delete All">
+                  <IconButton
+                    color="inherit"
+                    aria-label="Delete All"
+                    onClick={handleDeleteAll}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Restore All">
+                  <IconButton
+                    color="inherit"
+                    aria-label="Restore All"
+                    onClick={handleRestoreAll}
+                  >
+                    <RestoreIcon />
+                  </IconButton>
+                </Tooltip>
+              </Fragment>
+            )}
             {/* <Tooltip title="More Options">
               <IconButton color="inherit" aria-label="More Options">
                 <MoreVertIcon />

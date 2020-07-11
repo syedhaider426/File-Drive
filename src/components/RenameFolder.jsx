@@ -12,7 +12,6 @@ import Snack from "./Snack";
 
 class RenameFolder extends Component {
   state = {
-    renameOpen: false,
     renamedSnack: false,
     folderButtonDisabled: false,
     foldername: "",
@@ -29,7 +28,7 @@ class RenameFolder extends Component {
   };
 
   handleRenameFolderClose = () => {
-    this.props.handleFolderDialog({ renameFolderDialogOpen: false });
+    this.props.handleDialog({ renameFolderDialogOpen: false });
   };
 
   handleFolderOnChange = (e) => {
@@ -60,7 +59,6 @@ class RenameFolder extends Component {
         });
         this.setState(
           {
-            renameOpen: false,
             renamedFolder: selectedFolders[0],
             renamedSnack: true,
           },
@@ -89,7 +87,6 @@ class RenameFolder extends Component {
         });
         this.setState(
           {
-            renameOpen: false,
             renamedFolder: {},
             renamedSnack: false,
             folderName: "",
@@ -109,7 +106,7 @@ class RenameFolder extends Component {
     return;
   };
   render() {
-    const { renamedSnack, renameOpen, folderButtonDisabled } = {
+    const { renamedSnack, folderButtonDisabled } = {
       ...this.state,
     };
     const { selectedFolders } = { ...this.props };
