@@ -31,6 +31,7 @@ class Files extends Component {
         this.setState({
           files: data.files,
           folders: data.folders,
+          currentMenu: this.props.menu,
           currentID: this.props.match.url,
         });
       })
@@ -73,7 +74,6 @@ class Files extends Component {
     } = {
       ...this.state,
     };
-
     return (
       <FileTable
         files={files}

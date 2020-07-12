@@ -71,7 +71,6 @@ class ActionHeader extends Component {
       handleTrash,
       handleDeleteForever,
       handleFileCopy,
-      currentMenu,
       handleFavorites,
       handleRestore,
       handleUnfavorited,
@@ -81,6 +80,7 @@ class ActionHeader extends Component {
       handleDeleteAll,
       handleRestoreAll,
       currentFolder,
+      currentMenu,
     } = this.props;
     const { classes } = this.props;
 
@@ -117,7 +117,7 @@ class ActionHeader extends Component {
         handleSetState={this.props.handleSetState}
       />
     );
-
+    console.log("CurrentMenu", currentMenu);
     return (
       <AppBar position="static" color="transparent" elevation={3}>
         <Toolbar variant="dense">

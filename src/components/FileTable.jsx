@@ -71,23 +71,28 @@ class FileTable extends Component {
         foldername: folder.foldername,
         parent_id: folder.parent_id,
       });
+      const isFavorited = this.checkIsFavorited(selectedFolders);
       handleSetState({
         selectedFiles: [],
         selectedFolders,
+        isFavorited,
       });
-    } else if (selectedFolders[0].id === folder._id) {
-      this.props.history.push(`/drive/folders/${folder._id}`, {
-        currentFolder: ["Space Jesus"],
-      });
+    } else if (
+      selectedFolders[0].id === folder._id &&
+      this.props.currentMenu !== "Trash"
+    ) {
+      this.props.history.push(`/drive/folders/${folder._id}`);
     } else {
       selectedFolders[0] = {
         id: folder._id,
         foldername: folder.foldername,
         parent_id: folder.parent_id,
       };
+      const isFavorited = this.checkIsFavorited(selectedFolders);
       handleSetState({
         selectedFiles: [],
         selectedFolders,
+        isFavorited,
       });
     }
   };
@@ -174,8 +179,10 @@ class FileTable extends Component {
   handleTrash = () => {
     let { selectedFolders, selectedFiles } = { ...this.props };
     const data = { selectedFolders, selectedFiles, isFavorited: [false, true] };
-    const folder = this.props.match.params.folder || "";
-    postData(`/api/files/trash/${folder}`, data)
+    const folder = this.props.match.params.folder
+      ? `/${this.props.match.params.folder}`
+      : "";
+    postData(`/api/files/trash${folder}`, data)
       .then((data) => {
         const { files, folders } = { ...data };
         //Slice will clone the array and return reference to new array
@@ -208,8 +215,10 @@ class FileTable extends Component {
   handleUndoTrash = () => {
     let { tempFolders, tempFiles } = { ...this.props };
     const data = { selectedFolders: tempFolders, selectedFiles: tempFiles };
-    const folder = this.props.match.params.folder || "";
-    postData(`/api/files/undoTrash/${folder}`, data)
+    const folder = this.props.match.params.folder
+      ? `/${this.props.match.params.folder}`
+      : "";
+    postData(`/api/files/undoTrash${folder}`, data)
       .then((data) => {
         const { files, folders } = { ...data };
         this.props.handleSetState({
@@ -347,6 +356,7 @@ class FileTable extends Component {
 
   checkIsFavorited = (items) => {
     let isFavorited = 0;
+    console.log(items);
     for (let i = 0; i < items.length; ++i) {
       if (items[i].isFavorited) isFavorited++;
     }
