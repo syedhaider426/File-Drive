@@ -67,6 +67,7 @@ class MoveItem extends Component {
       selectedFolders,
       selectedFiles,
     };
+    console.log(selectedFiles);
     postData("/api/files/move", data).then((data) => {
       const { files, folders } = { ...data };
       this.setState({
@@ -132,7 +133,9 @@ class MoveItem extends Component {
     const { movedSnack, moveButtonDisabled } = {
       ...this.state,
     };
-    const { selectedFiles, selectedFolders, classes } = { ...this.props };
+    const { selectedFiles, selectedFolders, folders, classes } = {
+      ...this.props,
+    };
     const moveSnack = (
       <Snack
         open={movedSnack}
@@ -142,12 +145,7 @@ class MoveItem extends Component {
         onClick={this.handleUndoMoveItem}
       />
     );
-    let moveFolders = [];
-    if (selectedFolders.length > 0) {
-      moveFolders = this.props.folders.filter(
-        (folder) => folder._id != selectedFolders[0].id
-      );
-    }
+    let moveFolders = folders;
 
     const moveFileDialog = (
       <Dialog

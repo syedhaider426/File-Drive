@@ -174,7 +174,8 @@ class FileTable extends Component {
   handleTrash = () => {
     let { selectedFolders, selectedFiles } = { ...this.props };
     const data = { selectedFolders, selectedFiles, isFavorited: [false, true] };
-    postData("/api/files/trash", data)
+    const folder = this.props.match.params.folder || "";
+    postData(`/api/files/trash/${folder}`, data)
       .then((data) => {
         const { files, folders } = { ...data };
         //Slice will clone the array and return reference to new array
@@ -207,7 +208,8 @@ class FileTable extends Component {
   handleUndoTrash = () => {
     let { tempFolders, tempFiles } = { ...this.props };
     const data = { selectedFolders: tempFolders, selectedFiles: tempFiles };
-    postData("/api/files/undoTrash", data)
+    const folder = this.props.match.params.folder || "";
+    postData(`/api/files/undoTrash/${folder}`, data)
       .then((data) => {
         const { files, folders } = { ...data };
         this.props.handleSetState({
@@ -414,7 +416,6 @@ class FileTable extends Component {
     } = {
       ...this.props,
     };
-
     const copySnack = (
       <Snack
         open={copySnackOpen}
