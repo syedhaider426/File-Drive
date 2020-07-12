@@ -30,6 +30,9 @@ const styles = (theme) => ({
   table: {
     minWidth: 650,
   },
+  iconSpacing: {
+    left: theme.spacing(1),
+  },
 });
 
 class FileTable extends Component {
@@ -69,7 +72,10 @@ class FileTable extends Component {
         selectedFolders,
       });
     } else if (selectedFolders[0].id === id) {
-      this.props.history.push(`/folder/${id}`);
+      console.log("PUSH");
+      this.props.history.push(`/drive/folders/${id}`, {
+        currentFolder: ["Space Jesus"],
+      });
     } else {
       selectedFolders[0] = { id, foldername };
       handleSetState({
@@ -397,6 +403,7 @@ class FileTable extends Component {
       favoritesSnackOpen,
       isFavorited,
       handleSetState,
+      currentFolder,
     } = {
       ...this.props,
     };
@@ -455,6 +462,7 @@ class FileTable extends Component {
             currentMenu={currentMenu}
             isFavorited={isFavorited}
             handleSetState={handleSetState}
+            currentFolder={currentFolder}
             handleDeleteAll={this.handleDeleteAll}
             handleRestoreAll={this.handleRestoreAll}
           />

@@ -91,7 +91,7 @@ class Login extends Component {
           this.setState({ email: "", password: "", errors });
         } else {
           console.log("Logged in succesfully");
-          this.props.history.push("/home");
+          this.props.history.push("/drive/home");
         }
       });
     }

@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import getData from "../helpers/getData";
 import FileTable from "../components/FileTable";
+import { withRouter } from "react-router-dom";
 
 class Files extends Component {
   state = {
@@ -8,7 +9,7 @@ class Files extends Component {
     folders: [],
     selectedFiles: [],
     selectedFolders: [],
-    currentMenu: this.props.path,
+    currentMenu: this.props.menu,
     loaded: false,
     snackbarOpen: false,
     filesModified: 0,
@@ -20,10 +21,12 @@ class Files extends Component {
     trashSnackOpen: false,
     favoritesSnackOpen: false,
     isFavorited: false,
+    currentFolder: ["Home"],
+    currentID: this.props.match.url,
   };
 
   componentDidMount() {
-    getData(`/api/files/${this.props.path}`)
+    getData(`/api${this.props.match.url}`)
       .then((data) => {
         this.setState({
           files: data.files,
@@ -55,10 +58,11 @@ class Files extends Component {
       trashSnackOpen,
       favoritesSnackOpen,
       isFavorited,
+      currentFolder,
     } = {
       ...this.state,
     };
-    console.log(this.props.path);
+
     return (
       <FileTable
         files={files}
@@ -78,9 +82,10 @@ class Files extends Component {
         trashSnackOpen={trashSnackOpen}
         favoritesSnackOpen={favoritesSnackOpen}
         isFavorited={isFavorited}
+        currentFolder={currentFolder}
       />
     );
   }
 }
 
-export default Files;
+export default withRouter(Files);

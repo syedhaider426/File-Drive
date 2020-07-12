@@ -6,15 +6,27 @@ import {
   TextField,
   DialogActions,
   Button,
+  IconButton,
 } from "@material-ui/core";
 import postData from "../helpers/postData";
 import Snack from "./Snack";
+import { withStyles } from "@material-ui/core/styles";
+import CloseIcon from "@material-ui/icons/Close";
+
+const styles = (theme) => ({
+  closeButton: {
+    position: "absolute",
+    right: theme.spacing(1),
+    top: theme.spacing(1),
+    color: theme.palette.grey[500],
+  },
+});
 
 class RenameFile extends Component {
   state = {
     renameOpen: false,
     renamedSnack: false,
-    fileButtonDisabled: false,
+    fileButtonDisabled: true,
     filename: "",
     renamedFile: {},
   };
@@ -29,7 +41,10 @@ class RenameFile extends Component {
   };
 
   handleRenameFileClose = () => {
-    this.props.handleFileDialog({ renameFileDialogOpen: false });
+    this.setState(
+      { filename: "", fileButtonDisabled: true },
+      this.props.handleDialog({ renameFileDialogOpen: false })
+    );
   };
 
   handleFileOnChange = (e) => {
@@ -110,7 +125,7 @@ class RenameFile extends Component {
     const { renamedSnack, fileButtonDisabled } = {
       ...this.state,
     };
-    const { selectedFiles } = { ...this.props };
+    const { selectedFiles, classes } = { ...this.props };
     const renameSnack = (
       <Snack
         open={renamedSnack}
@@ -127,7 +142,16 @@ class RenameFile extends Component {
         onClose={this.handleRenameFileClose}
         aria-labelledby="form-dialog-title"
       >
-        <DialogTitle id="form-dialog-title">Rename</DialogTitle>
+        <DialogTitle id="form-dialog-title">
+          Rename
+          <IconButton
+            aria-label="close"
+            className={classes.closeButton}
+            onClick={this.handleRenameFileClose}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
         <form onSubmit={this.handleRenameFile} method="POST">
           <DialogContent>
             <TextField
@@ -168,4 +192,4 @@ class RenameFile extends Component {
   }
 }
 
-export default RenameFile;
+export default withStyles(styles)(RenameFile);

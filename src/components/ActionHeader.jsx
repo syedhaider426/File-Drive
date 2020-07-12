@@ -11,9 +11,9 @@ import MoveToInboxIcon from "@material-ui/icons/MoveToInbox";
 import Tooltip from "@material-ui/core/Tooltip";
 import RestoreIcon from "@material-ui/icons/Restore";
 import StarOutlineOutlinedIcon from "@material-ui/icons/StarOutlined";
-import postData from "../helpers/postData";
 import RenameFolder from "./RenameFolder";
 import RenameFile from "./RenameFile";
+import MoveItem from "./MoveItem";
 
 const styles = {
   // This group of buttons will be aligned to the right
@@ -31,6 +31,7 @@ class ActionHeader extends Component {
   state = {
     renameFolderDialogOpen: false,
     renameFileDialogOpen: false,
+    moveItemDialogOpen: false,
   };
 
   handleRenameOpen = () => {
@@ -43,6 +44,10 @@ class ActionHeader extends Component {
 
   handleDialog = (value) => {
     this.setState(value);
+  };
+
+  handleMove = () => {
+    this.setState({ moveItemDialogOpen: true });
   };
 
   /**
@@ -73,17 +78,52 @@ class ActionHeader extends Component {
       handleFavoritesTrash,
       isFavorited,
       handleHomeUnfavorited,
-      handleRenameOpen,
       handleDeleteAll,
       handleRestoreAll,
+      currentFolder,
     } = this.props;
     const { classes } = this.props;
+
+    const renameFile = (
+      <RenameFile
+        renameFileDialogOpen={this.state.renameFileDialogOpen}
+        handleDialog={this.handleDialog}
+        files={files}
+        selectedFiles={selectedFiles}
+        handleSetState={this.props.handleSetState}
+        handleFocus={this.handleFocus}
+      />
+    );
+
+    const renameFolder = (
+      <RenameFolder
+        renameFolderDialogOpen={this.state.renameFolderDialogOpen}
+        handleDialog={this.handleDialog}
+        folders={folders}
+        selectedFolders={selectedFolders}
+        handleSetState={this.props.handleSetState}
+        handleFocus={this.handleFocus}
+      />
+    );
+
+    const moveItem = (
+      <MoveItem
+        moveItemDialogOpen={this.state.moveItemDialogOpen}
+        handleDialog={this.handleDialog}
+        files={files}
+        folders={folders}
+        selectedFiles={selectedFiles}
+        selectedFolders={selectedFolders}
+        handleSetState={this.props.handleSetState}
+      />
+    );
 
     return (
       <AppBar position="static" color="transparent" elevation={3}>
         <Toolbar variant="dense">
-          <Typography color="inherit">{currentMenu}</Typography>
-
+          <Typography color="inherit">
+            {currentFolder.length > 0 ? currentFolder[0] : "Home"}
+          </Typography>
           <section className={classes.rightToolbar}>
             {selectedFiles.length === 1 && currentMenu !== "Trash" && (
               <Tooltip title="Rename">
@@ -96,14 +136,7 @@ class ActionHeader extends Component {
                 </IconButton>
               </Tooltip>
             )}
-            <RenameFile
-              renameFileDialogOpen={this.state.renameFileDialogOpen}
-              handleFileDialog={this.handleDialog}
-              files={files}
-              selectedFiles={selectedFiles}
-              handleSetState={this.props.handleSetState}
-              handleFocus={this.handleFocus}
-            />
+            {renameFile}
             {selectedFolders.length === 1 && currentMenu !== "Trash" && (
               <Tooltip title="Rename">
                 <IconButton
@@ -115,14 +148,7 @@ class ActionHeader extends Component {
                 </IconButton>
               </Tooltip>
             )}
-            <RenameFolder
-              renameFolderDialogOpen={this.state.renameFolderDialogOpen}
-              handleDialog={this.handleDialog}
-              folders={folders}
-              selectedFolders={selectedFolders}
-              handleSetState={this.props.handleSetState}
-              handleFocus={this.handleFocus}
-            />
+            {renameFolder}
             {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
               currentMenu === "Home" && (
                 <Tooltip title="Trash">
@@ -163,12 +189,16 @@ class ActionHeader extends Component {
             {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
               currentMenu !== "Trash" && (
                 <Tooltip title="Move">
-                  <IconButton color="inherit" aria-label="Move">
+                  <IconButton
+                    color="inherit"
+                    aria-label="Move"
+                    onClick={this.handleMove}
+                  >
                     <MoveToInboxIcon />
                   </IconButton>
                 </Tooltip>
               )}
-
+            {moveItem}
             {!isFavorited
               ? (selectedFiles.length > 0 || selectedFolders.length > 0) &&
                 currentMenu === "Home" && (

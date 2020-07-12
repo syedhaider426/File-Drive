@@ -8,6 +8,7 @@ import SignInSide from "../components/Login";
 import Dashboard from "../panel_left/Dashboard";
 import Register from "../components/Register";
 import Confirmation from "../components/Confirmation";
+import { withRouter } from "react-router-dom";
 
 /***
  * If the same component is used as the child of multiple <Route>s at the
@@ -18,6 +19,7 @@ import Confirmation from "../components/Confirmation";
  * instance when the route changes.
  *
  */
+
 const Main = () => {
   return (
     <Fragment>
@@ -29,19 +31,24 @@ const Main = () => {
           <Route path="/forgot-password">
             <ForgotPassword />
           </Route>
-          <Route path="/home" key={1234}>
+          <Route path="/drive/home" key={1234}>
             <Grid container spacing={0}>
-              <Files path={"Home"} />
+              <Files menu={"Home"} />
             </Grid>
           </Route>
-          <Route path="/favorites" key={2345}>
+          <Route path="/drive/favorites" key={2345}>
             <Grid container spacing={0}>
-              <Files path={"Favorites"} />
+              <Files menu={"Favorites"} />
             </Grid>
           </Route>
-          <Route path="/trash" key={3456}>
+          <Route path="/drive/trash" key={3456}>
             <Grid container spacing={0}>
-              <Files path={"Trash"} />
+              <Files menu={"Trash"} />
+            </Grid>
+          </Route>
+          <Route path="/drive/folders/:folder">
+            <Grid container spacing={0}>
+              <Files menu={"Folder"} />
             </Grid>
           </Route>
           <Route path="/dashboard">

@@ -150,14 +150,14 @@ class Actions extends Component {
     );
 
     const HomeLink = React.forwardRef((props, ref) => (
-      <Link to={"/home"} {...props} ref={ref} />
+      <Link to={"/drive/home"} {...props} ref={ref} />
     ));
     const FavoritesLink = React.forwardRef((props, ref) => (
-      <Link to={"/favorites"} {...props} ref={ref} />
+      <Link to={"/drive/favorites"} {...props} ref={ref} />
     ));
 
     const TrashLink = React.forwardRef((props, ref) => (
-      <Link to={"/trash"} {...props} ref={ref} />
+      <Link to={"/drive/trash"} {...props} ref={ref} />
     ));
     return (
       <Fragment>

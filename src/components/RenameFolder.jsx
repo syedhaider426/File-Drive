@@ -6,14 +6,26 @@ import {
   TextField,
   DialogActions,
   Button,
+  IconButton,
 } from "@material-ui/core";
 import postData from "../helpers/postData";
 import Snack from "./Snack";
+import { withStyles } from "@material-ui/core/styles";
+import CloseIcon from "@material-ui/icons/Close";
+
+const styles = (theme) => ({
+  closeButton: {
+    position: "absolute",
+    right: theme.spacing(1),
+    top: theme.spacing(1),
+    color: theme.palette.grey[500],
+  },
+});
 
 class RenameFolder extends Component {
   state = {
     renamedSnack: false,
-    folderButtonDisabled: false,
+    folderButtonDisabled: true,
     foldername: "",
     renamedFolder: {},
   };
@@ -28,7 +40,10 @@ class RenameFolder extends Component {
   };
 
   handleRenameFolderClose = () => {
-    this.props.handleDialog({ renameFolderDialogOpen: false });
+    this.setState(
+      { foldername: "'" },
+      this.props.handleDialog({ renameFolderDialogOpen: false })
+    );
   };
 
   handleFolderOnChange = (e) => {
@@ -109,7 +124,7 @@ class RenameFolder extends Component {
     const { renamedSnack, folderButtonDisabled } = {
       ...this.state,
     };
-    const { selectedFolders } = { ...this.props };
+    const { selectedFolders, classes } = { ...this.props };
     const renameSnack = (
       <Snack
         open={renamedSnack}
@@ -126,7 +141,16 @@ class RenameFolder extends Component {
         onClose={this.handleRenameFolderClose}
         aria-labelledby="form-dialog-title"
       >
-        <DialogTitle id="form-dialog-title">Rename</DialogTitle>
+        <DialogTitle id="form-dialog-title">
+          Rename
+          <IconButton
+            aria-label="close"
+            className={classes.closeButton}
+            onClick={this.handleRenameFolderClose}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
         <form onSubmit={this.handleRenameFolder} method="POST">
           <DialogContent>
             <TextField
@@ -169,4 +193,4 @@ class RenameFolder extends Component {
   }
 }
 
-export default RenameFolder;
+export default withStyles(styles)(RenameFolder);
