@@ -63,21 +63,28 @@ class FileTable extends Component {
     });
   };
 
-  handleFolderClick = (e, id, foldername) => {
+  handleFolderClick = (e, folder) => {
     const { selectedFolders, handleSetState } = { ...this.props };
     if (selectedFolders.length === 0) {
-      selectedFolders.push({ id, foldername });
+      selectedFolders.push({
+        id: folder._id,
+        foldername: folder.foldername,
+        parent_id: folder.parent_id,
+      });
       handleSetState({
         selectedFiles: [],
         selectedFolders,
       });
-    } else if (selectedFolders[0].id === id) {
-      console.log("PUSH");
-      this.props.history.push(`/drive/folders/${id}`, {
+    } else if (selectedFolders[0].id === folder._id) {
+      this.props.history.push(`/drive/folders/${folder._id}`, {
         currentFolder: ["Space Jesus"],
       });
     } else {
-      selectedFolders[0] = { id, foldername };
+      selectedFolders[0] = {
+        id: folder._id,
+        foldername: folder.foldername,
+        parent_id: folder.parent_id,
+      };
       handleSetState({
         selectedFiles: [],
         selectedFolders,
@@ -92,6 +99,7 @@ class FileTable extends Component {
         id: file._id,
         filename: file.filename,
         isFavorited: file.metadata.isFavorited,
+        folder_id: file.folder_id,
       });
       const isFavorited = this.checkIsFavorited(selectedFiles);
       handleSetState({
@@ -237,7 +245,6 @@ class FileTable extends Component {
       .then((data) => {
         const { files, folders } = { ...data };
         //Trashed files and folders
-        console.log("made it here");
         this.props.handleSetState({
           files,
           folders,
@@ -483,9 +490,7 @@ class FileTable extends Component {
                 <TableRow
                   key={folder._id}
                   className={classes.tableRow}
-                  onClick={(e) =>
-                    this.handleFolderClick(e, folder._id, folder.foldername)
-                  }
+                  onClick={(e) => this.handleFolderClick(e, folder)}
                   selected={
                     selectedFolders.length > 0
                       ? selectedFolders[0].id === folder._id
