@@ -25,15 +25,26 @@ class Files extends Component {
     currentID: this.props.match.url,
   };
 
-  componentDidMount() {
+  fetchData = () => {
     getData(`/api${this.props.match.url}`)
       .then((data) => {
         this.setState({
           files: data.files,
           folders: data.folders,
+          currentID: this.props.match.url,
         });
       })
       .catch((err) => console.log("Err", err));
+  };
+
+  componentDidMount() {
+    this.fetchData();
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.props.match.url != prevState.currentID) {
+      this.fetchData();
+    }
   }
 
   handleSetState = (value) => {

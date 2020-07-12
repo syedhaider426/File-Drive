@@ -31,17 +31,17 @@ const Main = () => {
           <Route path="/forgot-password">
             <ForgotPassword />
           </Route>
-          <Route path="/drive/home" key={1234}>
+          <Route path="/drive/home">
             <Grid container spacing={0}>
               <Files menu={"Home"} />
             </Grid>
           </Route>
-          <Route path="/drive/favorites" key={2345}>
+          <Route path="/drive/favorites">
             <Grid container spacing={0}>
               <Files menu={"Favorites"} />
             </Grid>
           </Route>
-          <Route path="/drive/trash" key={3456}>
+          <Route path="/drive/trash">
             <Grid container spacing={0}>
               <Files menu={"Trash"} />
             </Grid>
