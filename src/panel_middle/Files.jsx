@@ -26,11 +26,13 @@ class Files extends Component {
   };
 
   fetchData = () => {
+    const { state } = this.props.location;
     getData(`/api${this.props.match.url}`)
       .then((data) => {
         this.setState({
           files: data.files,
           folders: data.folders,
+          currentFolder: data.folderPath,
           currentMenu: this.props.menu,
           currentID: this.props.match.url,
         });

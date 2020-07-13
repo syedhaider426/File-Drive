@@ -64,7 +64,9 @@ class FileTable extends Component {
   };
 
   handleFolderClick = (e, folder) => {
-    const { selectedFolders, handleSetState } = { ...this.props };
+    const { selectedFolders, handleSetState, currentFolder } = {
+      ...this.props,
+    };
     if (selectedFolders.length === 0) {
       selectedFolders.push({
         id: folder._id,

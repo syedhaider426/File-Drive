@@ -14,6 +14,8 @@ import StarOutlineOutlinedIcon from "@material-ui/icons/StarOutlined";
 import RenameFolder from "./RenameFolder";
 import RenameFile from "./RenameFile";
 import MoveItem from "./MoveItem";
+import { List, ListItem, ListItemText } from "@material-ui/core";
+import { Link } from "react-router-dom";
 
 const styles = {
   // This group of buttons will be aligned to the right
@@ -24,6 +26,15 @@ const styles = {
   menuButton: {
     marginRight: 16,
     marginLeft: -12,
+  },
+  flexContainer: {
+    padding: 20,
+  },
+  root: {
+    display: "flex",
+  },
+  item: {
+    padding: 0,
   },
 };
 
@@ -117,12 +128,40 @@ class ActionHeader extends Component {
         handleSetState={this.props.handleSetState}
       />
     );
-    console.log("CurrentMenu", currentMenu);
+
+    let menu = "";
+    if (currentFolder !== undefined || currentMenu === "Folder") {
+      menu = "1";
+    }
+
     return (
       <AppBar position="static" color="transparent" elevation={3}>
         <Toolbar variant="dense">
           <Typography color="inherit">
-            {currentFolder.length > 0 ? currentFolder[0] : "Home"}
+            {menu !== "" ? (
+              <div>
+                <List className={classes.root}>
+                  <ListItem button component={Link} to={`/drive/home`}>
+                    <ListItemText
+                      className={classes.item}
+                      primary={"Home > "}
+                    />
+                  </ListItem>
+                  {currentFolder.map((folder) => (
+                    <ListItem
+                      className={classes.item}
+                      button
+                      component={Link}
+                      to={`/drive/folders/${folder._id}`}
+                    >
+                      <ListItemText primary={`${folder.foldername} >`} />
+                    </ListItem>
+                  ))}
+                </List>
+              </div>
+            ) : (
+              currentMenu
+            )}
           </Typography>
           <section className={classes.rightToolbar}>
             {selectedFiles.length === 1 && currentMenu !== "Trash" && (
@@ -150,7 +189,7 @@ class ActionHeader extends Component {
             )}
             {renameFolder}
             {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
-              currentMenu === "Home" && (
+              (currentMenu === "Home" || currentMenu === "Folder") && (
                 <Tooltip title="Trash">
                   <IconButton
                     color="inherit"
@@ -201,7 +240,7 @@ class ActionHeader extends Component {
             {moveItem}
             {!isFavorited
               ? (selectedFiles.length > 0 || selectedFolders.length > 0) &&
-                currentMenu === "Home" && (
+                (currentMenu === "Home" || currentMenu === "Folder") && (
                   <Tooltip title="Add to Starred">
                     <IconButton
                       color="inherit"
@@ -213,7 +252,7 @@ class ActionHeader extends Component {
                   </Tooltip>
                 )
               : (selectedFiles.length > 0 || selectedFolders.length > 0) &&
-                currentMenu === "Home" && (
+                (currentMenu === "Home" || currentMenu === "Folder") && (
                   <Tooltip title="Remove from Starred">
                     <IconButton
                       color="inherit"
