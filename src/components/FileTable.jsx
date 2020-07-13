@@ -117,18 +117,47 @@ class FileTable extends Component {
         selectedFiles,
         isFavorited,
       });
-    } else if (selectedFiles[0].id === file._id) {
+    } else if (
+      selectedFiles.length == 1 &&
+      selectedFiles[0].id === file._id &&
+      !e.ctrlKey
+    ) {
       this.props.history.push(`/file/${file._id}`);
+    } else if (
+      selectedFiles.length == 1 &&
+      selectedFiles[0].id === file._id &&
+      e.ctrlKey
+    ) {
+      handleSetState({ selectedFiles: [] });
+    } else if (e.ctrlKey) {
+      let files = [];
+      let count = 0;
+      for (let i = 0; i < selectedFiles.length; ++i) {
+        if (selectedFiles[i].id != file._id) {
+          files.push(selectedFiles[i]);
+          count++;
+        }
+      }
+      if (count === selectedFiles.length)
+        files.push({
+          id: file._id,
+          filename: file.filename,
+          isFavorited: file.metadata.isFavorited,
+          folder_id: file.folder_id,
+        });
+      const isFavorited = this.checkIsFavorited(files);
+      handleSetState({ selectedFiles: files, isFavorited });
     } else {
-      selectedFiles[0] = {
+      let files = [];
+      files[0] = {
         id: file._id,
         filename: file.filename,
         isFavorited: file.metadata.isFavorited,
       };
-      const isFavorited = this.checkIsFavorited(selectedFiles);
+      const isFavorited = this.checkIsFavorited(files);
       handleSetState({
         selectedFolders: [],
-        selectedFiles,
+        selectedFiles: files,
         isFavorited,
       });
     }
@@ -304,6 +333,7 @@ class FileTable extends Component {
          * TempFiles - Reference to selected files (if user chooses to undo, reference the tempfiles)
          */
         this.props.handleSetState({
+          isFavorited: true,
           files,
           folders,
           favoritesSnackOpen: true,
@@ -342,8 +372,6 @@ class FileTable extends Component {
         this.props.handleSetState({
           files,
           folders,
-          selectedFiles: [],
-          selectedFolders: [],
         });
       })
       .catch((err) => console.log("Err", err));
@@ -378,11 +406,17 @@ class FileTable extends Component {
         this.props.handleSetState({
           files,
           folders,
-          selectedFiles: [],
-          selectedFolders: [],
+          isFavorited: false,
         });
       })
       .catch((err) => console.log("Err", err));
+  };
+
+  selectedIndex = (id) => {
+    for (let i = 0; i < this.props.selectedFiles.length; ++i) {
+      if (this.props.selectedFiles[i].id === id) return true;
+    }
+    return false;
   };
 
   handleDeleteAll = () => {
@@ -460,7 +494,7 @@ class FileTable extends Component {
         onClick={this.handleUndoFavorite}
       />
     );
-
+    console.log("SELECTED FILES", selectedFiles);
     return (
       <Fragment>
         <Grid item xs={12}>
@@ -538,16 +572,12 @@ class FileTable extends Component {
                     <TableCell align="left">—</TableCell>
                   </TableRow>
                 ))}
-                {files.map((file) => (
+                {files.map((file, i) => (
                   <TableRow
                     key={file._id}
                     className={classes.tableRow}
                     onClick={(e) => this.handleFileClick(e, file)}
-                    selected={
-                      selectedFiles.length > 0
-                        ? selectedFiles[0].id === file._id
-                        : false
-                    }
+                    selected={this.selectedIndex(file._id)}
                   >
                     <TableCell>
                       <div

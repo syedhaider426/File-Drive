@@ -14,7 +14,6 @@ import StarOutlineOutlinedIcon from "@material-ui/icons/StarOutlined";
 import RenameFolder from "./RenameFolder";
 import RenameFile from "./RenameFile";
 import MoveItem from "./MoveItem";
-import { List, ListItem, ListItemText } from "@material-ui/core";
 import { Link } from "react-router-dom";
 
 const styles = {
@@ -133,20 +132,22 @@ class ActionHeader extends Component {
     if (currentFolder !== undefined || currentMenu === "Folder") {
       menu = "1";
     }
-
+    console.log("isFavorited", isFavorited);
     return (
       <AppBar position="static" color="transparent" elevation={3}>
         <Toolbar variant="dense">
           <Typography color="inherit">
             {menu !== "" ? (
-              <div>
-                <Link to={`/drive/home`}>{`Home >`}</Link>
+              <Fragment>
+                <Link to={`/drive/home`} key={"Home"}>
+                  {`Home >`}{" "}
+                </Link>
                 {currentFolder.map((folder) => (
-                  <Link to={`/drive/folders/${folder._id}`}>
+                  <Link key={folder._id} to={`/drive/folders/${folder._id}`}>
                     {` ${folder.foldername} >`}
                   </Link>
                 ))}
-              </div>
+              </Fragment>
             ) : (
               currentMenu
             )}
