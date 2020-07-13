@@ -23,10 +23,10 @@ class Files extends Component {
     isFavorited: false,
     currentFolder: ["Home"],
     currentID: this.props.match.url,
+    isLoaded: false,
   };
 
   fetchData = () => {
-    const { state } = this.props.location;
     getData(`/api${this.props.match.url}`)
       .then((data) => {
         this.setState({
@@ -35,6 +35,7 @@ class Files extends Component {
           currentFolder: data.folderPath,
           currentMenu: this.props.menu,
           currentID: this.props.match.url,
+          isLoaded: true,
         });
       })
       .catch((err) => console.log("Err", err));
@@ -73,6 +74,7 @@ class Files extends Component {
       favoritesSnackOpen,
       isFavorited,
       currentFolder,
+      isLoaded,
     } = {
       ...this.state,
     };
@@ -96,6 +98,7 @@ class Files extends Component {
         favoritesSnackOpen={favoritesSnackOpen}
         isFavorited={isFavorited}
         currentFolder={currentFolder}
+        isLoaded={isLoaded}
       />
     );
   }

@@ -67,7 +67,6 @@ class MoveItem extends Component {
       selectedFolders,
       selectedFiles,
     };
-    console.log(selectedFiles);
     postData("/api/files/move", data).then((data) => {
       const { files, folders } = { ...data };
       this.setState({

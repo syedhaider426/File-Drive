@@ -51,10 +51,15 @@ class Actions extends Component {
   handleCreateFolder = (e) => {
     e.preventDefault();
     const data = { folder: this.state.folder };
-    postData("/api/folders/create", data)
+    const folder = this.props.match.params.folder
+      ? `/${this.props.match.params.folder}`
+      : "";
+    postData(`/api/folders/create${folder}`, data)
       .then((data) => {
-        console.log(data);
-        this.setState({ newFolderOpen: false });
+        this.setState(
+          { newFolderOpen: false },
+          this.props.handleSetState({ folders: data.folders })
+        );
       })
       .catch((err) => console.log("Err", err));
   };
@@ -69,10 +74,18 @@ class Actions extends Component {
     for (let i = 0; i < files.length; i++) {
       form.append("files", files[i], files[i].name);
     }
-    fetch("/api/files/upload", { method: "POST", body: form })
+    const folder = this.props.match.params.folder
+      ? `/${this.props.match.params.folder}`
+      : "";
+    fetch(`/api/files/upload${folder}`, { method: "POST", body: form })
       .then((res) => res.json())
       .then((data) => {
-        this.setState({ open: false });
+        this.setState(
+          { open: false },
+          this.props.handleSetState({
+            files: data.files,
+          })
+        );
       })
       .catch((err) => console.log("Errasdasdsa", err));
   };

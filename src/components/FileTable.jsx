@@ -17,6 +17,7 @@ import PrimarySearchAppBar from "./PrimarySearchAppBar";
 import Actions from "../panel_left/Actions";
 import StarIcon from "@material-ui/icons/Star";
 import Snack from "./Snack";
+import { CircularProgress } from "@material-ui/core";
 
 const styles = (theme) => ({
   tableRow: {
@@ -83,7 +84,9 @@ class FileTable extends Component {
       selectedFolders[0].id === folder._id &&
       this.props.currentMenu !== "Trash"
     ) {
-      this.props.history.push(`/drive/folders/${folder._id}`);
+      this.props.history.push(`/drive/folders/${folder._id}`, {
+        selectedFolders: [],
+      });
     } else {
       selectedFolders[0] = {
         id: folder._id,
@@ -425,6 +428,7 @@ class FileTable extends Component {
       isFavorited,
       handleSetState,
       currentFolder,
+      isLoaded,
     } = {
       ...this.props,
     };
@@ -463,7 +467,7 @@ class FileTable extends Component {
           <PrimarySearchAppBar />
         </Grid>
         <Grid item xs={2}>
-          <Actions />
+          <Actions handleSetState={handleSetState} />
         </Grid>
         <Grid item xs={10}>
           <ActionHeader
@@ -486,92 +490,99 @@ class FileTable extends Component {
             handleDeleteAll={this.handleDeleteAll}
             handleRestoreAll={this.handleRestoreAll}
           />
-          <Table
-            className={classes.table}
-            size="medium"
-            aria-label="a dense table"
-          >
-            <TableHead>
-              <TableRow>
-                <TableCell style={{ width: "33%" }}>Name</TableCell>
-                <TableCell style={{ width: "33%" }}>Uploaded On</TableCell>
-                <TableCell style={{ width: "33%" }}>File Size</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody style={{ width: "100%" }}>
-              {folders.map((folder) => (
-                <TableRow
-                  key={folder._id}
-                  className={classes.tableRow}
-                  onClick={(e) => this.handleFolderClick(e, folder)}
-                  selected={
-                    selectedFolders.length > 0
-                      ? selectedFolders[0].id === folder._id
-                      : false
-                  }
-                >
-                  <TableCell>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                      }}
-                    >
-                      <FolderIcon style={{ fill: "#5f6368" }} />
-                      <span className="data">{folder.foldername}</span>
-                      {currentMenu === "Home" && folder.isFavorited && (
-                        <StarIcon className="data" />
-                      )}
-                    </div>
-                  </TableCell>
+          {isLoaded ? (
+            <Table
+              className={classes.table}
+              size="medium"
+              aria-label="a dense table"
+            >
+              <TableHead>
+                <TableRow>
+                  <TableCell style={{ width: "33%" }}>Name</TableCell>
+                  <TableCell style={{ width: "33%" }}>Uploaded On</TableCell>
+                  <TableCell style={{ width: "33%" }}>File Size</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody style={{ width: "100%" }}>
+                {folders.map((folder) => (
+                  <TableRow
+                    key={folder._id}
+                    className={classes.tableRow}
+                    onClick={(e) => this.handleFolderClick(e, folder)}
+                    selected={
+                      selectedFolders.length > 0
+                        ? selectedFolders[0].id === folder._id
+                        : false
+                    }
+                  >
+                    <TableCell>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                        }}
+                      >
+                        <FolderIcon style={{ fill: "#5f6368" }} />
+                        <span className="data">{folder.foldername}</span>
+                        {currentMenu === "Home" && folder.isFavorited && (
+                          <StarIcon className="data" />
+                        )}
+                      </div>
+                    </TableCell>
 
-                  <TableCell>
-                    <span className="details">
-                      {convertISODate(folder.createdOn)}
-                    </span>
-                  </TableCell>
-                  <TableCell align="left">—</TableCell>
-                </TableRow>
-              ))}
-              {files.map((file) => (
-                <TableRow
-                  key={file._id}
-                  className={classes.tableRow}
-                  onClick={(e) => this.handleFileClick(e, file)}
-                  selected={
-                    selectedFiles.length > 0
-                      ? selectedFiles[0].id === file._id
-                      : false
-                  }
-                >
-                  <TableCell>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                      }}
-                    >
-                      <FileIcon style={{ fill: "#5f6368" }} />
-                      <span className="data">{file.filename}</span>
-                      {currentMenu === "Home" && file.metadata.isFavorited && (
-                        <StarIcon className="data" />
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span className="details">
-                      {convertISODate(file.uploadDate)}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <span className="details">
-                      {returnFileSize(file.length)}
-                    </span>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                    <TableCell>
+                      <span className="details">
+                        {convertISODate(folder.createdOn)}
+                      </span>
+                    </TableCell>
+                    <TableCell align="left">—</TableCell>
+                  </TableRow>
+                ))}
+                {files.map((file) => (
+                  <TableRow
+                    key={file._id}
+                    className={classes.tableRow}
+                    onClick={(e) => this.handleFileClick(e, file)}
+                    selected={
+                      selectedFiles.length > 0
+                        ? selectedFiles[0].id === file._id
+                        : false
+                    }
+                  >
+                    <TableCell>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                        }}
+                      >
+                        <FileIcon style={{ fill: "#5f6368" }} />
+                        <span className="data">{file.filename}</span>
+                        {currentMenu === "Home" &&
+                          file.metadata.isFavorited && (
+                            <StarIcon className="data" />
+                          )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="details">
+                        {convertISODate(file.uploadDate)}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className="details">
+                        {returnFileSize(file.length)}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <CircularProgress />
+            </div>
+          )}
           {copySnack}
           {trashSnack}
           {favoritesSnack}

@@ -140,24 +140,12 @@ class ActionHeader extends Component {
           <Typography color="inherit">
             {menu !== "" ? (
               <div>
-                <List className={classes.root}>
-                  <ListItem button component={Link} to={`/drive/home`}>
-                    <ListItemText
-                      className={classes.item}
-                      primary={"Home > "}
-                    />
-                  </ListItem>
-                  {currentFolder.map((folder) => (
-                    <ListItem
-                      className={classes.item}
-                      button
-                      component={Link}
-                      to={`/drive/folders/${folder._id}`}
-                    >
-                      <ListItemText primary={`${folder.foldername} >`} />
-                    </ListItem>
-                  ))}
-                </List>
+                <Link to={`/drive/home`}>{`Home >`}</Link>
+                {currentFolder.map((folder) => (
+                  <Link to={`/drive/folders/${folder._id}`}>
+                    {` ${folder.foldername} >`}
+                  </Link>
+                ))}
               </div>
             ) : (
               currentMenu
