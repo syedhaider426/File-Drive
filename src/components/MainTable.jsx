@@ -33,19 +33,18 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function MainTable(props) {
-  const {
-    handleFolderClick,
-    handleFileClick,
-    folders,
-    files,
-    selectedFolders,
-    selectedFiles,
-    currentMenu,
-    isLoaded,
-  } = { ...props };
+function MainTable({
+  handleFolderClick,
+  handleFileClick,
+  folders,
+  files,
+  selectedFolders,
+  selectedFiles,
+  currentMenu,
+  isLoaded,
+}) {
   const classes = useStyles();
-
+  const headerList = ["Name", "Uploaded On", "File Size"];
   return (
     <Fragment>
       {isLoaded ? (
@@ -53,9 +52,11 @@ function MainTable(props) {
           <Table size="small" aria-label="a dense table" stickyHeader>
             <TableHead>
               <TableRow>
-                <TableCell style={{ width: "33%" }}>Name</TableCell>
-                <TableCell style={{ width: "33%" }}>Uploaded On</TableCell>
-                <TableCell style={{ width: "33%" }}>File Size</TableCell>
+                {headerList.map((header) => (
+                  <TableCell key={header} style={{ width: "33%" }}>
+                    {header}
+                  </TableCell>
+                ))}
               </TableRow>
             </TableHead>
             <TableBody style={{ width: "100%" }}>

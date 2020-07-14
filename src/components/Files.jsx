@@ -19,6 +19,7 @@ import StarIcon from "@material-ui/icons/Star";
 import Snack from "./Snack";
 import { CircularProgress, TableContainer } from "@material-ui/core";
 import MainTable from "./MainTable";
+import getData from "../helpers/getData";
 
 const styles = (theme) => ({
   tableRow: {
@@ -76,11 +77,60 @@ const layout = (theme) => ({
 });
 
 class FileTable extends Component {
+  state = {
+    files: [],
+    folders: [],
+    selectedFiles: [],
+    selectedFolders: [],
+    loaded: false,
+    snackbarOpen: false,
+    filesModified: 0,
+    foldersModified: 0,
+    tempFiles: [],
+    tempFolders: [],
+    snackBarMessage: "",
+    copySnackOpen: false,
+    trashSnackOpen: false,
+    favoritesSnackOpen: false,
+    isFavorited: false,
+    currentFolder: ["Home"],
+    currentID: this.props.match.url,
+    isLoaded: false,
+  };
+
+  fetchData = () => {
+    getData(`/api${this.props.match.url}`)
+      .then((data) => {
+        this.setState({
+          files: data.files,
+          folders: data.folders,
+          currentFolder: data.folderPath,
+          currentID: this.props.match.url,
+          isLoaded: true,
+        });
+      })
+      .catch((err) => console.log("Err", err));
+  };
+
+  componentDidMount() {
+    this.fetchData();
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.props.match.url != prevState.currentID) {
+      this.fetchData();
+    }
+  }
+
+  handleSetState = (value) => {
+    this.setState(value);
+  };
+
   handleFavoritesSnackClose = (event, reason) => {
     if (reason === "clickaway") {
       return;
     }
-    this.props.handleSetState({
+    this.setState({
       favoritesSnackOpen: false,
     });
   };
@@ -89,7 +139,7 @@ class FileTable extends Component {
     if (reason === "clickaway") {
       return;
     }
-    this.props.handleSetState({
+    this.setState({
       copySnackOpen: false,
     });
   };
@@ -98,16 +148,13 @@ class FileTable extends Component {
     if (reason === "clickaway") {
       return;
     }
-    this.props.handleSetState({
+    this.setState({
       trashSnackOpen: false,
     });
   };
 
   handleFolderClick = (e, folder) => {
-    const { selectedFolders, handleSetState } = {
-      ...this.props,
-    };
-    console.log("did i make it here2312");
+    const { selectedFolders, currentMenu } = { ...this.state };
     // No folders selected
     if (selectedFolders.length === 0 && !e.ctrlKey) {
       // Add selected folder to array
@@ -120,7 +167,7 @@ class FileTable extends Component {
       const isFavorited = this.checkIsFavorited(selectedFolders);
 
       //Set state
-      handleSetState({
+      this.setState({
         selectedFiles: [],
         selectedFolders,
         isFavorited,
@@ -148,7 +195,7 @@ class FileTable extends Component {
           parent_id: folder.parent_id,
         };
         const isFavorited = this.checkIsFavorited(folders);
-        handleSetState({
+        this.setState({
           selectedFiles: [],
           selectedFolders: folders,
           isFavorited,
@@ -158,12 +205,12 @@ class FileTable extends Component {
       /**
        * Clear the list of folders if user ctrl clicks the same folder
        */
-      this.props.currentMenu !== "Trash" &&
+      this.props.menu !== "Trash" &&
       selectedFolders.length === 1 &&
       e.ctrlKey
     ) {
       if (selectedFolders[0].id === folder._id)
-        handleSetState({ selectedFolders: [] });
+        this.setState({ selectedFolders: [] });
       else {
         selectedFolders.push({
           id: folder._id,
@@ -171,7 +218,7 @@ class FileTable extends Component {
           parent_id: folder.parent_id,
         });
         const isFavorited = this.checkIsFavorited(selectedFolders);
-        handleSetState({
+        this.setState({
           selectedFolders,
           isFavorited,
         });
@@ -192,7 +239,7 @@ class FileTable extends Component {
           parent_id: folder.parent_id,
         });
       const isFavorited = this.checkIsFavorited(folders);
-      handleSetState({ selectedFolders: folders, isFavorited });
+      this.setState({ selectedFolders: folders, isFavorited });
     } else {
       let folders = [];
       folders[0] = {
@@ -201,7 +248,7 @@ class FileTable extends Component {
         parent_id: folder.parent_id,
       };
       const isFavorited = this.checkIsFavorited(folders);
-      handleSetState({
+      this.setState({
         selectedFiles: [],
         selectedFolders: folders,
         isFavorited,
@@ -210,7 +257,7 @@ class FileTable extends Component {
   };
 
   handleFileClick = (e, file) => {
-    const { selectedFiles, handleSetState } = { ...this.props };
+    const { selectedFiles } = { ...this.state };
     if (selectedFiles.length === 0 && !e.ctrlKey) {
       selectedFiles.push({
         id: file._id,
@@ -219,7 +266,7 @@ class FileTable extends Component {
         folder_id: file.folder_id,
       });
       const isFavorited = this.checkIsFavorited(selectedFiles);
-      handleSetState({
+      this.setState({
         selectedFolders: [],
         selectedFiles,
         isFavorited,
@@ -235,7 +282,7 @@ class FileTable extends Component {
       selectedFiles[0].id === file._id &&
       e.ctrlKey
     ) {
-      handleSetState({ selectedFiles: [] });
+      this.setState({ selectedFiles: [] });
     } else if (e.ctrlKey) {
       let files = [];
       let count = 0;
@@ -253,7 +300,7 @@ class FileTable extends Component {
           folder_id: file.folder_id,
         });
       const isFavorited = this.checkIsFavorited(files);
-      handleSetState({ selectedFiles: files, isFavorited });
+      this.setState({ selectedFiles: files, isFavorited });
     } else {
       let files = [];
       files[0] = {
@@ -263,7 +310,7 @@ class FileTable extends Component {
         folder_id: file.folder_id,
       };
       const isFavorited = this.checkIsFavorited(files);
-      handleSetState({
+      this.setState({
         selectedFolders: [],
         selectedFiles: files,
         isFavorited,
@@ -272,11 +319,11 @@ class FileTable extends Component {
   };
 
   handleFileCopy = () => {
-    const { selectedFiles, handleSetState } = { ...this.props };
+    const { selectedFiles } = { ...this.state };
     const data = { selectedFiles };
     postData("/api/files/copy", data)
       .then((data) => {
-        const { files } = { ...this.props };
+        const { files } = { ...this.state };
         for (let file of data.files) {
           files.push(file);
         }
@@ -289,7 +336,7 @@ class FileTable extends Component {
          * Snackbaropen - Open Snackbar
          * TempFiles - Reference to selected files (if user chooses to undo, reference the tempfiles)
          */
-        handleSetState({
+        this.setState({
           trashSnackOpen: false,
           copySnackOpen: true,
           favoritesSnackOpen: false,
@@ -303,12 +350,12 @@ class FileTable extends Component {
   };
 
   handleUndoCopy = () => {
-    const { tempFiles } = { ...this.props };
+    const { tempFiles } = { ...this.state };
     const data = { selectedFiles: tempFiles };
     postData("/api/files/undoCopy", data)
       .then((data) => {
         const { files } = { ...data };
-        this.props.handleSetState({
+        this.setState({
           files,
           tempFiles: [],
           filesModified: 0,
@@ -319,7 +366,7 @@ class FileTable extends Component {
   };
 
   handleTrash = () => {
-    let { selectedFolders, selectedFiles } = { ...this.props };
+    let { selectedFolders, selectedFiles } = { ...this.state };
     const data = { selectedFolders, selectedFiles, isFavorited: [false, true] };
     const folder = this.props.match.params.folder
       ? `/${this.props.match.params.folder}`
@@ -338,7 +385,7 @@ class FileTable extends Component {
          * TempFiles - Reference to selected files (if user chooses to undo, reference the tempfiles)
          */
 
-        this.props.handleSetState({
+        this.setState({
           files,
           folders,
           trashSnackOpen: true,
@@ -355,7 +402,7 @@ class FileTable extends Component {
   };
 
   handleUndoTrash = () => {
-    let { tempFolders, tempFiles } = { ...this.props };
+    let { tempFolders, tempFiles } = { ...this.state };
     const data = { selectedFolders: tempFolders, selectedFiles: tempFiles };
     const folder = this.props.match.params.folder
       ? `/${this.props.match.params.folder}`
@@ -363,7 +410,7 @@ class FileTable extends Component {
     postData(`/api/files/undoTrash${folder}`, data)
       .then((data) => {
         const { files, folders } = { ...data };
-        this.props.handleSetState({
+        this.setState({
           files,
           folders,
           tempFiles: [],
@@ -376,12 +423,12 @@ class FileTable extends Component {
   };
 
   handleFavoritesTrash = () => {
-    let { selectedFolders, selectedFiles } = { ...this.props };
+    let { selectedFolders, selectedFiles } = { ...this.state };
     const data = { selectedFolders, selectedFiles, isFavorited: [true] };
     postData("/api/files/trash", data)
       .then((data) => {
         const { files, folders } = { ...data };
-        this.props.handleSetState({
+        this.setState({
           files,
           folders,
           selectedFiles: [],
@@ -392,13 +439,13 @@ class FileTable extends Component {
   };
 
   handleDeleteForever = () => {
-    let { selectedFolders, selectedFiles } = { ...this.props };
+    let { selectedFolders, selectedFiles } = { ...this.state };
     const data = { selectedFolders, selectedFiles };
     postData("/api/files/delete", data)
       .then((data) => {
         const { files, folders } = { ...data };
         //Trashed files and folders
-        this.props.handleSetState({
+        this.setState({
           files,
           folders,
           selectedFiles: [],
@@ -409,12 +456,12 @@ class FileTable extends Component {
   };
 
   handleRestore = () => {
-    const { selectedFolders, selectedFiles } = { ...this.props };
+    const { selectedFolders, selectedFiles } = { ...this.state };
     const data = { selectedFolders, selectedFiles };
     postData("/api/files/restore", data)
       .then((data) => {
         const { files, folders } = { ...data };
-        this.props.handleSetState({
+        this.setState({
           files,
           folders,
           selectedFiles: [],
@@ -425,7 +472,7 @@ class FileTable extends Component {
   };
 
   handleFavorites = () => {
-    let { selectedFolders, selectedFiles } = { ...this.props };
+    let { selectedFolders, selectedFiles } = { ...this.state };
     const data = { selectedFolders, selectedFiles };
     postData("/api/files/favorite", data)
       .then((data) => {
@@ -440,7 +487,7 @@ class FileTable extends Component {
          * Snackbaropen - Open Snackbar
          * TempFiles - Reference to selected files (if user chooses to undo, reference the tempfiles)
          */
-        this.props.handleSetState({
+        this.setState({
           isFavorited: true,
           files,
           folders,
@@ -454,12 +501,12 @@ class FileTable extends Component {
   };
 
   handleUndoFavorite = () => {
-    const { tempFolders, tempFiles } = { ...this.props };
+    const { tempFolders, tempFiles } = { ...this.state };
     const data = { selectedFolders: tempFolders, selectedFiles: tempFiles };
     postData("/api/files/undoFavorite", data)
       .then((data) => {
         const { files, folders } = { ...data };
-        this.props.handleSetState({
+        this.setState({
           files,
           folders,
           tempFiles: [],
@@ -472,12 +519,12 @@ class FileTable extends Component {
   };
 
   handleUnfavorited = () => {
-    let { selectedFolders, selectedFiles } = { ...this.props };
+    let { selectedFolders, selectedFiles } = { ...this.state };
     const data = { selectedFolders, selectedFiles };
     postData("/api/files/unfavorite", data)
       .then((data) => {
         const { files, folders } = { ...data };
-        this.props.handleSetState({
+        this.setState({
           files,
           folders,
         });
@@ -487,7 +534,7 @@ class FileTable extends Component {
 
   handleSnackbarExit = () => {
     if (this.props.tempFiles || this.props.tempFolders) {
-      this.props.handleSetState({
+      this.setState({
         tempFiles: [],
         tempFolders: [],
       });
@@ -506,12 +553,12 @@ class FileTable extends Component {
   };
 
   handleHomeUnfavorited = () => {
-    let { selectedFolders, selectedFiles } = { ...this.props };
+    let { selectedFolders, selectedFiles } = { ...this.state };
     const data = { selectedFolders, selectedFiles };
     postData("/api/files/homeUnfavorite", data)
       .then((data) => {
         const { files, folders } = { ...data };
-        this.props.handleSetState({
+        this.setState({
           files,
           folders,
           isFavorited: false,
@@ -526,7 +573,7 @@ class FileTable extends Component {
       .then((data) => {
         document.body.style.cursor = "default";
         const { files, folders } = { ...data };
-        this.props.handleSetState({
+        this.setState({
           files,
           folders,
         });
@@ -540,7 +587,7 @@ class FileTable extends Component {
       .then((data) => {
         document.body.style.cursor = "default";
         const { files, folders } = { ...data };
-        this.props.handleSetState({
+        this.setState({
           files,
           folders,
         });
@@ -565,8 +612,9 @@ class FileTable extends Component {
       currentFolder,
       isLoaded,
     } = {
-      ...this.props,
+      ...this.state,
     };
+
     const copySnack = (
       <Snack
         open={copySnackOpen}
@@ -595,17 +643,13 @@ class FileTable extends Component {
         onClick={this.handleUndoFavorite}
       />
     );
-    console.log("SELECTED FILES", selectedFiles);
     return (
       <Fragment>
         <Grid item xs={12}>
           <PrimarySearchAppBar />
         </Grid>
         <Grid item xs={2}>
-          <Actions
-            handleSetState={handleSetState}
-            menu={this.props.currentMenu}
-          />
+          <Actions handleSetState={handleSetState} menu={this.props.menu} />
         </Grid>
         <Grid item xs={10}>
           <ActionHeader
@@ -621,7 +665,7 @@ class FileTable extends Component {
             handleUnfavorited={this.handleUnfavorited}
             handleFavoritesTrash={this.handleFavoritesTrash}
             handleHomeUnfavorited={this.handleHomeUnfavorited}
-            currentMenu={currentMenu}
+            currentMenu={this.props.menu}
             isFavorited={isFavorited}
             handleSetState={handleSetState}
             currentFolder={currentFolder}
@@ -633,7 +677,9 @@ class FileTable extends Component {
             handleFileClick={this.handleFileClick}
             folders={folders}
             files={files}
-            currentMenu={currentMenu}
+            selectedFolders={selectedFolders}
+            selectedFiles={selectedFiles}
+            currentMenu={this.props.menu}
             isLoaded={isLoaded}
           />
           {copySnack}

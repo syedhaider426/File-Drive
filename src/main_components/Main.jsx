@@ -3,7 +3,7 @@ import React, { Fragment } from "react";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import ForgotPassword from "../components/ForgotPassword";
 import Grid from "@material-ui/core/Grid";
-import Files from "../panel_middle/Files";
+import Files from "../components/Files";
 import SignInSide from "../components/Login";
 import Dashboard from "../panel_left/Dashboard";
 import Register from "../components/Register";
