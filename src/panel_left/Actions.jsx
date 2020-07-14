@@ -15,10 +15,21 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import CloudUploadIcon from "@material-ui/icons/CloudUpload";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
-import { Divider } from "@material-ui/core";
+import { Divider, IconButton } from "@material-ui/core";
 import CreateNewFolderOutlinedIcon from "@material-ui/icons/CreateNewFolderOutlined";
 import FolderOpenOutlinedIcon from "@material-ui/icons/FolderOpenOutlined";
 import FileIcon from "@material-ui/icons/InsertDriveFile";
+import CloseIcon from "@material-ui/icons/Close";
+import { withStyles } from "@material-ui/core/styles";
+
+const styles = (theme) => ({
+  closeButton: {
+    position: "absolute",
+    right: theme.spacing(1),
+    top: theme.spacing(1),
+    color: theme.palette.grey[500],
+  },
+});
 
 class Actions extends Component {
   state = {
@@ -92,6 +103,7 @@ class Actions extends Component {
 
   render() {
     const { open, newFolderOpen, folderButtonDisabled } = { ...this.state };
+    const { classes } = { ...this.props };
     const {
       handleClose,
       handleClickOpen,
@@ -110,6 +122,15 @@ class Actions extends Component {
         onClose={handleClose}
         BackdropProps={{ style: { backgroundColor: "transparent" } }}
       >
+        <DialogTitle>
+          <IconButton
+            aria-label="close"
+            className={classes.closeButton}
+            onClick={this.uploadClose}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
         <List>
           <ListItem button onClick={handleCreateFolderOpen}>
             <CreateNewFolderOutlinedIcon />
@@ -133,7 +154,7 @@ class Actions extends Component {
         onClose={handleCreateFolderClose}
         aria-labelledby="form-dialog-title"
       >
-        <DialogTitle id="form-dialog-title">Create Folder</DialogTitle>
+        <DialogTitle id="form-dialog-title">Create Folder </DialogTitle>
         <form onSubmit={handleCreateFolder} method="POST">
           <DialogContent>
             <TextField
@@ -197,19 +218,33 @@ class Actions extends Component {
               Upload
             </Button>
           </ListItem>
-          <ListItem button component={HomeLink}>
+          <ListItem
+            button
+            component={HomeLink}
+            selected={
+              this.props.menu != "Trash" && this.props.menu != "Favorites"
+            }
+          >
             <ListItemIcon>
               <HomeIcon />
             </ListItemIcon>
             <ListItemText primary="Home" />
           </ListItem>
-          <ListItem button component={FavoritesLink}>
+          <ListItem
+            button
+            component={FavoritesLink}
+            selected={this.props.menu == "Favorites"}
+          >
             <ListItemIcon>
               <StarIcon />
             </ListItemIcon>
-            <ListItemText primary="Starred" />
+            <ListItemText primary="Favorites" />
           </ListItem>
-          <ListItem button component={TrashLink}>
+          <ListItem
+            button
+            component={TrashLink}
+            selected={this.props.menu == "Trash"}
+          >
             <ListItemIcon>
               <DeleteIcon />
             </ListItemIcon>
@@ -222,4 +257,4 @@ class Actions extends Component {
   }
 }
 
-export default withRouter(Actions);
+export default withRouter(withStyles(styles)(Actions));

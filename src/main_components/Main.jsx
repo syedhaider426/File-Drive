@@ -9,6 +9,7 @@ import Dashboard from "../panel_left/Dashboard";
 import Register from "../components/Register";
 import Confirmation from "../components/Confirmation";
 import { withRouter } from "react-router-dom";
+import Profile from "../components/Profile";
 
 /***
  * If the same component is used as the child of multiple <Route>s at the
@@ -77,6 +78,11 @@ const Main = () => {
                   "Thank you for verifiying your email. You can now login to your account."
                 }
               />
+            </Grid>
+          </Route>
+          <Route path="/drive/profile">
+            <Grid container spacing={0}>
+              <Profile />
             </Grid>
           </Route>
           <Route path="/" exact>

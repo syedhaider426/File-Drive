@@ -17,7 +17,8 @@ import PrimarySearchAppBar from "./PrimarySearchAppBar";
 import Actions from "../panel_left/Actions";
 import StarIcon from "@material-ui/icons/Star";
 import Snack from "./Snack";
-import { CircularProgress } from "@material-ui/core";
+import { CircularProgress, TableContainer } from "@material-ui/core";
+import MainTable from "./MainTable";
 
 const styles = (theme) => ({
   tableRow: {
@@ -29,10 +30,48 @@ const styles = (theme) => ({
     },
   },
   table: {
-    minWidth: 650,
+    maxHeight: "85vh",
+  },
+  root: {
+    width: "100%",
   },
   iconSpacing: {
     left: theme.spacing(1),
+  },
+});
+
+const drawerWidth = 240;
+
+const layout = (theme) => ({
+  root: {
+    display: "flex",
+  },
+  drawer: {
+    [theme.breakpoints.up("sm")]: {
+      width: drawerWidth,
+      flexShrink: 0,
+    },
+  },
+  appBar: {
+    [theme.breakpoints.up("sm")]: {
+      width: `calc(100% - ${drawerWidth}px)`,
+      marginLeft: drawerWidth,
+    },
+  },
+  menuButton: {
+    marginRight: theme.spacing(2),
+    [theme.breakpoints.up("sm")]: {
+      display: "none",
+    },
+  },
+  // necessary for content to be below app bar
+  toolbar: theme.mixins.toolbar,
+  drawerPaper: {
+    width: drawerWidth,
+  },
+  content: {
+    flexGrow: 1,
+    padding: theme.spacing(3),
   },
 });
 
@@ -65,38 +104,106 @@ class FileTable extends Component {
   };
 
   handleFolderClick = (e, folder) => {
-    const { selectedFolders, handleSetState, currentFolder } = {
+    const { selectedFolders, handleSetState } = {
       ...this.props,
     };
-    if (selectedFolders.length === 0) {
+    console.log("did i make it here2312");
+    // No folders selected
+    if (selectedFolders.length === 0 && !e.ctrlKey) {
+      // Add selected folder to array
       selectedFolders.push({
         id: folder._id,
         foldername: folder.foldername,
         parent_id: folder.parent_id,
       });
+      //Check if any of the folders are favorited
       const isFavorited = this.checkIsFavorited(selectedFolders);
+
+      //Set state
       handleSetState({
         selectedFiles: [],
         selectedFolders,
         isFavorited,
       });
     } else if (
-      selectedFolders[0].id === folder._id &&
-      this.props.currentMenu !== "Trash"
+      /***
+       * User double clicks the same folder and the current menu is not 'Trash',
+       * If the folder was clicked without the ctrlkey and there is only one
+       * value in the selectedfolders list, go to the next page
+       */
+      this.props.currentMenu !== "Trash" &&
+      selectedFolders.length === 1 &&
+      !e.ctrlKey
     ) {
-      this.props.history.push(`/drive/folders/${folder._id}`, {
-        selectedFolders: [],
-      });
+      if (selectedFolders[0].id === folder._id)
+        this.props.history.push(`/drive/folders/${folder._id}`, {
+          selectedFolders: [],
+          selectedFiles: [],
+        });
+      else {
+        let folders = [];
+        folders[0] = {
+          id: folder._id,
+          foldername: folder.foldername,
+          parent_id: folder.parent_id,
+        };
+        const isFavorited = this.checkIsFavorited(folders);
+        handleSetState({
+          selectedFiles: [],
+          selectedFolders: folders,
+          isFavorited,
+        });
+      }
+    } else if (
+      /**
+       * Clear the list of folders if user ctrl clicks the same folder
+       */
+      this.props.currentMenu !== "Trash" &&
+      selectedFolders.length === 1 &&
+      e.ctrlKey
+    ) {
+      if (selectedFolders[0].id === folder._id)
+        handleSetState({ selectedFolders: [] });
+      else {
+        selectedFolders.push({
+          id: folder._id,
+          foldername: folder.foldername,
+          parent_id: folder.parent_id,
+        });
+        const isFavorited = this.checkIsFavorited(selectedFolders);
+        handleSetState({
+          selectedFolders,
+          isFavorited,
+        });
+      }
+    } else if (e.ctrlKey) {
+      let folders = [];
+      let count = 0;
+      for (let i = 0; i < selectedFolders.length; ++i) {
+        if (selectedFolders[i].id != folder._id) {
+          folders.push(selectedFolders[i]);
+          count++;
+        }
+      }
+      if (count === selectedFolders.length)
+        folders.push({
+          id: folder._id,
+          foldername: folder.foldername,
+          parent_id: folder.parent_id,
+        });
+      const isFavorited = this.checkIsFavorited(folders);
+      handleSetState({ selectedFolders: folders, isFavorited });
     } else {
-      selectedFolders[0] = {
+      let folders = [];
+      folders[0] = {
         id: folder._id,
         foldername: folder.foldername,
         parent_id: folder.parent_id,
       };
-      const isFavorited = this.checkIsFavorited(selectedFolders);
+      const isFavorited = this.checkIsFavorited(folders);
       handleSetState({
         selectedFiles: [],
-        selectedFolders,
+        selectedFolders: folders,
         isFavorited,
       });
     }
@@ -104,7 +211,7 @@ class FileTable extends Component {
 
   handleFileClick = (e, file) => {
     const { selectedFiles, handleSetState } = { ...this.props };
-    if (selectedFiles.length === 0) {
+    if (selectedFiles.length === 0 && !e.ctrlKey) {
       selectedFiles.push({
         id: file._id,
         filename: file.filename,
@@ -153,6 +260,7 @@ class FileTable extends Component {
         id: file._id,
         filename: file.filename,
         isFavorited: file.metadata.isFavorited,
+        folder_id: file.folder_id,
       };
       const isFavorited = this.checkIsFavorited(files);
       handleSetState({
@@ -412,13 +520,6 @@ class FileTable extends Component {
       .catch((err) => console.log("Err", err));
   };
 
-  selectedIndex = (id) => {
-    for (let i = 0; i < this.props.selectedFiles.length; ++i) {
-      if (this.props.selectedFiles[i].id === id) return true;
-    }
-    return false;
-  };
-
   handleDeleteAll = () => {
     document.body.style.cursor = "wait";
     postData("/api/files/deleteAll")
@@ -501,7 +602,10 @@ class FileTable extends Component {
           <PrimarySearchAppBar />
         </Grid>
         <Grid item xs={2}>
-          <Actions handleSetState={handleSetState} />
+          <Actions
+            handleSetState={handleSetState}
+            menu={this.props.currentMenu}
+          />
         </Grid>
         <Grid item xs={10}>
           <ActionHeader
@@ -524,95 +628,14 @@ class FileTable extends Component {
             handleDeleteAll={this.handleDeleteAll}
             handleRestoreAll={this.handleRestoreAll}
           />
-          {isLoaded ? (
-            <Table
-              className={classes.table}
-              size="medium"
-              aria-label="a dense table"
-            >
-              <TableHead>
-                <TableRow>
-                  <TableCell style={{ width: "33%" }}>Name</TableCell>
-                  <TableCell style={{ width: "33%" }}>Uploaded On</TableCell>
-                  <TableCell style={{ width: "33%" }}>File Size</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody style={{ width: "100%" }}>
-                {folders.map((folder) => (
-                  <TableRow
-                    key={folder._id}
-                    className={classes.tableRow}
-                    onClick={(e) => this.handleFolderClick(e, folder)}
-                    selected={
-                      selectedFolders.length > 0
-                        ? selectedFolders[0].id === folder._id
-                        : false
-                    }
-                  >
-                    <TableCell>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                        }}
-                      >
-                        <FolderIcon style={{ fill: "#5f6368" }} />
-                        <span className="data">{folder.foldername}</span>
-                        {currentMenu === "Home" && folder.isFavorited && (
-                          <StarIcon className="data" />
-                        )}
-                      </div>
-                    </TableCell>
-
-                    <TableCell>
-                      <span className="details">
-                        {convertISODate(folder.createdOn)}
-                      </span>
-                    </TableCell>
-                    <TableCell align="left">—</TableCell>
-                  </TableRow>
-                ))}
-                {files.map((file, i) => (
-                  <TableRow
-                    key={file._id}
-                    className={classes.tableRow}
-                    onClick={(e) => this.handleFileClick(e, file)}
-                    selected={this.selectedIndex(file._id)}
-                  >
-                    <TableCell>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                        }}
-                      >
-                        <FileIcon style={{ fill: "#5f6368" }} />
-                        <span className="data">{file.filename}</span>
-                        {currentMenu === "Home" &&
-                          file.metadata.isFavorited && (
-                            <StarIcon className="data" />
-                          )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <span className="details">
-                        {convertISODate(file.uploadDate)}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="details">
-                        {returnFileSize(file.length)}
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <div style={{ display: "flex", justifyContent: "center" }}>
-              <CircularProgress />
-            </div>
-          )}
+          <MainTable
+            handleFolderClick={this.handleFolderClick}
+            handleFileClick={this.handleFileClick}
+            folders={folders}
+            files={files}
+            currentMenu={currentMenu}
+            isLoaded={isLoaded}
+          />
           {copySnack}
           {trashSnack}
           {favoritesSnack}

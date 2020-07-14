@@ -132,7 +132,6 @@ class ActionHeader extends Component {
     if (currentFolder !== undefined || currentMenu === "Folder") {
       menu = "1";
     }
-    console.log("isFavorited", isFavorited);
     return (
       <AppBar position="static" color="transparent" elevation={3}>
         <Toolbar variant="dense">
@@ -140,11 +139,13 @@ class ActionHeader extends Component {
             {menu !== "" ? (
               <Fragment>
                 <Link to={`/drive/home`} key={"Home"}>
-                  {`Home >`}{" "}
+                  {currentFolder.length <= 0 ? `Home` : `Home > `}
                 </Link>
-                {currentFolder.map((folder) => (
+                {currentFolder.map((folder, index) => (
                   <Link key={folder._id} to={`/drive/folders/${folder._id}`}>
-                    {` ${folder.foldername} >`}
+                    {index === currentFolder.length - 1
+                      ? `${folder.foldername}`
+                      : `${folder.foldername} >`}
                   </Link>
                 ))}
               </Fragment>

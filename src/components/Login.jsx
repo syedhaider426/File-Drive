@@ -90,7 +90,6 @@ class Login extends Component {
           errors.login = "Login failed. Please try again.";
           this.setState({ email: "", password: "", errors });
         } else {
-          console.log("Logged in succesfully");
           this.props.history.push("/drive/home");
         }
       });
@@ -99,6 +98,7 @@ class Login extends Component {
 
   render() {
     const { classes } = this.props;
+    const { errors } = this.state;
     return (
       <Grid container component="main" className={classes.root}>
         <CssBaseline />
@@ -127,8 +127,8 @@ class Login extends Component {
                 autoComplete="email"
                 autoFocus
                 onChange={this.handleEmailChange}
-                error={this.state.errors.email}
-                helperText={this.state.errors.email}
+                error={errors.email}
+                helperText={errors.email}
               />
               <TextField
                 variant="outlined"
@@ -140,8 +140,8 @@ class Login extends Component {
                 type="password"
                 id="password"
                 autoComplete="current-password"
-                error={this.state.errors.password}
-                helperText={this.state.errors.password}
+                error={errors.password}
+                helperText={errors.password}
                 onChange={this.handlePasswordChange}
               />
               <Button
@@ -174,7 +174,7 @@ class Login extends Component {
                   {"Copyright © "}
                   <Link color="inherit" to="https://g-drive-clone.com/">
                     G-Drive Clone
-                  </Link>{" "}
+                  </Link>
                   {new Date().getFullYear()}
                   {"."}
                 </Typography>
