@@ -139,15 +139,16 @@ class ActionHeader extends Component {
             {menu !== "" ? (
               <Fragment>
                 <Link to={`/drive/home`} key={"Home"}>
-                  {currentFolder.length <= 0 ? `Home` : `Home > `}
+                  {currentFolder.length === 0 ? `Home` : `Home > `}
                 </Link>
-                {currentFolder.map((folder, index) => (
-                  <Link key={index} to={`/drive/folders/${folder._id}`}>
-                    {index === currentFolder.length - 1
-                      ? `${folder.foldername}`
-                      : `${folder.foldername} >`}
-                  </Link>
-                ))}
+                {currentFolder.length > 0 &&
+                  currentFolder.map((folder, index) => (
+                    <Link key={index} to={`/drive/folders/${folder._id}`}>
+                      {index === currentFolder.length - 1
+                        ? `${folder.foldername}`
+                        : `${folder.foldername} >`}
+                    </Link>
+                  ))}
               </Fragment>
             ) : (
               currentMenu

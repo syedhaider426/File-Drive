@@ -58,6 +58,7 @@ class FileTable extends Component {
     copySnackOpen: false,
     trashSnackOpen: false,
     favoritesSnackOpen: false,
+    restoreSnackOpen: false,
     currentFolder: ["Home"],
     currentID: this.props.match.url,
     isLoaded: false,
@@ -69,7 +70,7 @@ class FileTable extends Component {
         this.setState({
           files: data.files,
           folders: data.folders,
-          currentFolder: data.folderPath,
+          currentFolder: data.folderPath || this.state.currentFolder,
           currentID: this.props.match.url,
           isLoaded: true,
         });
@@ -115,6 +116,24 @@ class FileTable extends Component {
     }
     this.setState({
       trashSnackOpen: false,
+    });
+  };
+
+  handleRestoreSnackClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    this.setState({
+      restoreSnackOpen: false,
+    });
+  };
+
+  handleUnFavoriteSnackClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    this.setState({
+      undoFavoriteSnackOpen: false,
     });
   };
 
@@ -424,16 +443,56 @@ class FileTable extends Component {
     postData("/api/files/restore", data)
       .then((data) => {
         const { files, folders } = { ...data };
+        //Slice will clone the array and return reference to new array
+        const tempFiles = selectedFiles.slice();
+        const tempFolders = selectedFolders.slice();
+        const filesModified = tempFiles.length + tempFolders.length;
+        /***
+         * Files - Updated files
+         * Files Modified - Length of selected files that were copied
+         * TempFiles - Reference to selected files (if user chooses to undo, reference the tempfiles)
+         */
         this.setState({
           files,
           folders,
+          trashSnackOpen: false,
+          copySnackOpen: false,
+          favoritesSnackOpen: false,
+          restoreSnackOpen: true,
           selectedFiles: [],
           selectedFolders: [],
+          tempFiles,
+          tempFolders,
+          filesModified,
         });
       })
       .catch((err) => console.log("Err", err));
   };
 
+  handleUndoRestore = () => {
+    let { tempFolders, tempFiles } = { ...this.state };
+    const data = {
+      selectedFolders: tempFolders,
+      selectedFiles: tempFiles,
+      isFavorited: [false, true],
+      trashMenu: true,
+    };
+    postData(`/api/files/trash`, data)
+      .then((data) => {
+        const { files, folders } = { ...data };
+        this.setState({
+          files,
+          folders,
+          restoreSnackOpen: false,
+          tempFiles: [],
+          tempFolders: [],
+          filesModified: 0,
+        });
+      })
+      .catch((err) => console.log("Err", err));
+  };
+
+  //When you favorite an item from Home
   handleFavorites = () => {
     let { selectedFolders, selectedFiles } = { ...this.state };
     const data = { selectedFolders, selectedFiles };
@@ -462,6 +521,7 @@ class FileTable extends Component {
       .catch((err) => console.log("Err", err));
   };
 
+  //When you unfavorite an item from 'Home', and then click undo
   handleUndoFavorite = () => {
     const { tempFolders, tempFiles } = { ...this.state };
     const data = { selectedFolders: tempFolders, selectedFiles: tempFiles };
@@ -480,15 +540,52 @@ class FileTable extends Component {
       .catch((err) => console.log("Err", err));
   };
 
+  //When you unfavorite an item in 'Favorites'
   handleUnfavorited = () => {
     let { selectedFolders, selectedFiles } = { ...this.state };
     const data = { selectedFolders, selectedFiles };
     postData("/api/files/unfavorite", data)
       .then((data) => {
         const { files, folders } = { ...data };
+        //Slice will clone the array and return reference to new array
+        const tempFiles = selectedFiles.slice();
+        const tempFolders = selectedFolders.slice();
+        const filesModified = tempFiles.length + tempFolders.length;
+        /***
+         * Files - Updated files
+         * Files Modified - Length of selected files that were copied
+         * TempFiles - Reference to selected files (if user chooses to undo, reference the tempfiles)
+         */
         this.setState({
           files,
           folders,
+          undoFavoriteSnackOpen: true,
+          tempFiles,
+          tempFolders,
+          filesModified,
+        });
+      })
+      .catch((err) => console.log("Err", err));
+  };
+
+  //When you unfavorite an item in 'Favorites', and then click undo
+  handleUndoUnfavorite = () => {
+    const { tempFolders, tempFiles } = { ...this.state };
+    const data = {
+      selectedFolders: tempFolders,
+      selectedFiles: tempFiles,
+      favoritesMenu: true,
+    };
+    postData("/api/files/favorite", data)
+      .then((data) => {
+        const { files, folders } = { ...data };
+        this.setState({
+          files,
+          folders,
+          tempFiles: [],
+          tempFolders: [],
+          filesModified: 0,
+          undoFavoriteSnackOpen: false,
         });
       })
       .catch((err) => console.log("Err", err));
@@ -566,6 +663,8 @@ class FileTable extends Component {
       copySnackOpen,
       trashSnackOpen,
       favoritesSnackOpen,
+      restoreSnackOpen,
+      undoFavoriteSnackOpen,
       isFavorited,
       currentFolder,
       isLoaded,
@@ -604,13 +703,24 @@ class FileTable extends Component {
 
     const restoreSnack = (
       <Snack
-        open={favoritesSnackOpen}
+        open={restoreSnackOpen}
         onClose={this.handleRestoreSnackClose}
         onExited={this.handleSnackbarExit}
         message={`Restored ${filesModified} item(s).`}
         onClick={this.handleUndoRestore}
       />
     );
+
+    const unfavoriteSnack = (
+      <Snack
+        open={undoFavoriteSnackOpen}
+        onClose={this.handleUnFavoriteSnackClose}
+        onExited={this.handleSnackbarExit}
+        message={`Unfavorited ${filesModified} item(s).`}
+        onClick={this.handleUndoUnfavorite}
+      />
+    );
+
     return (
       <Fragment>
         <Grid item xs={12}>
@@ -656,6 +766,8 @@ class FileTable extends Component {
           {copySnack}
           {trashSnack}
           {favoritesSnack}
+          {restoreSnack}
+          {unfavoriteSnack}
         </Grid>
       </Fragment>
     );
