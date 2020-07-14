@@ -142,7 +142,7 @@ class ActionHeader extends Component {
                   {currentFolder.length <= 0 ? `Home` : `Home > `}
                 </Link>
                 {currentFolder.map((folder, index) => (
-                  <Link key={folder._id} to={`/drive/folders/${folder._id}`}>
+                  <Link key={index} to={`/drive/folders/${folder._id}`}>
                     {index === currentFolder.length - 1
                       ? `${folder.foldername}`
                       : `${folder.foldername} >`}

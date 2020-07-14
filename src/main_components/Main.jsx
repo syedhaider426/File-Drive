@@ -8,7 +8,6 @@ import SignInSide from "../components/Login";
 import Dashboard from "../panel_left/Dashboard";
 import Register from "../components/Register";
 import Confirmation from "../components/Confirmation";
-import { withRouter } from "react-router-dom";
 import Profile from "../components/Profile";
 
 /***

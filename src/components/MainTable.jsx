@@ -1,5 +1,4 @@
-import React, { Fragment, Component } from "react";
-import { withStyles } from "@material-ui/core/styles";
+import React, { Fragment } from "react";
 import convertISODate from "../helpers/convertISODate";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
@@ -10,9 +9,10 @@ import FileIcon from "@material-ui/icons/InsertDriveFile";
 import FolderIcon from "@material-ui/icons/Folder";
 import returnFileSize from "../helpers/returnFileSize";
 import { CircularProgress, TableContainer } from "@material-ui/core";
-import { makeStyles, useTheme } from "@material-ui/core/styles";
+import { makeStyles } from "@material-ui/core/styles";
 import StarIcon from "@material-ui/icons/Star";
 import selectedIndex from "../helpers/selectedIndex";
+
 const useStyles = makeStyles((theme) => ({
   tableRow: {
     tableRow: {

@@ -2,44 +2,13 @@ import React, { Fragment, Component } from "react";
 import { withStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
 import { withRouter } from "react-router-dom";
-import convertISODate from "../helpers/convertISODate";
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableHead from "@material-ui/core/TableHead";
-import TableRow from "@material-ui/core/TableRow";
-import FileIcon from "@material-ui/icons/InsertDriveFile";
-import FolderIcon from "@material-ui/icons/Folder";
 import ActionHeader from "./ActionHeader";
 import postData from "../helpers/postData";
-import returnFileSize from "../helpers/returnFileSize";
 import PrimarySearchAppBar from "./PrimarySearchAppBar";
 import Actions from "../panel_left/Actions";
-import StarIcon from "@material-ui/icons/Star";
 import Snack from "./Snack";
-import { CircularProgress, TableContainer } from "@material-ui/core";
 import MainTable from "./MainTable";
 import getData from "../helpers/getData";
-
-const styles = (theme) => ({
-  tableRow: {
-    tableRow: {
-      "&$selected, &$selected:hover": {
-        backgroundColor: "#e8f0fe",
-        color: "#1967d2",
-      },
-    },
-  },
-  table: {
-    maxHeight: "85vh",
-  },
-  root: {
-    width: "100%",
-  },
-  iconSpacing: {
-    left: theme.spacing(1),
-  },
-});
 
 const drawerWidth = 240;
 
@@ -82,17 +51,13 @@ class FileTable extends Component {
     folders: [],
     selectedFiles: [],
     selectedFolders: [],
-    loaded: false,
-    snackbarOpen: false,
+    isFavorited: false,
     filesModified: 0,
-    foldersModified: 0,
     tempFiles: [],
     tempFolders: [],
-    snackBarMessage: "",
     copySnackOpen: false,
     trashSnackOpen: false,
     favoritesSnackOpen: false,
-    isFavorited: false,
     currentFolder: ["Home"],
     currentID: this.props.match.url,
     isLoaded: false,
@@ -117,7 +82,7 @@ class FileTable extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.props.match.url != prevState.currentID) {
+    if (this.props.match.url !== prevState.currentID) {
       this.fetchData();
     }
   }
@@ -154,7 +119,7 @@ class FileTable extends Component {
   };
 
   handleFolderClick = (e, folder) => {
-    const { selectedFolders, currentMenu } = { ...this.state };
+    const { selectedFolders } = { ...this.state };
     // No folders selected
     if (selectedFolders.length === 0 && !e.ctrlKey) {
       // Add selected folder to array
@@ -227,7 +192,7 @@ class FileTable extends Component {
       let folders = [];
       let count = 0;
       for (let i = 0; i < selectedFolders.length; ++i) {
-        if (selectedFolders[i].id != folder._id) {
+        if (selectedFolders[i].id !== folder._id) {
           folders.push(selectedFolders[i]);
           count++;
         }
@@ -272,13 +237,13 @@ class FileTable extends Component {
         isFavorited,
       });
     } else if (
-      selectedFiles.length == 1 &&
+      selectedFiles.length === 1 &&
       selectedFiles[0].id === file._id &&
       !e.ctrlKey
     ) {
       this.props.history.push(`/file/${file._id}`);
     } else if (
-      selectedFiles.length == 1 &&
+      selectedFiles.length === 1 &&
       selectedFiles[0].id === file._id &&
       e.ctrlKey
     ) {
@@ -287,7 +252,7 @@ class FileTable extends Component {
       let files = [];
       let count = 0;
       for (let i = 0; i < selectedFiles.length; ++i) {
-        if (selectedFiles[i].id != file._id) {
+        if (selectedFiles[i].id !== file._id) {
           files.push(selectedFiles[i]);
           count++;
         }
@@ -333,7 +298,6 @@ class FileTable extends Component {
         /***
          * Files - Updated files
          * Files Modified - Length of selected files that were copied
-         * Snackbaropen - Open Snackbar
          * TempFiles - Reference to selected files (if user chooses to undo, reference the tempfiles)
          */
         this.setState({
@@ -381,7 +345,6 @@ class FileTable extends Component {
         /***
          * Files - Updated files
          * Files Modified - Length of selected files that were copied
-         * Snackbaropen - Open Snackbar
          * TempFiles - Reference to selected files (if user chooses to undo, reference the tempfiles)
          */
 
@@ -484,7 +447,6 @@ class FileTable extends Component {
         /***
          * Files - Updated files
          * Files Modified - Length of selected files that were copied
-         * Snackbaropen - Open Snackbar
          * TempFiles - Reference to selected files (if user chooses to undo, reference the tempfiles)
          */
         this.setState({
@@ -544,7 +506,6 @@ class FileTable extends Component {
 
   checkIsFavorited = (items) => {
     let isFavorited = 0;
-    console.log(items);
     for (let i = 0; i < items.length; ++i) {
       if (items[i].isFavorited) isFavorited++;
     }
@@ -599,16 +560,13 @@ class FileTable extends Component {
     const {
       files,
       folders,
-      classes,
       selectedFolders,
       selectedFiles,
-      currentMenu,
       filesModified,
       copySnackOpen,
       trashSnackOpen,
       favoritesSnackOpen,
       isFavorited,
-      handleSetState,
       currentFolder,
       isLoaded,
     } = {
@@ -643,13 +601,26 @@ class FileTable extends Component {
         onClick={this.handleUndoFavorite}
       />
     );
+
+    const restoreSnack = (
+      <Snack
+        open={favoritesSnackOpen}
+        onClose={this.handleRestoreSnackClose}
+        onExited={this.handleSnackbarExit}
+        message={`Restored ${filesModified} item(s).`}
+        onClick={this.handleUndoRestore}
+      />
+    );
     return (
       <Fragment>
         <Grid item xs={12}>
           <PrimarySearchAppBar />
         </Grid>
         <Grid item xs={2}>
-          <Actions handleSetState={handleSetState} menu={this.props.menu} />
+          <Actions
+            handleSetState={this.handleSetState}
+            menu={this.props.menu}
+          />
         </Grid>
         <Grid item xs={10}>
           <ActionHeader
@@ -667,7 +638,7 @@ class FileTable extends Component {
             handleHomeUnfavorited={this.handleHomeUnfavorited}
             currentMenu={this.props.menu}
             isFavorited={isFavorited}
-            handleSetState={handleSetState}
+            handleSetState={this.handleSetState}
             currentFolder={currentFolder}
             handleDeleteAll={this.handleDeleteAll}
             handleRestoreAll={this.handleRestoreAll}
@@ -691,4 +662,4 @@ class FileTable extends Component {
   }
 }
 
-export default withRouter(withStyles(styles)(FileTable));
+export default withRouter(withStyles(layout)(FileTable));

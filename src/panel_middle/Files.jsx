@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import getData from "../helpers/getData";
-import FileTable from "../components/FileTable";
+import FileTable from "../components/Files";
 import { withRouter } from "react-router-dom";
 
 class Files extends Component {

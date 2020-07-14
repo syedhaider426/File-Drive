@@ -132,7 +132,7 @@ class MoveItem extends Component {
     const { movedSnack, moveButtonDisabled } = {
       ...this.state,
     };
-    const { selectedFiles, selectedFolders, folders, classes } = {
+    const { folders, classes } = {
       ...this.props,
     };
     const moveSnack = (
@@ -168,7 +168,7 @@ class MoveItem extends Component {
                 {moveFolders.map((folder, index) => (
                   <ListItem
                     alignItems="center"
-                    selected={index == this.state.selectedIndex}
+                    selected={index === this.state.selectedIndex}
                     onClick={() =>
                       this.handleOnClick(folder._id, folder.foldername, index)
                     }

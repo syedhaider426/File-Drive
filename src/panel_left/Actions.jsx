@@ -62,6 +62,7 @@ class Actions extends Component {
   handleCreateFolder = (e) => {
     e.preventDefault();
     const data = { folder: this.state.folder };
+
     const folder = this.props.match.params.folder
       ? `/${this.props.match.params.folder}`
       : "";
@@ -91,10 +92,11 @@ class Actions extends Component {
     fetch(`/api/files/upload${folder}`, { method: "POST", body: form })
       .then((res) => res.json())
       .then((data) => {
+        const { files } = data;
         this.setState(
           { open: false },
           this.props.handleSetState({
-            files: data.files,
+            files,
           })
         );
       })
@@ -222,7 +224,7 @@ class Actions extends Component {
             button
             component={HomeLink}
             selected={
-              this.props.menu != "Trash" && this.props.menu != "Favorites"
+              this.props.menu !== "Trash" && this.props.menu !== "Favorites"
             }
           >
             <ListItemIcon>
@@ -233,7 +235,7 @@ class Actions extends Component {
           <ListItem
             button
             component={FavoritesLink}
-            selected={this.props.menu == "Favorites"}
+            selected={this.props.menu === "Favorites"}
           >
             <ListItemIcon>
               <StarIcon />
@@ -243,7 +245,7 @@ class Actions extends Component {
           <ListItem
             button
             component={TrashLink}
-            selected={this.props.menu == "Trash"}
+            selected={this.props.menu === "Trash"}
           >
             <ListItemIcon>
               <DeleteIcon />
