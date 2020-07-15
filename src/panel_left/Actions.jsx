@@ -71,6 +71,7 @@ class Actions extends Component {
             folders,
             mobileOpen: false,
             selectedFolders: newFolder,
+            selectedFiles: [],
           })
         );
       })
@@ -89,12 +90,14 @@ class Actions extends Component {
     fetch(`/api/files/upload${folder}`, { method: "POST", body: form })
       .then((res) => res.json())
       .then((data) => {
-        const { files } = data;
+        const { files, uploadedFiles } = data;
         this.setState(
           { open: false },
           this.props.handleSetState({
             files,
             mobileOpen: false,
+            selectedFiles: uploadedFiles,
+            selectedFolders: [],
           })
         );
       })
