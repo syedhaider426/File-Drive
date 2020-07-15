@@ -32,57 +32,39 @@ const Main = () => {
             <ForgotPassword />
           </Route>
           <Route path="/drive/home">
-            <Grid container spacing={0}>
-              <Files menu={"Home"} />
-            </Grid>
+            <Files menu={"Home"} />
           </Route>
           <Route path="/drive/favorites">
-            <Grid container spacing={0}>
-              <Files menu={"Favorites"} />
-            </Grid>
+            <Files menu={"Favorites"} />
           </Route>
           <Route path="/drive/trash">
-            <Grid container spacing={0}>
-              <Files menu={"Trash"} />
-            </Grid>
+            <Files menu={"Trash"} />
           </Route>
           <Route path="/drive/folders/:folder">
-            <Grid container spacing={0}>
-              <Files menu={"Folder"} />
-            </Grid>
+            <Files menu={"Folder"} />
           </Route>
           <Route path="/dashboard">
-            <Grid container spacing={0}>
-              <Dashboard />
-            </Grid>
+            <Dashboard />
           </Route>
           <Route path="/register">
-            <Grid container spacing={0}>
-              <Register />
-            </Grid>
+            <Register />
           </Route>
           <Route path="/confirmRegistration">
-            <Grid container spacing={0}>
-              <Confirmation
-                message={
-                  "Thank you for registering your account. Please check your email to confirm your account."
-                }
-              />
-            </Grid>
+            <Confirmation
+              message={
+                "Thank you for registering your account. Please check your email to confirm your account."
+              }
+            />
           </Route>
           <Route path="/verification">
-            <Grid container spacing={0}>
-              <Confirmation
-                message={
-                  "Thank you for verifiying your email. You can now login to your account."
-                }
-              />
-            </Grid>
+            <Confirmation
+              message={
+                "Thank you for verifiying your email. You can now login to your account."
+              }
+            />
           </Route>
           <Route path="/drive/profile">
-            <Grid container spacing={0}>
-              <Profile />
-            </Grid>
+            <Profile />
           </Route>
           <Route path="/" exact>
             <Login />

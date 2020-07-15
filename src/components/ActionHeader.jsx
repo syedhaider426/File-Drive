@@ -16,16 +16,11 @@ import RenameFile from "./RenameFile";
 import MoveItem from "./MoveItem";
 import NavigateNextIcon from "@material-ui/icons/NavigateNext";
 import { Link } from "react-router-dom";
-import { Breadcrumbs, Menu, MenuItem } from "@material-ui/core";
+import { Breadcrumbs, Menu, MenuItem, Box } from "@material-ui/core";
 
 import MoreIcon from "@material-ui/icons/MoreVert";
 
 const styles = (theme) => ({
-  // This group of buttons will be aligned to the right
-  // rightToolbar: {
-  //   marginLeft: "auto",
-  //   marginRight: -12,
-  // },
   menuButton: {
     marginRight: 16,
     marginLeft: -12,
@@ -43,12 +38,6 @@ const styles = (theme) => ({
     flexGrow: 1,
   },
 
-  title: {
-    display: "none",
-    [theme.breakpoints.up("sm")]: {
-      display: "block",
-    },
-  },
   sectionDesktop: {
     display: "none",
     [theme.breakpoints.up("md")]: {
@@ -60,6 +49,10 @@ const styles = (theme) => ({
     [theme.breakpoints.up("md")]: {
       display: "none",
     },
+  },
+  font: {
+    fontSize: "16px",
+    fontWeight: "fontWeightBold",
   },
 });
 
@@ -165,10 +158,7 @@ class ActionHeader extends Component {
         handleSetState={this.props.handleSetState}
       />
     );
-
-    const menuId = "primary-search-account-menu";
-
-    const mobileMenuId = "primary-search-account-menu-mobile";
+    const mobileMenuId = "mobile-menu";
     const renderMobileMenu = (
       <Menu
         anchorEl={this.state.mobileMoreAnchorEl}
@@ -200,26 +190,30 @@ class ActionHeader extends Component {
               separator={<NavigateNextIcon fontSize="small" />}
               aria-label="breadcrumb"
             >
-              <Link
-                style={{ textDecoration: "none", color: "black" }}
-                to={`/drive/home`}
-                key={"Home"}
-              >
-                Home
-              </Link>
+              <Box fontSize={20}>
+                <Link
+                  style={{ textDecoration: "none", color: "black" }}
+                  to={`/drive/home`}
+                  key={"Home"}
+                >
+                  Home
+                </Link>
+              </Box>
               {currentFolder !== undefined &&
                 currentFolder.map((folder, index) => (
-                  <Link
-                    style={{ textDecoration: "none", color: "black" }}
-                    key={index}
-                    to={`/drive/folders/${folder._id}`}
-                  >
-                    {folder.foldername}
-                  </Link>
+                  <Box fontSize={20}>
+                    <Link
+                      style={{ textDecoration: "none", color: "black" }}
+                      key={index}
+                      to={`/drive/folders/${folder._id}`}
+                    >
+                      {folder.foldername}
+                    </Link>
+                  </Box>
                 ))}
             </Breadcrumbs>
           ) : (
-            currentMenu
+            <Box fontSize={20}>{currentMenu}</Box>
           )}
           <div className={classes.grow} />
           <div className={classes.sectionDesktop}>
@@ -234,6 +228,7 @@ class ActionHeader extends Component {
                 </IconButton>
               </Tooltip>
             )}{" "}
+            {renameFile}
             {selectedFolders.length === 1 && currentMenu !== "Trash" && (
               <Tooltip title="Rename">
                 <IconButton

@@ -32,7 +32,6 @@ class Actions extends Component {
     anchorEl: undefined,
   };
   handleClickOpen = (e) => {
-    console.log(e.currentTarget);
     this.setState({ open: true, anchorEl: e.currentTarget });
   };
 
@@ -53,25 +52,29 @@ class Actions extends Component {
     else this.setState({ folder: e.target.value, folderButtonDisabled: false });
   };
 
+  handleFileUploadOpen = () => {
+    document.getElementById("upload-file").click();
+  };
+
   handleCreateFolder = (e) => {
     e.preventDefault();
     const data = { folder: this.state.folder };
-
     const folder = this.props.match.params.folder
       ? `/${this.props.match.params.folder}`
       : "";
     postData(`/api/folders/create${folder}`, data)
       .then((data) => {
+        const { folders, newFolder } = { ...data };
         this.setState(
           { newFolderOpen: false },
-          this.props.handleSetState({ folders: data.folders })
+          this.props.handleSetState({
+            folders,
+            mobileOpen: false,
+            selectedFolders: newFolder,
+          })
         );
       })
       .catch((err) => console.log("Err", err));
-  };
-
-  handleFileUploadOpen = () => {
-    document.getElementById("upload-file").click();
   };
 
   handleFileUpload = (e) => {
@@ -91,6 +94,7 @@ class Actions extends Component {
           { open: false },
           this.props.handleSetState({
             files,
+            mobileOpen: false,
           })
         );
       })

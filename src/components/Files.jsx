@@ -9,8 +9,18 @@ import Actions from "../panel_left/Actions";
 import Snack from "./Snack";
 import MainTable from "./MainTable";
 import getData from "../helpers/getData";
-
-const drawerWidth = 240;
+import {
+  Hidden,
+  Drawer,
+  Divider,
+  CssBaseline,
+  AppBar,
+  Toolbar,
+  IconButton,
+  Typography,
+} from "@material-ui/core";
+import MenuIcon from "@material-ui/icons/Menu";
+const drawerWidth = 150;
 
 const layout = (theme) => ({
   root: {
@@ -41,7 +51,7 @@ const layout = (theme) => ({
   },
   content: {
     flexGrow: 1,
-    padding: theme.spacing(3),
+    padding: theme.spacing(1),
   },
 });
 
@@ -62,6 +72,7 @@ class FileTable extends Component {
     currentFolder: ["Home"],
     currentID: this.props.match.url,
     isLoaded: false,
+    mobileOpen: false,
   };
 
   fetchData = () => {
@@ -655,6 +666,10 @@ class FileTable extends Component {
       .catch((err) => console.log("Err", err));
   };
 
+  handleDrawerToggle = () => {
+    this.setState({ mobileOpen: !this.state.mobileOpen });
+  };
+
   render() {
     const {
       files,
@@ -670,9 +685,12 @@ class FileTable extends Component {
       isFavorited,
       currentFolder,
       isLoaded,
+      mobileOpen,
     } = {
       ...this.state,
     };
+
+    const { classes } = { ...this.props };
 
     const copySnack = (
       <Snack
@@ -722,56 +740,107 @@ class FileTable extends Component {
         onClick={this.handleUndoUnfavorite}
       />
     );
-    console.log("selectedFolders", selectedFolders);
+
     return (
       <Fragment>
-        <Grid item xs={12}>
-          <PrimarySearchAppBar />
-        </Grid>
-        <Grid item xs={2}>
-          <Actions
-            handleSetState={this.handleSetState}
-            menu={this.props.menu}
-          />
-        </Grid>
-        <Grid item xs={10}>
-          <ActionHeader
-            files={files}
-            folders={folders}
-            selectedFiles={selectedFiles}
-            selectedFolders={selectedFolders}
-            handleTrash={this.handleTrash}
-            handleFileCopy={this.handleFileCopy}
-            handleDeleteForever={this.handleDeleteForever}
-            handleRestore={this.handleRestore}
-            handleFavorites={this.handleFavorites}
-            handleUnfavorited={this.handleUnfavorited}
-            handleFavoritesTrash={this.handleFavoritesTrash}
-            handleHomeUnfavorited={this.handleHomeUnfavorited}
-            currentMenu={this.props.menu}
-            isFavorited={isFavorited}
-            handleSetState={this.handleSetState}
-            currentFolder={currentFolder}
-            isLoaded={isLoaded}
-            handleDeleteAll={this.handleDeleteAll}
-            handleRestoreAll={this.handleRestoreAll}
-          />
-          <MainTable
-            handleFolderClick={this.handleFolderClick}
-            handleFileClick={this.handleFileClick}
-            folders={folders}
-            files={files}
-            selectedFolders={selectedFolders}
-            selectedFiles={selectedFiles}
-            currentMenu={this.props.menu}
-            isLoaded={isLoaded}
-          />
-          {copySnack}
-          {trashSnack}
-          {favoritesSnack}
-          {restoreSnack}
-          {unfavoriteSnack}
-        </Grid>
+        <div className={classes.root}>
+          <CssBaseline />
+          <AppBar position="fixed" className={classes.appBar}>
+            <Toolbar>
+              <IconButton
+                color="inherit"
+                aria-label="open drawer"
+                edge="start"
+                onClick={this.handleDrawerToggle}
+                className={classes.menuButton}
+              >
+                <MenuIcon />
+              </IconButton>
+              <Typography variant="h6" noWrap>
+                G-Drive
+              </Typography>
+            </Toolbar>
+          </AppBar>
+          <nav className={classes.drawer} aria-label="mailbox folders">
+            <Hidden smUp implementation="css">
+              <Drawer
+                variant="temporary"
+                open={mobileOpen}
+                onClose={this.handleDrawerToggle}
+                classes={{
+                  paper: classes.drawerPaper,
+                }}
+                ModalProps={{
+                  keepMounted: true, // Better open performance on mobile.
+                }}
+              >
+                <div className={classes.toolbar} />
+                <Divider />
+                <Actions
+                  handleSetState={this.handleSetState}
+                  menu={this.props.menu}
+                  mobileOpen={mobileOpen}
+                />
+              </Drawer>
+            </Hidden>
+            <Hidden xsDown implementation="css">
+              <Drawer
+                classes={{
+                  paper: classes.drawerPaper,
+                }}
+                variant="permanent"
+                open
+              >
+                <div className={classes.toolbar} />
+                <Divider />
+                <Actions
+                  handleSetState={this.handleSetState}
+                  menu={this.props.menu}
+                  mobileOpen={mobileOpen}
+                />
+              </Drawer>
+            </Hidden>
+          </nav>
+          <main className={classes.content}>
+            <div className={classes.toolbar} />
+            <ActionHeader
+              files={files}
+              folders={folders}
+              selectedFiles={selectedFiles}
+              selectedFolders={selectedFolders}
+              handleTrash={this.handleTrash}
+              handleFileCopy={this.handleFileCopy}
+              handleDeleteForever={this.handleDeleteForever}
+              handleRestore={this.handleRestore}
+              handleFavorites={this.handleFavorites}
+              handleUnfavorited={this.handleUnfavorited}
+              handleFavoritesTrash={this.handleFavoritesTrash}
+              handleHomeUnfavorited={this.handleHomeUnfavorited}
+              currentMenu={this.props.menu}
+              isFavorited={isFavorited}
+              handleSetState={this.handleSetState}
+              currentFolder={currentFolder}
+              isLoaded={isLoaded}
+              handleDeleteAll={this.handleDeleteAll}
+              handleRestoreAll={this.handleRestoreAll}
+            />
+            <MainTable
+              handleFolderClick={this.handleFolderClick}
+              handleFileClick={this.handleFileClick}
+              folders={folders}
+              files={files}
+              selectedFolders={selectedFolders}
+              selectedFiles={selectedFiles}
+              currentMenu={this.props.menu}
+              isLoaded={isLoaded}
+            />
+            {copySnack}
+            {trashSnack}
+            {favoritesSnack}
+            {restoreSnack}
+            {unfavoriteSnack}
+          </main>
+        </div>
       </Fragment>
     );
   }
