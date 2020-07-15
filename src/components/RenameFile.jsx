@@ -42,7 +42,7 @@ class RenameFile extends Component {
 
   handleRenameFileClose = () => {
     this.setState(
-      { filename: "", fileButtonDisabled: true },
+      { fileButtonDisabled: true },
       this.props.handleDialog({ renameFileDialogOpen: false })
     );
   };
@@ -72,6 +72,7 @@ class RenameFile extends Component {
             arr[i].filename = filename;
             return true;
           }
+          return false;
         });
         this.setState(
           {
@@ -100,6 +101,7 @@ class RenameFile extends Component {
             arr[i].filename = selectedFiles[0].filename;
             return true;
           }
+          return false;
         });
         this.setState(
           {

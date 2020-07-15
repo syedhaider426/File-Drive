@@ -41,18 +41,19 @@ class RenameFolder extends Component {
 
   handleRenameFolderClose = () => {
     this.setState(
-      { foldername: "'" },
+      { folderButtonDisabled: true },
       this.props.handleDialog({ renameFolderDialogOpen: false })
     );
   };
 
   handleFolderOnChange = (e) => {
     if (e.target.value === "") this.setState({ folderButtonDisabled: true });
-    else
+    else {
       this.setState({
         foldername: e.target.value,
         folderButtonDisabled: false,
       });
+    }
   };
 
   handleRenameFolder = (e) => {
@@ -63,6 +64,7 @@ class RenameFolder extends Component {
       id: selectedFolders[0].id,
       newName: foldername,
     };
+
     postData("/api/folders/rename", data)
       .then((data) => {
         let folders = this.props.folders;
@@ -71,6 +73,7 @@ class RenameFolder extends Component {
             arr[i].foldername = foldername;
             return true;
           }
+          return false;
         });
         this.setState(
           {
@@ -99,6 +102,7 @@ class RenameFolder extends Component {
             arr[i].foldername = selectedFolders[0].foldername;
             return true;
           }
+          return false;
         });
         this.setState(
           {

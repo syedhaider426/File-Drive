@@ -1,4 +1,4 @@
-import { withStyles } from "@material-ui/styles";
+import { withStyles } from "@material-ui/core/styles";
 import React, { Component, Fragment } from "react";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
@@ -14,14 +14,18 @@ import StarOutlineOutlinedIcon from "@material-ui/icons/StarOutlined";
 import RenameFolder from "./RenameFolder";
 import RenameFile from "./RenameFile";
 import MoveItem from "./MoveItem";
+import NavigateNextIcon from "@material-ui/icons/NavigateNext";
 import { Link } from "react-router-dom";
+import { Breadcrumbs, Menu, MenuItem } from "@material-ui/core";
 
-const styles = {
+import MoreIcon from "@material-ui/icons/MoreVert";
+
+const styles = (theme) => ({
   // This group of buttons will be aligned to the right
-  rightToolbar: {
-    marginLeft: "auto",
-    marginRight: -12,
-  },
+  // rightToolbar: {
+  //   marginLeft: "auto",
+  //   marginRight: -12,
+  // },
   menuButton: {
     marginRight: 16,
     marginLeft: -12,
@@ -35,13 +39,36 @@ const styles = {
   item: {
     padding: 0,
   },
-};
+  grow: {
+    flexGrow: 1,
+  },
+
+  title: {
+    display: "none",
+    [theme.breakpoints.up("sm")]: {
+      display: "block",
+    },
+  },
+  sectionDesktop: {
+    display: "none",
+    [theme.breakpoints.up("md")]: {
+      display: "flex",
+    },
+  },
+  sectionMobile: {
+    display: "flex",
+    [theme.breakpoints.up("md")]: {
+      display: "none",
+    },
+  },
+});
 
 class ActionHeader extends Component {
   state = {
     renameFolderDialogOpen: false,
     renameFileDialogOpen: false,
     moveItemDialogOpen: false,
+    isMobileMenuOpen: false,
   };
 
   handleRenameOpen = () => {
@@ -58,6 +85,17 @@ class ActionHeader extends Component {
 
   handleMove = () => {
     this.setState({ moveItemDialogOpen: true });
+  };
+
+  handleMobileMenuOpen = (e) => {
+    this.setState({
+      isMobileMenuOpen: true,
+      mobileMoreAnchorEl: e.currentTarget,
+    });
+  };
+
+  handleMobileMenuClose = () => {
+    this.setState({ isMobileMenuOpen: false });
   };
 
   /**
@@ -93,7 +131,7 @@ class ActionHeader extends Component {
       currentMenu,
     } = this.props;
     const { classes } = this.props;
-
+    const { isMobileMenuOpen } = this.state;
     const renameFile = (
       <RenameFile
         renameFileDialogOpen={this.state.renameFileDialogOpen}
@@ -128,6 +166,28 @@ class ActionHeader extends Component {
       />
     );
 
+    const menuId = "primary-search-account-menu";
+
+    const mobileMenuId = "primary-search-account-menu-mobile";
+    const renderMobileMenu = (
+      <Menu
+        anchorEl={this.state.mobileMoreAnchorEl}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        id={mobileMenuId}
+        keepMounted
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
+        open={isMobileMenuOpen}
+        onClose={this.handleMobileMenuClose}
+      >
+        <MenuItem dense={true}>
+          <p>Messages</p>
+        </MenuItem>
+        <MenuItem dense={true} onClick={this.handleFocus}>
+          <p>Profile</p>
+        </MenuItem>
+      </Menu>
+    );
+
     let menu = "";
     if (currentFolder !== undefined || currentMenu === "Folder") {
       menu = "1";
@@ -135,26 +195,34 @@ class ActionHeader extends Component {
     return (
       <AppBar position="static" color="transparent" elevation={3}>
         <Toolbar variant="dense">
-          <Typography color="inherit">
-            {menu !== "" ? (
-              <Fragment>
-                <Link to={`/drive/home`} key={"Home"}>
-                  {currentFolder.length === 0 ? `Home` : `Home > `}
-                </Link>
-                {currentFolder.length > 0 &&
-                  currentFolder.map((folder, index) => (
-                    <Link key={index} to={`/drive/folders/${folder._id}`}>
-                      {index === currentFolder.length - 1
-                        ? `${folder.foldername}`
-                        : `${folder.foldername} >`}
-                    </Link>
-                  ))}
-              </Fragment>
-            ) : (
-              currentMenu
-            )}
-          </Typography>
-          <section className={classes.rightToolbar}>
+          {menu !== "" ? (
+            <Breadcrumbs
+              separator={<NavigateNextIcon fontSize="small" />}
+              aria-label="breadcrumb"
+            >
+              <Link
+                style={{ textDecoration: "none", color: "black" }}
+                to={`/drive/home`}
+                key={"Home"}
+              >
+                Home
+              </Link>
+              {currentFolder !== undefined &&
+                currentFolder.map((folder, index) => (
+                  <Link
+                    style={{ textDecoration: "none", color: "black" }}
+                    key={index}
+                    to={`/drive/folders/${folder._id}`}
+                  >
+                    {folder.foldername}
+                  </Link>
+                ))}
+            </Breadcrumbs>
+          ) : (
+            currentMenu
+          )}
+          <div className={classes.grow} />
+          <div className={classes.sectionDesktop}>
             {selectedFiles.length === 1 && currentMenu !== "Trash" && (
               <Tooltip title="Rename">
                 <IconButton
@@ -165,8 +233,7 @@ class ActionHeader extends Component {
                   <RenameIcon />
                 </IconButton>
               </Tooltip>
-            )}
-            {renameFile}
+            )}{" "}
             {selectedFolders.length === 1 && currentMenu !== "Trash" && (
               <Tooltip title="Rename">
                 <IconButton
@@ -311,12 +378,23 @@ class ActionHeader extends Component {
                 </Tooltip>
               </Fragment>
             )}
-            {/* <Tooltip title="More Options">
-              <IconButton color="inherit" aria-label="More Options">
-                <MoreVertIcon />
-              </IconButton>
-            </Tooltip> */}
-          </section>
+          </div>{" "}
+          <div className={classes.sectionMobile}>
+            {
+              <Tooltip title="More Options">
+                <IconButton
+                  color="inherit"
+                  aria-label="show more"
+                  aria-controls={mobileMenuId}
+                  aria-haspopup="true"
+                  onClick={this.handleMobileMenuOpen}
+                >
+                  <MoreIcon />
+                </IconButton>
+              </Tooltip>
+            }{" "}
+            {renderMobileMenu}
+          </div>
         </Toolbar>
       </AppBar>
     );

@@ -15,21 +15,13 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import CloudUploadIcon from "@material-ui/icons/CloudUpload";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
-import { Divider, IconButton } from "@material-ui/core";
-import CreateNewFolderOutlinedIcon from "@material-ui/icons/CreateNewFolderOutlined";
-import FolderOpenOutlinedIcon from "@material-ui/icons/FolderOpenOutlined";
-import FileIcon from "@material-ui/icons/InsertDriveFile";
-import CloseIcon from "@material-ui/icons/Close";
-import { withStyles } from "@material-ui/core/styles";
+import Divider from "@material-ui/core/Divider";
+import Menu from "@material-ui/core/Menu";
+import MenuItem from "@material-ui/core/MenuItem";
+import Typography from "@material-ui/core/Typography";
 
-const styles = (theme) => ({
-  closeButton: {
-    position: "absolute",
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.grey[500],
-  },
-});
+import CreateNewFolderOutlinedIcon from "@material-ui/icons/CreateNewFolderOutlined";
+import FileIcon from "@material-ui/icons/InsertDriveFile";
 
 class Actions extends Component {
   state = {
@@ -37,9 +29,11 @@ class Actions extends Component {
     newFolderOpen: false,
     folder: "",
     folderButtonDisabled: true,
+    anchorEl: undefined,
   };
   handleClickOpen = (e) => {
-    this.setState({ open: true });
+    console.log(e.currentTarget);
+    this.setState({ open: true, anchorEl: e.currentTarget });
   };
 
   handleClose = (e) => {
@@ -105,13 +99,11 @@ class Actions extends Component {
 
   render() {
     const { open, newFolderOpen, folderButtonDisabled } = { ...this.state };
-    const { classes } = { ...this.props };
     const {
       handleClose,
       handleClickOpen,
       handleFileUploadOpen,
       handleCreateFolderOpen,
-      handleFolderUpload,
       handleCreateFolderClose,
       handleCreateFolder,
       handleFolderOnChange,
@@ -119,35 +111,16 @@ class Actions extends Component {
     } = { ...this };
 
     const actionsDialog = (
-      <Dialog
-        open={open}
-        onClose={handleClose}
-        BackdropProps={{ style: { backgroundColor: "transparent" } }}
-      >
-        <DialogTitle>
-          <IconButton
-            aria-label="close"
-            className={classes.closeButton}
-            onClick={this.uploadClose}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <List>
-          <ListItem button onClick={handleCreateFolderOpen}>
-            <CreateNewFolderOutlinedIcon />
-            <ListItemText primary="New Folder" />
-          </ListItem>
-          <ListItem button onClick={handleFileUploadOpen}>
-            <FileIcon />
-            <ListItemText primary="File Upload" />
-          </ListItem>
-          <ListItem button onClick={handleFolderUpload}>
-            <FolderOpenOutlinedIcon />
-            <ListItemText primary="Folder Upload" />
-          </ListItem>
-        </List>
-      </Dialog>
+      <Menu open={open} onClose={handleClose} anchorEl={this.state.anchorEl}>
+        <MenuItem onClick={handleCreateFolderOpen}>
+          <CreateNewFolderOutlinedIcon />
+          <Typography variant="inherit">New Folder</Typography>
+        </MenuItem>
+        <MenuItem onClick={handleFileUploadOpen}>
+          <FileIcon />
+          <Typography variant="inherit">File Upload</Typography>
+        </MenuItem>
+      </Menu>
     );
 
     const newFolderDialog = (
@@ -259,4 +232,4 @@ class Actions extends Component {
   }
 }
 
-export default withRouter(withStyles(styles)(Actions));
+export default withRouter(Actions);

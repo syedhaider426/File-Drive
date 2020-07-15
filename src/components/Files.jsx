@@ -70,7 +70,9 @@ class FileTable extends Component {
         this.setState({
           files: data.files,
           folders: data.folders,
-          currentFolder: data.folderPath || this.state.currentFolder,
+          selectedFolders: [],
+          selectedFiles: [],
+          currentFolder: data.folderPath,
           currentID: this.props.match.url,
           isLoaded: true,
         });
@@ -720,7 +722,7 @@ class FileTable extends Component {
         onClick={this.handleUndoUnfavorite}
       />
     );
-
+    console.log("selectedFolders", selectedFolders);
     return (
       <Fragment>
         <Grid item xs={12}>
@@ -750,6 +752,7 @@ class FileTable extends Component {
             isFavorited={isFavorited}
             handleSetState={this.handleSetState}
             currentFolder={currentFolder}
+            isLoaded={isLoaded}
             handleDeleteAll={this.handleDeleteAll}
             handleRestoreAll={this.handleRestoreAll}
           />
