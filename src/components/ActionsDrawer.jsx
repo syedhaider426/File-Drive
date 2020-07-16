@@ -1,18 +1,6 @@
 import React, { Fragment, Component } from "react";
 import { withStyles } from "@material-ui/core/styles";
-import AccountCircle from "@material-ui/icons/AccountCircle";
-import {
-  Hidden,
-  Drawer,
-  Divider,
-  AppBar,
-  Toolbar,
-  IconButton,
-  Typography,
-  Menu,
-  MenuItem,
-} from "@material-ui/core";
-import MenuIcon from "@material-ui/icons/Menu";
+import { Hidden, Drawer, Divider, Menu, MenuItem } from "@material-ui/core";
 import { Link } from "react-router-dom";
 
 const drawerWidth = 150;

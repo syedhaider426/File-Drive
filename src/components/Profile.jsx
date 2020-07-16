@@ -1,17 +1,15 @@
 import React, { Component, Fragment } from "react";
 import { Link, withRouter } from "react-router-dom";
 import postData from "../helpers/postData";
-import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import TextField from "@material-ui/core/TextField";
 import Box from "@material-ui/core/Box";
-import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import Typography from "@material-ui/core/Typography";
 import { withStyles } from "@material-ui/core/styles";
-import { Container } from "@material-ui/core";
-import PrimarySearchAppBar from "./PrimarySearchAppBar";
 import Header from "./Header";
+import { Snackbar } from "@material-ui/core";
+import MuiAlert from "@material-ui/lab/Alert";
 
 const styles = (theme) => ({
   paper: {
@@ -32,36 +30,45 @@ const styles = (theme) => ({
     margin: theme.spacing(3, 0, 2),
   },
 });
+function Alert(props) {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
 class Profile extends Component {
   state = {
-    email: "",
-    password: "",
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
     errors: {
-      email: "",
-      password: "",
+      currentPassword: "",
+      newPassword: "",
       confirmPassword: "",
     },
-    confirmPassword: "",
+    open: false,
+    passwordSuccess: false,
   };
 
-  handleEmailChange = ({ target }) => {
+  handleCurrentPasswordChange = ({ target }) => {
     const { errors } = this.state;
-    if (target.value === "") errors.email = "Email is required";
-    else delete errors.email;
-    this.setState({ email: target.value, errors });
+    if (target.value === "")
+      errors.currentPassword = "Please enter current password.";
+    else delete errors.currentPassword;
+    this.setState({ currentPassword: target.value, errors });
   };
 
-  handlePasswordChange = ({ target }) => {
-    const { errors } = this.state;
-    if (target.value === "") errors.password = "Password is required";
-    else delete errors.password;
-    this.setState({ password: target.value, errors });
+  handleNewPasswordChange = ({ target }) => {
+    const { errors, confirmPassword } = this.state;
+    if (target.value === "") errors.newPassword = "Please enter new password.";
+    else if (confirmPassword !== "" && target.value !== confirmPassword)
+      errors.newPassword = "Passwords do not match.";
+    else delete errors.newPassword;
+    this.setState({ newPassword: target.value, errors });
   };
 
   handleConfirmPasswordChange = ({ target }) => {
-    const { errors, password } = this.state;
-    if (target.value === "") errors.confirmPassword = "Please confirm password";
-    if (target.value !== password)
+    const { errors, newPassword } = this.state;
+    if (target.value === "")
+      errors.confirmPassword = "Please confirm password.";
+    if (target.value !== newPassword)
       errors.confirmPassword = "Passwords do not match";
     else delete errors.confirmPassword;
     this.setState({ confirmPassword: target.value, errors });
@@ -69,92 +76,89 @@ class Profile extends Component {
 
   handleSubmit = (e) => {
     e.preventDefault();
-    const { email, password, confirmPassword } = { ...this.state };
+    const { currentPassword, newPassword, confirmPassword } = { ...this.state };
     const errors = {};
-    if (email === "") errors.email = "Email is required.";
-    if (password === "") errors.password = "Password is required.";
+    if (currentPassword === "")
+      errors.currentPassword = "Please enter current password.";
+    if (newPassword === "") errors.newPassword = "lease enter new password.";
     if (confirmPassword === "")
-      errors.confirmPassword = "Please confirm password";
+      errors.confirmPassword = "Please confirm password.";
+
     if (Object.keys(errors).length !== 0) {
       this.setState({ errors });
     } else {
-      const data = { email, password, confirmPassword };
-      postData("/api/user/register", data)
+      const data = { currentPassword, newPassword, confirmPassword };
+      postData("/api/user/resetPassword", data)
         .then((data) => {
-          console.log("test");
-          this.props.history.push("/confirmRegistration");
+          if (data.success)
+            this.setState({
+              confirmPassword: "",
+              newPassword: "",
+              currentPassword: "",
+              open: true,
+              passwordSuccess: true,
+            });
+          else {
+            this.setState({
+              open: true,
+              passwordSuccess: false,
+              confirmPassword: "",
+              newPassword: "",
+              currentPassword: "",
+            });
+          }
         })
         .catch((err) => console.log("Err"));
     }
   };
 
+  handleClose = () => {
+    this.setState({ open: false });
+  };
+
   render() {
-    const { errors } = { ...this.state };
+    const {
+      errors,
+      open,
+      passwordSuccess,
+      currentPassword,
+      newPassword,
+      confirmPassword,
+    } = { ...this.state };
     const { classes } = this.props;
+    let res;
+    if (passwordSuccess)
+      res = {
+        severity: "success",
+        message: "Succesfully changed password!",
+      };
+    else
+      res = {
+        severity: "error",
+        message:
+          "Password entered does not match current password. Please try again!",
+      };
+    const successSnack = (
+      <Snackbar
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "center",
+        }}
+        open={open}
+        autoHideDuration={6000}
+        onClose={this.handleClose}
+      >
+        <Alert onClose={this.handleClose} severity={res.severity}>
+          {res.message}
+        </Alert>
+      </Snackbar>
+    );
+
     return (
       <Fragment>
         <CssBaseline />
         <Header />
         <div className={classes.paper}>
-          <Typography component="h1" variant="h4">
-            Account Settings
-          </Typography>
-          <form
-            className={classes.form}
-            noValidate
-            onSubmit={this.handleSubmit}
-          >
-            <h1>Change Email</h1>
-            <TextField
-              variant="outlined"
-              margin="normal"
-              required
-              fullWidth
-              id="currentEmail"
-              label="Current Email Address"
-              name="currentEmail"
-              autoComplete="currentEmail"
-              onChange={this.handleEmailChange}
-              error={errors.email}
-              helperText={errors.email}
-            />
-            <TextField
-              variant="outlined"
-              margin="normal"
-              required
-              fullWidth
-              id="newEmail"
-              label="New Email Address"
-              name="newEmail"
-              autoComplete="newEmail"
-              onChange={this.handleNewEmailChange}
-              error={errors.newEmail}
-              helperText={errors.newEmail}
-            />
-            <TextField
-              variant="outlined"
-              margin="normal"
-              required
-              fullWidth
-              id="confirmEmail"
-              label="Confirm Email Address"
-              name="confirmEmail"
-              autoComplete="confirmEmail"
-              onChange={this.handleNewEmailChange}
-              error={errors.confirmEmail}
-              helperText={errors.confirmEmail}
-            />
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              color="primary"
-              className={classes.submit}
-            >
-              Submit
-            </Button>
-          </form>
-
           <form
             className={classes.form}
             noValidate
@@ -169,10 +173,12 @@ class Profile extends Component {
               id="currentPassword"
               label="Current Password"
               name="currentPassword"
+              type="password"
               autoComplete="currentPassword"
-              onChange={this.handleCurrentPasswordChange}
+              value={currentPassword}
               error={errors.currentPassword}
               helperText={errors.currentPassword}
+              onChange={this.handleCurrentPasswordChange}
             />
             <TextField
               variant="outlined"
@@ -181,9 +187,9 @@ class Profile extends Component {
               fullWidth
               name="new password"
               label="New Password"
-              type="password"
               id="newPassword"
               autoComplete="newPassword"
+              value={newPassword}
               error={errors.newPassword}
               helperText={errors.newPassword}
               onChange={this.handleNewPasswordChange}
@@ -195,9 +201,9 @@ class Profile extends Component {
               fullWidth
               name="password"
               label="Confirm Password"
-              type="password"
               id="password"
               autoComplete="confirmPassword"
+              value={confirmPassword}
               error={errors.confirmPassword}
               helperText={errors.confirmPassword}
               onChange={this.handleConfirmPasswordChange}
@@ -221,6 +227,7 @@ class Profile extends Component {
                 {"."}
               </Typography>
             </Box>
+            {successSnack}
           </form>
         </div>
       </Fragment>

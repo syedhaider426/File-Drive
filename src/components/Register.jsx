@@ -50,8 +50,10 @@ class Register extends Component {
   };
 
   handlePasswordChange = ({ target }) => {
-    const { errors } = this.state;
+    const { errors, confirmPassword } = this.state;
     if (target.value === "") errors.password = "Password is required";
+    else if (target.value !== confirmPassword && confirmPassword !== "")
+      errors.password = "Passwords do not match";
     else delete errors.password;
     this.setState({ password: target.value, errors });
   };

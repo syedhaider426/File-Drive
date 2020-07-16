@@ -13,6 +13,7 @@ import {
 import MenuIcon from "@material-ui/icons/Menu";
 import { Link } from "react-router-dom";
 import { withRouter } from "react-router-dom";
+import postData from "../helpers/postData";
 
 const drawerWidth = 150;
 
@@ -60,6 +61,12 @@ class Header extends Component {
     this.setState({ profileOpen: false });
   };
 
+  handleLogOut = () => {
+    postData("/logout").then(() => {
+      this.props.history.push("/");
+    });
+  };
+
   render() {
     const { profileOpen, profileAnchorEl } = { ...this.state };
     const { classes, homePage } = { ...this.props };
@@ -77,6 +84,7 @@ class Header extends Component {
         <MenuItem component={Link} to="/drive/profile">
           Profile
         </MenuItem>
+        <MenuItem onClick={this.handleLogOut}>Sign Out</MenuItem>
       </Menu>
     );
 
@@ -84,21 +92,22 @@ class Header extends Component {
       <Fragment>
         <AppBar
           position="fixed"
-          className={homePage == "Home" ? classes.appBar : ""}
+          className={homePage === "Home" ? classes.appBar : ""}
         >
           <Toolbar>
-            <IconButton
-              color="inherit"
-              aria-label="open drawer"
-              edge="start"
-              onClick={this.handleDrawerToggle}
-              className={classes.menuButton}
-            >
-              <MenuIcon />
-            </IconButton>
-
+            {homePage === "Home" && (
+              <IconButton
+                color="inherit"
+                aria-label="open drawer"
+                edge="start"
+                onClick={this.handleDrawerToggle}
+                className={classes.menuButton}
+              >
+                <MenuIcon />
+              </IconButton>
+            )}
             <Typography variant="h6" className={classes.content}>
-              {homePage != "Home" ? (
+              {homePage !== "Home" ? (
                 <Link
                   to="/drive/home"
                   style={{ textDecoration: "none", color: "white" }}
@@ -109,7 +118,7 @@ class Header extends Component {
                 "G-Drive"
               )}
             </Typography>
-            {homePage == "Home" && (
+            {homePage === "Home" && (
               <IconButton
                 edge="end"
                 aria-label="account of current user"
@@ -121,7 +130,7 @@ class Header extends Component {
                 <AccountCircle />
               </IconButton>
             )}
-            {homePage != "Home" && (
+            {homePage !== "Home" && (
               <Button color="inherit" onClick={this.props.history.goBack}>
                 Back
               </Button>
