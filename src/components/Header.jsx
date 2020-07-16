@@ -2,17 +2,17 @@ import React, { Fragment, Component } from "react";
 import { withStyles } from "@material-ui/core/styles";
 import AccountCircle from "@material-ui/icons/AccountCircle";
 import {
-  Hidden,
-  Drawer,
-  Divider,
   AppBar,
   Toolbar,
   IconButton,
   Typography,
   Menu,
   MenuItem,
+  Button,
 } from "@material-ui/core";
 import MenuIcon from "@material-ui/icons/Menu";
+import { Link } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 
 const drawerWidth = 150;
 
@@ -49,14 +49,8 @@ const styles = (theme) => ({
   },
 });
 
-class Navbar extends Component {
-  state = { mobileOpen: false, profileOpen: false };
-
-  handleDrawerToggle = () => {
-    this.setState({
-      mobileOpen: !this.state.mobileOpen,
-    });
-  };
+class Header extends Component {
+  state = { profileOpen: false };
 
   handleProfileMenuOpen = (e) => {
     this.setState({ profileOpen: true, profileAnchorEl: e.currentTarget });
@@ -67,8 +61,8 @@ class Navbar extends Component {
   };
 
   render() {
-    const { mobileOpen, profileOpen, profileAnchorEl } = { ...this.state };
-    const { actions, classes } = { ...this.props };
+    const { profileOpen, profileAnchorEl } = { ...this.state };
+    const { classes, homePage } = { ...this.props };
 
     const profileMenu = (
       <Menu
@@ -80,14 +74,18 @@ class Navbar extends Component {
         open={profileOpen}
         onClose={this.handleProfileMenuClose}
       >
-        <MenuItem>Settings</MenuItem>
-        <MenuItem>Profile</MenuItem>
+        <MenuItem component={Link} to="/drive/profile">
+          Profile
+        </MenuItem>
       </Menu>
     );
 
     return (
       <Fragment>
-        <AppBar position="fixed" className={classes.appBar}>
+        <AppBar
+          position="fixed"
+          className={homePage == "Home" ? classes.appBar : ""}
+        >
           <Toolbar>
             <IconButton
               color="inherit"
@@ -98,57 +96,42 @@ class Navbar extends Component {
             >
               <MenuIcon />
             </IconButton>
-            <Typography variant="h6" className={classes.title}>
-              G-Drive
+
+            <Typography variant="h6" className={classes.content}>
+              {homePage != "Home" ? (
+                <Link
+                  to="/drive/home"
+                  style={{ textDecoration: "none", color: "white" }}
+                >
+                  G-Drive
+                </Link>
+              ) : (
+                "G-Drive"
+              )}
             </Typography>
-            <IconButton
-              edge="end"
-              aria-label="account of current user"
-              aria-controls={"profile-menu"}
-              aria-haspopup="true"
-              onClick={this.handleProfileMenuOpen}
-              color="inherit"
-            >
-              <AccountCircle />
-            </IconButton>
+            {homePage == "Home" && (
+              <IconButton
+                edge="end"
+                aria-label="account of current user"
+                aria-controls={"profile-menu"}
+                aria-haspopup="true"
+                onClick={this.handleProfileMenuOpen}
+                color="inherit"
+              >
+                <AccountCircle />
+              </IconButton>
+            )}
+            {homePage != "Home" && (
+              <Button color="inherit" onClick={this.props.history.goBack}>
+                Back
+              </Button>
+            )}
           </Toolbar>
         </AppBar>
-        <nav className={classes.drawer}>
-          <Hidden smUp implementation="css">
-            <Drawer
-              variant="temporary"
-              open={mobileOpen}
-              onClose={this.handleDrawerToggle}
-              classes={{
-                paper: classes.drawerPaper,
-              }}
-              ModalProps={{
-                keepMounted: true, // Better open performance on mobile.
-              }}
-            >
-              <div className={classes.toolbar} />
-              <Divider />
-              {actions}
-            </Drawer>
-          </Hidden>
-          <Hidden xsDown implementation="css">
-            <Drawer
-              classes={{
-                paper: classes.drawerPaper,
-              }}
-              variant="permanent"
-              open
-            >
-              <div className={classes.toolbar} />
-              <Divider />
-              {actions}
-            </Drawer>
-          </Hidden>
-        </nav>
         {profileMenu}
       </Fragment>
     );
   }
 }
 
-export default withStyles(styles)(Navbar);
+export default withRouter(withStyles(styles)(Header));

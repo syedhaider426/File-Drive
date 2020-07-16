@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, Fragment } from "react";
 import { Link, withRouter } from "react-router-dom";
 import postData from "../helpers/postData";
 import Avatar from "@material-ui/core/Avatar";
@@ -10,13 +10,16 @@ import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import Typography from "@material-ui/core/Typography";
 import { withStyles } from "@material-ui/core/styles";
 import { Container } from "@material-ui/core";
+import PrimarySearchAppBar from "./PrimarySearchAppBar";
+import Header from "./Header";
 
 const styles = (theme) => ({
   paper: {
-    marginTop: theme.spacing(8),
+    marginTop: theme.spacing(4),
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
+    padding: 40,
   },
   avatar: {
     margin: theme.spacing(1),
@@ -24,7 +27,6 @@ const styles = (theme) => ({
   },
   form: {
     width: "100%", // Fix IE 11 issue.
-    marginTop: theme.spacing(1),
   },
   submit: {
     margin: theme.spacing(3, 0, 2),
@@ -90,13 +92,11 @@ class Profile extends Component {
     const { errors } = { ...this.state };
     const { classes } = this.props;
     return (
-      <Container component="main" maxWidth="xs">
+      <Fragment>
         <CssBaseline />
+        <Header />
         <div className={classes.paper}>
-          <Avatar className={classes.avatar}>
-            <LockOutlinedIcon />
-          </Avatar>
-          <Typography component="h1" variant="h5">
+          <Typography component="h1" variant="h4">
             Account Settings
           </Typography>
           <form
@@ -114,7 +114,6 @@ class Profile extends Component {
               label="Current Email Address"
               name="currentEmail"
               autoComplete="currentEmail"
-              autoFocus
               onChange={this.handleEmailChange}
               error={errors.email}
               helperText={errors.email}
@@ -128,7 +127,6 @@ class Profile extends Component {
               label="New Email Address"
               name="newEmail"
               autoComplete="newEmail"
-              autoFocus
               onChange={this.handleNewEmailChange}
               error={errors.newEmail}
               helperText={errors.newEmail}
@@ -142,7 +140,6 @@ class Profile extends Component {
               label="Confirm Email Address"
               name="confirmEmail"
               autoComplete="confirmEmail"
-              autoFocus
               onChange={this.handleNewEmailChange}
               error={errors.confirmEmail}
               helperText={errors.confirmEmail}
@@ -173,7 +170,6 @@ class Profile extends Component {
               label="Current Password"
               name="currentPassword"
               autoComplete="currentPassword"
-              autoFocus
               onChange={this.handleCurrentPasswordChange}
               error={errors.currentPassword}
               helperText={errors.currentPassword}
@@ -215,7 +211,7 @@ class Profile extends Component {
             >
               Submit
             </Button>
-            <Box mt={5}>
+            <Box>
               <Typography variant="body2" color="textSecondary" align="center">
                 {"Copyright © "}
                 <Link color="inherit" to="https://g-drive-clone.com/">
@@ -227,7 +223,7 @@ class Profile extends Component {
             </Box>
           </form>
         </div>
-      </Container>
+      </Fragment>
     );
   }
 }

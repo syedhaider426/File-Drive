@@ -110,7 +110,6 @@ class ActionHeader extends Component {
    */
   handleFocus = (event) => {
     event.preventDefault();
-    console.log("CALLED");
     const { target } = event;
     const extensionStarts = target.value.lastIndexOf(".");
     target.focus();
@@ -119,6 +118,7 @@ class ActionHeader extends Component {
 
   render() {
     const {
+      classes,
       files,
       folders,
       selectedFiles,
@@ -137,7 +137,6 @@ class ActionHeader extends Component {
       currentFolder,
       currentMenu,
     } = this.props;
-    const { classes } = this.props;
     const { isMobileMenuOpen, trashMenuOpen } = this.state;
     const renameFile = (
       <RenameFile

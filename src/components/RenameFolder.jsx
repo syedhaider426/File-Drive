@@ -30,6 +30,12 @@ class RenameFolder extends Component {
     renamedFolder: {},
   };
 
+  shouldComponentUpdate(nextProps, nextState) {
+    if (this.props.renameFolderDialogOpen != nextProps.renameFolderDialogOpen)
+      return true;
+    return false;
+  }
+
   handleRenameSnackClose = (event, reason) => {
     if (reason === "clickaway") {
       return;

@@ -8,7 +8,8 @@ import Snack from "./Snack";
 import MainTable from "./MainTable";
 import getData from "../helpers/getData";
 import CssBaseline from "@material-ui/core/CssBaseline";
-import Navbar from "./Navbar";
+import ActionsDrawer from "./ActionsDrawer";
+import Header from "./Header";
 
 const layout = (theme) => ({
   root: {
@@ -720,7 +721,8 @@ class FileTable extends Component {
       <Fragment>
         <div className={classes.root}>
           <CssBaseline />
-          <Navbar actions={actions} />
+          <Header homePage={"Home"} />
+          <ActionsDrawer actions={actions} />
           <main className={classes.content}>
             <div className={classes.toolbar} />
             <ActionHeader

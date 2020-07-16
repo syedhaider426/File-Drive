@@ -40,20 +40,26 @@ class RenameFile extends Component {
     });
   };
 
+  shouldComponentUpdate(nextProps, nextState) {
+    if (this.props.renameFileDialogOpen != nextProps.renameFileDialogOpen)
+      return true;
+    return false;
+  }
+
   handleRenameFileClose = () => {
     this.setState(
-      { fileButtonDisabled: true },
+      { fileButtonDisabled: true, filename: "" },
       this.props.handleDialog({ renameFileDialogOpen: false })
     );
   };
 
   handleFileOnChange = (e) => {
-    // if (e.target.value === "") this.setState({ fileButtonDisabled: true });
-    // else
-    this.setState({
-      filename: e.target.value,
-      fileButtonDisabled: false,
-    });
+    if (e.target.value === "") this.setState({ fileButtonDisabled: true });
+    else
+      this.setState({
+        filename: e.target.value,
+        fileButtonDisabled: false,
+      });
   };
 
   handleRenameFile = (e) => {
@@ -137,6 +143,7 @@ class RenameFile extends Component {
       ...this.state,
     };
     const { selectedFiles, classes } = { ...this.props };
+    console.log(this.props);
     const renameSnack = (
       <Snack
         open={renamedSnack}
@@ -146,7 +153,7 @@ class RenameFile extends Component {
         onClick={this.handleUndoRenameFile}
       />
     );
-
+    const defaultValue = selectedFiles[0] && selectedFiles[0].filename;
     const renameFileDialog = (
       <Dialog
         open={this.props.renameFileDialogOpen}
@@ -166,15 +173,11 @@ class RenameFile extends Component {
         <form onSubmit={this.handleRenameFile} method="POST">
           <DialogContent>
             <TextField
-              margin="dense"
-              inputRef={(input) => input && input.focus()}
-              id="file"
               autoFocus
-              tabIndex="1"
-              defaultValue={
-                selectedFiles[0] === undefined ? "" : selectedFiles[0].filename
-              }
+              margin="dense"
+              id="file"
               fullWidth
+              defaultValue={defaultValue}
               onChange={this.handleFileOnChange}
             />
           </DialogContent>
@@ -182,12 +185,7 @@ class RenameFile extends Component {
             <Button onClick={this.handleRenameFileClose} color="primary">
               Cancel
             </Button>
-            <Button
-              disabled={fileButtonDisabled}
-              onClick={this.handleRenameFileClose}
-              color="primary"
-              type="submit"
-            >
+            <Button disabled={fileButtonDisabled} color="primary" type="submit">
               Confirm
             </Button>
           </DialogActions>
