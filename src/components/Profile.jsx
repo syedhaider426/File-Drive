@@ -29,6 +29,12 @@ const styles = (theme) => ({
   submit: {
     margin: theme.spacing(3, 0, 2),
   },
+  grow: {
+    flexGrow: 1,
+  },
+  flex: {
+    display: "flex",
+  },
 });
 function Alert(props) {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -131,12 +137,14 @@ class Profile extends Component {
       res = {
         severity: "success",
         message: "Succesfully changed password!",
+        duration: 6000,
       };
     else
       res = {
         severity: "error",
         message:
           "Password entered does not match current password. Please try again!",
+        duration: 12000,
       };
     const successSnack = (
       <Snackbar
@@ -145,7 +153,7 @@ class Profile extends Component {
           horizontal: "center",
         }}
         open={open}
-        autoHideDuration={6000}
+        autoHideDuration={res.duration}
         onClose={this.handleClose}
       >
         <Alert onClose={this.handleClose} severity={res.severity}>

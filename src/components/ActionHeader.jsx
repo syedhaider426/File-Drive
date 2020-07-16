@@ -16,7 +16,18 @@ import MoveItem from "./MoveItem";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import NavigateNextIcon from "@material-ui/icons/NavigateNext";
 import { Link } from "react-router-dom";
-import { Breadcrumbs, Menu, MenuItem, Box } from "@material-ui/core";
+import {
+  Breadcrumbs,
+  Menu,
+  MenuItem,
+  Box,
+  DialogContent,
+  Dialog,
+  DialogTitle,
+  Button,
+  DialogActions,
+  DialogContentText,
+} from "@material-ui/core";
 
 import MoreIcon from "@material-ui/icons/MoreVert";
 
@@ -53,6 +64,7 @@ const styles = (theme) => ({
   menuItem: {
     padding: 0,
   },
+  icons: { color: "#5f6368" },
 });
 
 class ActionHeader extends Component {
@@ -61,7 +73,7 @@ class ActionHeader extends Component {
     renameFileDialogOpen: false,
     moveItemDialogOpen: false,
     isMobileMenuOpen: false,
-    trashMenuOpen: false,
+    anchorElement: undefined,
   };
 
   handleRenameOpen = () => {
@@ -88,14 +100,14 @@ class ActionHeader extends Component {
   };
 
   handleTrashMenuOpen = (e) => {
-    this.setState({
+    this.props.handleSetState({
       trashMenuOpen: true,
       trashAnchorEl: e.currentTarget,
     });
   };
 
   handleTrashMenuClose = (e) => {
-    this.setState({
+    this.props.handleSetState({
       trashMenuOpen: false,
     });
   };
@@ -114,6 +126,29 @@ class ActionHeader extends Component {
     const extensionStarts = target.value.lastIndexOf(".");
     target.focus();
     target.setSelectionRange(0, extensionStarts);
+  };
+
+  handleDeleteAllDialog = (e) => {
+    this.props.handleSetState({
+      trashMenuOpen: false,
+      deleteAllOpen: true,
+      trashAnchorEl: e.target,
+    });
+  };
+
+  handleDeleteAllClose = (e) => {
+    this.props.handleSetState({ trashMenuOpen: false, deleteAllOpen: false });
+  };
+  handleRestoreAllDialog = (e) => {
+    this.props.handleSetState({
+      trashMenuOpen: false,
+      restoreAllOpen: true,
+      trashAnchorEl: e.target,
+    });
+  };
+
+  handleRestoreAllClose = (e) => {
+    this.props.handleSetState({ trashMenuOpen: false, restoreAllOpen: false });
   };
 
   render() {
@@ -136,8 +171,10 @@ class ActionHeader extends Component {
       handleRestoreAll,
       currentFolder,
       currentMenu,
+      trashMenuOpen,
     } = this.props;
-    const { isMobileMenuOpen, trashMenuOpen } = this.state;
+    const { isMobileMenuOpen } = this.state;
+    console.log(this.props.trashMenuOpen);
     const renameFile = (
       <RenameFile
         renameFileDialogOpen={this.state.renameFileDialogOpen}
@@ -173,24 +210,79 @@ class ActionHeader extends Component {
     );
     const trashMenu = (
       <Menu
-        anchorEl={this.state.trashAnchorEl}
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "center",
-        }}
-        transformOrigin={{
-          vertical: "top",
-          horizontal: "center",
-        }}
+        anchorEl={this.props.trashAnchorEl}
         id={"trash-menu"}
         keepMounted
         open={trashMenuOpen}
         onClose={this.handleTrashMenuClose}
       >
-        <MenuItem>Delete All Trash</MenuItem>
-        <MenuItem>Restore All Items</MenuItem>
+        <MenuItem
+          onClick={this.handleDeleteAllDialog}
+          disabled={files?.length == 0 && folders?.length == 0}
+        >
+          Delete All Trash
+        </MenuItem>
+        <MenuItem
+          disabled={files?.length == 0 && folders?.length == 0}
+          onClick={this.handleRestoreAllDialog}
+        >
+          Restore All Items
+        </MenuItem>
       </Menu>
     );
+
+    const deleteAllDialog = (
+      <Dialog
+        open={this.props.deleteAllOpen}
+        onClose={this.handleDeleteAllClose}
+        aria-labelledby="restore-all-trash"
+        aria-describedby="restore-all-trash"
+      >
+        <DialogTitle>Delete All</DialogTitle>
+        <DialogContent>
+          <form onSubmit={handleDeleteAll}>
+            <DialogContentText id="alert-dialog-description">
+              Are you sure you want to delete all files and folders?
+            </DialogContentText>
+            <DialogActions>
+              <Button onClick={this.handleDeleteAllClose} color="primary">
+                Cancel
+              </Button>
+              <Button color="primary" type="submit">
+                Confirm
+              </Button>
+            </DialogActions>
+          </form>
+        </DialogContent>
+      </Dialog>
+    );
+
+    const restoreAllDialog = (
+      <Dialog
+        open={this.props.restoreAllOpen}
+        onClose={this.handleRestoreAllClose}
+        aria-labelledby="restore-all-trash"
+        aria-describedby="restore-all-trash"
+      >
+        <DialogTitle>Restore All</DialogTitle>
+        <DialogContent>
+          <form onSubmit={handleRestoreAll}>
+            <DialogContentText id="alert-dialog-description">
+              Are you sure you want to restore all files and folders?
+            </DialogContentText>
+            <DialogActions>
+              <Button onClick={this.handleRestoreAllClose} color="primary">
+                Cancel
+              </Button>
+              <Button color="primary" type="submit">
+                Confirm
+              </Button>
+            </DialogActions>
+          </form>
+        </DialogContent>
+      </Dialog>
+    );
+
     const mobileMenuId = "mobile-menu";
 
     const renderMobileMenu = (
@@ -208,7 +300,7 @@ class ActionHeader extends Component {
           currentMenu !== "Trash" && (
             <MenuItem className={classes.menuItem} onClick={this.handleMove}>
               <Tooltip title="Move To">
-                <IconButton color="inherit" aria-label="Move To">
+                <IconButton color="gray" aria-label="Move To">
                   <MoveToInboxIcon />
                 </IconButton>
               </Tooltip>
@@ -221,7 +313,7 @@ class ActionHeader extends Component {
             (currentMenu === "Home" || currentMenu === "Folder") && (
               <MenuItem className={classes.menuItem} onClick={handleFavorites}>
                 <Tooltip title="Add to Favorites">
-                  <IconButton color="inherit" aria-label="Add to Favorites">
+                  <IconButton color="gray" aria-label="Add to Favorites">
                     <StarOutlineOutlinedIcon />
                   </IconButton>
                 </Tooltip>
@@ -235,10 +327,7 @@ class ActionHeader extends Component {
                 onClick={handleHomeUnfavorited}
               >
                 <Tooltip title="Remove from Favorites">
-                  <IconButton
-                    color="inherit"
-                    aria-label="Remove from Favorites"
-                  >
+                  <IconButton color="gray" aria-label="Remove from Favorites">
                     <StarOutlineOutlinedIcon />
                   </IconButton>
                 </Tooltip>
@@ -251,7 +340,7 @@ class ActionHeader extends Component {
             onClick={this.handleRenameOpen}
           >
             <Tooltip title="Rename">
-              <IconButton color="inherit" aria-label="Rename">
+              <IconButton color="gray" aria-label="Rename">
                 <RenameIcon />
               </IconButton>
             </Tooltip>
@@ -265,7 +354,7 @@ class ActionHeader extends Component {
             onClick={this.handleRenameFolderOpen}
           >
             <Tooltip title="Rename">
-              <IconButton color="inherit" aria-label="Rename">
+              <IconButton color="gray" aria-label="Rename">
                 <RenameIcon />
               </IconButton>
             </Tooltip>
@@ -278,7 +367,7 @@ class ActionHeader extends Component {
           currentMenu !== "Trash" && (
             <MenuItem className={classes.menuItem} onClick={handleFileCopy}>
               <Tooltip title="Make a Copy">
-                <IconButton color="inherit" aria-label="Make a Copy">
+                <IconButton color="gray" aria-label="Make a Copy">
                   <FileCopyIcon />
                 </IconButton>
               </Tooltip>
@@ -289,7 +378,7 @@ class ActionHeader extends Component {
           currentMenu === "Favorites" && (
             <MenuItem className={classes.menuItem} onClick={handleUnfavorited}>
               <Tooltip title="Remove from Favorites">
-                <IconButton color="inherit" aria-label="Remove from Favorites">
+                <IconButton color="gray" aria-label="Remove from Favorites">
                   <StarOutlineOutlinedIcon />
                 </IconButton>
               </Tooltip>
@@ -300,7 +389,7 @@ class ActionHeader extends Component {
           (currentMenu === "Home" || currentMenu === "Folder") && (
             <MenuItem className={classes.menuItem} onClick={handleTrash}>
               <Tooltip title="Trash">
-                <IconButton color="inherit" aria-label="Trash">
+                <IconButton color="gray" aria-label="Trash">
                   <DeleteIcon />
                 </IconButton>
               </Tooltip>
@@ -314,7 +403,7 @@ class ActionHeader extends Component {
               onClick={handleFavoritesTrash}
             >
               <Tooltip title="Trash">
-                <IconButton color="inherit" aria-label="Trash">
+                <IconButton color="gray" aria-label="Trash">
                   <DeleteIcon />
                 </IconButton>
               </Tooltip>
@@ -326,7 +415,7 @@ class ActionHeader extends Component {
             <div>
               <MenuItem onClick={handleRestore}>
                 <Tooltip title="Restore from trash">
-                  <IconButton color="inherit" aria-label="Restore from trash">
+                  <IconButton color="gray" aria-label="Restore from trash">
                     <RestoreIcon />
                   </IconButton>
                 </Tooltip>
@@ -334,7 +423,7 @@ class ActionHeader extends Component {
               </MenuItem>
               <MenuItem onClick={handleDeleteForever}>
                 <Tooltip title="Delete forever">
-                  <IconButton color="inherit" aria-label="Delete forever">
+                  <IconButton color="gray" aria-label="Delete forever">
                     <DeleteIcon />
                   </IconButton>
                 </Tooltip>
@@ -407,7 +496,7 @@ class ActionHeader extends Component {
               currentMenu !== "Trash" && (
                 <Tooltip title="Move To">
                   <IconButton
-                    color="inherit"
+                    color="gray"
                     aria-label="Move To"
                     onClick={this.handleMove}
                   >
@@ -421,7 +510,7 @@ class ActionHeader extends Component {
                 (currentMenu === "Home" || currentMenu === "Folder") && (
                   <Tooltip title="Add to Favorites">
                     <IconButton
-                      color="inherit"
+                      color="gray"
                       aria-label="Add to Favorites"
                       onClick={handleFavorites}
                     >
@@ -433,7 +522,7 @@ class ActionHeader extends Component {
                 (currentMenu === "Home" || currentMenu === "Folder") && (
                   <Tooltip title="Remove from Favorites">
                     <IconButton
-                      color="inherit"
+                      color="gray"
                       aria-label="Remove from Favorites"
                       onClick={handleHomeUnfavorited}
                     >
@@ -444,7 +533,7 @@ class ActionHeader extends Component {
             {selectedFiles.length === 1 && currentMenu !== "Trash" && (
               <Tooltip title="Rename">
                 <IconButton
-                  color="inherit"
+                  color="gray"
                   aria-label="Rename"
                   onClick={this.handleRenameOpen}
                 >
@@ -456,7 +545,7 @@ class ActionHeader extends Component {
             {selectedFolders.length === 1 && currentMenu !== "Trash" && (
               <Tooltip title="Rename">
                 <IconButton
-                  color="inherit"
+                  color="gray"
                   aria-label="Rename"
                   onClick={this.handleRenameFolderOpen}
                 >
@@ -470,7 +559,7 @@ class ActionHeader extends Component {
               currentMenu !== "Trash" && (
                 <Tooltip title="Make a Copy">
                   <IconButton
-                    color="inherit"
+                    color="gray"
                     aria-label="Make a Copy"
                     onClick={handleFileCopy}
                   >
@@ -483,7 +572,7 @@ class ActionHeader extends Component {
               currentMenu === "Favorites" && (
                 <Tooltip title="Remove from Favorites">
                   <IconButton
-                    color="inherit"
+                    color="gray"
                     aria-label="Remove from Favorites"
                     onClick={handleUnfavorited}
                   >
@@ -495,7 +584,7 @@ class ActionHeader extends Component {
               (currentMenu === "Home" || currentMenu === "Folder") && (
                 <Tooltip title="Trash">
                   <IconButton
-                    color="inherit"
+                    color="gray"
                     aria-label="Trash"
                     onClick={handleTrash}
                   >
@@ -507,7 +596,7 @@ class ActionHeader extends Component {
               currentMenu === "Favorites" && (
                 <Tooltip title="Trash">
                   <IconButton
-                    color="inherit"
+                    color="gray"
                     aria-label="Trash"
                     onClick={handleFavoritesTrash}
                   >
@@ -520,7 +609,7 @@ class ActionHeader extends Component {
                 <div>
                   <Tooltip title="Restore from trash">
                     <IconButton
-                      color="inherit"
+                      color="gray"
                       aria-label="Restore from trash"
                       onClick={handleRestore}
                     >
@@ -529,7 +618,7 @@ class ActionHeader extends Component {
                   </Tooltip>
                   <Tooltip title="Delete forever">
                     <IconButton
-                      color="inherit"
+                      color="gray"
                       aria-label="Delete forever"
                       onClick={handleDeleteForever}
                     >
@@ -538,34 +627,14 @@ class ActionHeader extends Component {
                   </Tooltip>
                 </div>
               )}
-            {currentMenu === "Trash" && (
-              <div>
-                <Tooltip title="Delete All">
-                  <IconButton
-                    color="inherit"
-                    aria-label="Delete All"
-                    onClick={handleDeleteAll}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Restore All">
-                  <IconButton
-                    color="inherit"
-                    aria-label="Restore All"
-                    onClick={handleRestoreAll}
-                  >
-                    <RestoreIcon />
-                  </IconButton>
-                </Tooltip>
-              </div>
-            )}
+            {deleteAllDialog}
+            {restoreAllDialog}
           </div>
           <div className={classes.sectionMobile}>
             {(selectedFiles.length > 0 || selectedFolders.length > 0) && (
               <Tooltip title="More Options">
                 <IconButton
-                  color="inherit"
+                  color="gray"
                   aria-label="show more"
                   aria-controls={mobileMenuId}
                   aria-haspopup="true"

@@ -41,6 +41,10 @@ class FileTable extends Component {
     currentID: this.props.match.url,
     isLoaded: false,
     mobileOpen: false,
+    restoreAllOpen: false,
+    deleteAllOpen: false,
+    trashMenuOpen: false,
+    trashAnchorEl: undefined,
   };
 
   fetchData = () => {
@@ -606,7 +610,8 @@ class FileTable extends Component {
       .catch((err) => console.log("Err", err));
   };
 
-  handleDeleteAll = () => {
+  handleDeleteAll = (e) => {
+    e.preventDefault();
     document.body.style.cursor = "wait";
     postData("/api/files/deleteAll")
       .then((data) => {
@@ -615,12 +620,15 @@ class FileTable extends Component {
         this.setState({
           files,
           folders,
+          deleteAllOpen: false,
+          trashMenuOpen: false,
         });
       })
       .catch((err) => console.log("Err", err));
   };
 
-  handleRestoreAll = () => {
+  handleRestoreAll = (e) => {
+    e.preventDefault();
     document.body.style.cursor = "wait";
     postData("/api/files/restoreAll")
       .then((data) => {
@@ -629,6 +637,8 @@ class FileTable extends Component {
         this.setState({
           files,
           folders,
+          restoreAllOpen: false,
+          trashMenuOpen: false,
         });
       })
       .catch((err) => console.log("Err", err));
@@ -654,6 +664,10 @@ class FileTable extends Component {
       currentFolder,
       isLoaded,
       mobileOpen,
+      restoreAllOpen,
+      deleteAllOpen,
+      trashMenuOpen,
+      trashAnchorEl,
     } = {
       ...this.state,
     };
@@ -745,6 +759,10 @@ class FileTable extends Component {
               isLoaded={isLoaded}
               handleDeleteAll={this.handleDeleteAll}
               handleRestoreAll={this.handleRestoreAll}
+              restoreAllOpen={restoreAllOpen}
+              deleteAllOpen={deleteAllOpen}
+              trashMenuOpen={trashMenuOpen}
+              trashAnchorEl={trashAnchorEl}
             />
             <MainTable
               handleFolderClick={this.handleFolderClick}
