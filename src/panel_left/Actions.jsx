@@ -25,22 +25,22 @@ import FileIcon from "@material-ui/icons/InsertDriveFile";
 
 class Actions extends Component {
   state = {
-    open: false,
+    menuOpen: false,
     newFolderOpen: false,
     folder: "",
     folderButtonDisabled: true,
     anchorEl: undefined,
   };
   handleClickOpen = (e) => {
-    this.setState({ open: true, anchorEl: e.currentTarget });
+    this.setState({ menuOpen: true, anchorEl: e.currentTarget });
   };
 
   handleClose = (e) => {
-    this.setState({ open: false });
+    this.setState({ menuOpen: false });
   };
 
   handleCreateFolderOpen = () => {
-    this.setState({ open: false, newFolderOpen: true });
+    this.setState({ menuOpen: false, newFolderOpen: true });
   };
 
   handleCreateFolderClose = () => {
@@ -92,7 +92,7 @@ class Actions extends Component {
       .then((data) => {
         const { files, uploadedFiles } = data;
         this.setState(
-          { open: false },
+          { menuOpen: false },
           this.props.handleSetState({
             files,
             mobileOpen: false,
@@ -105,7 +105,7 @@ class Actions extends Component {
   };
 
   render() {
-    const { open, newFolderOpen, folderButtonDisabled } = { ...this.state };
+    const { menuOpen, newFolderOpen, folderButtonDisabled } = { ...this.state };
     const {
       handleClose,
       handleClickOpen,
@@ -117,8 +117,12 @@ class Actions extends Component {
       handleFileUpload,
     } = { ...this };
 
-    const actionsDialog = (
-      <Menu open={open} onClose={handleClose} anchorEl={this.state.anchorEl}>
+    const actionsMenu = (
+      <Menu
+        open={menuOpen}
+        onClose={handleClose}
+        anchorEl={this.state.anchorEl}
+      >
         <MenuItem onClick={handleCreateFolderOpen}>
           <CreateNewFolderOutlinedIcon />
           <Typography variant="inherit">New Folder</Typography>
@@ -177,7 +181,7 @@ class Actions extends Component {
     ));
     return (
       <Fragment>
-        {actionsDialog}
+        {actionsMenu}
         {newFolderDialog}
         <input
           style={{ display: "none" }}

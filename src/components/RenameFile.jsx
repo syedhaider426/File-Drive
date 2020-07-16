@@ -48,12 +48,12 @@ class RenameFile extends Component {
   };
 
   handleFileOnChange = (e) => {
-    if (e.target.value === "") this.setState({ fileButtonDisabled: true });
-    else
-      this.setState({
-        filename: e.target.value,
-        fileButtonDisabled: false,
-      });
+    // if (e.target.value === "") this.setState({ fileButtonDisabled: true });
+    // else
+    this.setState({
+      filename: e.target.value,
+      fileButtonDisabled: false,
+    });
   };
 
   handleRenameFile = (e) => {
@@ -123,6 +123,15 @@ class RenameFile extends Component {
     }
     return;
   };
+
+  handleFocus = (event) => {
+    event.preventDefault();
+    const { target } = event;
+    const extensionStarts = target.value.lastIndexOf(".");
+    target.focus();
+    target.setSelectionRange(0, extensionStarts);
+  };
+
   render() {
     const { renamedSnack, fileButtonDisabled } = {
       ...this.state,
@@ -157,10 +166,11 @@ class RenameFile extends Component {
         <form onSubmit={this.handleRenameFile} method="POST">
           <DialogContent>
             <TextField
-              autoFocus
               margin="dense"
-              onFocus={this.props.handleFocus}
+              inputRef={(input) => input && input.focus()}
               id="file"
+              autoFocus
+              tabIndex="1"
               defaultValue={
                 selectedFiles[0] === undefined ? "" : selectedFiles[0].filename
               }

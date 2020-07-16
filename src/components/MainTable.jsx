@@ -48,7 +48,7 @@ function MainTable({
   return (
     <Fragment>
       {isLoaded ? (
-        <TableContainer className={classes.table}>
+        <TableContainer id="table-container" className={classes.table}>
           <Table size="small" aria-label="a dense table" stickyHeader>
             <TableHead>
               <TableRow>
@@ -60,7 +60,7 @@ function MainTable({
               </TableRow>
             </TableHead>
             <TableBody style={{ width: "100%" }}>
-              {folders.map((folder) => (
+              {folders?.map((folder) => (
                 <TableRow
                   key={folder._id}
                   className={classes.tableRow}
@@ -90,7 +90,7 @@ function MainTable({
                   <TableCell align="left">—</TableCell>
                 </TableRow>
               ))}
-              {files.map((file) => (
+              {files?.map((file) => (
                 <TableRow
                   key={file._id}
                   className={classes.tableRow}

@@ -69,6 +69,7 @@ class MoveItem extends Component {
     };
     postData("/api/files/move", data).then((data) => {
       const { files, folders } = { ...data };
+      const filesModified = selectedFolders.length + selectedFiles.length;
       this.setState({
         movedSnack: true,
         tempSelectedFolders: selectedFolders,
@@ -77,6 +78,7 @@ class MoveItem extends Component {
       this.props.handleSetState({
         files,
         folders,
+        filesModified,
         selectedFiles: [],
         selectedFolders: [],
       });
@@ -140,7 +142,7 @@ class MoveItem extends Component {
         open={movedSnack}
         onClose={this.handleMoveSnackClose}
         onExited={this.handleSnackbarExit}
-        message={`Moved to "${this.state.movedFolder.foldername}"`}
+        message={`Moved ${this.props.filesModified} items to "${this.state.movedFolder.foldername}"`}
         onClick={this.handleUndoMoveItem}
       />
     );
@@ -165,7 +167,7 @@ class MoveItem extends Component {
           <DialogContent>
             <div className={classes.demo}>
               <List dense={true}>
-                {moveFolders.map((folder, index) => (
+                {moveFolders?.map((folder, index) => (
                   <ListItem
                     alignItems="center"
                     selected={index === this.state.selectedIndex}

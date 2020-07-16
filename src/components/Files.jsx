@@ -1,54 +1,21 @@
 import React, { Fragment, Component } from "react";
 import { withStyles } from "@material-ui/core/styles";
-import Grid from "@material-ui/core/Grid";
 import { withRouter } from "react-router-dom";
 import ActionHeader from "./ActionHeader";
 import postData from "../helpers/postData";
-import PrimarySearchAppBar from "./PrimarySearchAppBar";
 import Actions from "../panel_left/Actions";
 import Snack from "./Snack";
 import MainTable from "./MainTable";
 import getData from "../helpers/getData";
-import {
-  Hidden,
-  Drawer,
-  Divider,
-  CssBaseline,
-  AppBar,
-  Toolbar,
-  IconButton,
-  Typography,
-} from "@material-ui/core";
-import MenuIcon from "@material-ui/icons/Menu";
-const drawerWidth = 150;
+import CssBaseline from "@material-ui/core/CssBaseline";
+import Navbar from "./Navbar";
 
 const layout = (theme) => ({
   root: {
     display: "flex",
   },
-  drawer: {
-    [theme.breakpoints.up("sm")]: {
-      width: drawerWidth,
-      flexShrink: 0,
-    },
-  },
-  appBar: {
-    [theme.breakpoints.up("sm")]: {
-      width: `calc(100% - ${drawerWidth}px)`,
-      marginLeft: drawerWidth,
-    },
-  },
-  menuButton: {
-    marginRight: theme.spacing(2),
-    [theme.breakpoints.up("sm")]: {
-      display: "none",
-    },
-  },
   // necessary for content to be below app bar
   toolbar: theme.mixins.toolbar,
-  drawerPaper: {
-    width: drawerWidth,
-  },
   content: {
     flexGrow: 1,
     padding: theme.spacing(1),
@@ -741,66 +708,19 @@ class FileTable extends Component {
       />
     );
 
+    const actions = (
+      <Actions
+        handleSetState={this.handleSetState}
+        menu={this.props.menu}
+        mobileOpen={mobileOpen}
+      />
+    );
+
     return (
       <Fragment>
         <div className={classes.root}>
           <CssBaseline />
-          <AppBar position="fixed" className={classes.appBar}>
-            <Toolbar>
-              <IconButton
-                color="inherit"
-                aria-label="open drawer"
-                edge="start"
-                onClick={this.handleDrawerToggle}
-                className={classes.menuButton}
-              >
-                <MenuIcon />
-              </IconButton>
-              <Typography variant="h6" noWrap>
-                G-Drive
-              </Typography>
-            </Toolbar>
-          </AppBar>
-          <nav className={classes.drawer} aria-label="mailbox folders">
-            <Hidden smUp implementation="css">
-              <Drawer
-                variant="temporary"
-                open={mobileOpen}
-                onClose={this.handleDrawerToggle}
-                classes={{
-                  paper: classes.drawerPaper,
-                }}
-                ModalProps={{
-                  keepMounted: true, // Better open performance on mobile.
-                }}
-              >
-                <div className={classes.toolbar} />
-                <Divider />
-                <Actions
-                  handleSetState={this.handleSetState}
-                  menu={this.props.menu}
-                  mobileOpen={mobileOpen}
-                />
-              </Drawer>
-            </Hidden>
-            <Hidden xsDown implementation="css">
-              <Drawer
-                classes={{
-                  paper: classes.drawerPaper,
-                }}
-                variant="permanent"
-                open
-              >
-                <div className={classes.toolbar} />
-                <Divider />
-                <Actions
-                  handleSetState={this.handleSetState}
-                  menu={this.props.menu}
-                  mobileOpen={mobileOpen}
-                />
-              </Drawer>
-            </Hidden>
-          </nav>
+          <Navbar actions={actions} />
           <main className={classes.content}>
             <div className={classes.toolbar} />
             <ActionHeader
