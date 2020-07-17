@@ -53,8 +53,10 @@ class RenameFolder extends Component {
   };
 
   handleFolderOnChange = (e) => {
+    console.log(e.target.value);
     if (e.target.value === "") this.setState({ folderButtonDisabled: true });
     else {
+      console.log(this.state.foldername);
       this.setState({
         foldername: e.target.value,
         folderButtonDisabled: false,
@@ -144,7 +146,7 @@ class RenameFolder extends Component {
         onClick={this.handleUndoRenameFolder}
       />
     );
-
+    console.log("Folders", this.state.foldername);
     const renameFolderDialog = (
       <Dialog
         open={this.props.renameFolderDialogOpen}
@@ -182,8 +184,7 @@ class RenameFolder extends Component {
               Cancel
             </Button>
             <Button
-              disabled={folderButtonDisabled}
-              onClick={this.handleRenameFolderClose}
+              disabled={this.state.foldername === ""}
               color="primary"
               type="submit"
             >

@@ -31,6 +31,20 @@ const useStyles = makeStyles((theme) => ({
   iconSpacing: {
     left: theme.spacing(1),
   },
+  textContainer: {
+    display: "block",
+    width: "40vw",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    display: "flex",
+    alignItems: "center",
+  },
+  fileSize: {
+    [theme.breakpoints.down("xs")]: {
+      display: "none",
+    },
+  },
 }));
 
 function MainTable({
@@ -52,11 +66,14 @@ function MainTable({
           <Table size="small" aria-label="a dense table" stickyHeader>
             <TableHead>
               <TableRow>
-                {headerList.map((header) => (
-                  <TableCell key={header} style={{ width: "33%" }}>
-                    {header}
-                  </TableCell>
-                ))}
+                {headerList.map(
+                  (header, index) =>
+                    index !== headerList.length - 1 && (
+                      <TableCell key={header} style={{ width: "33%" }}>
+                        {header}
+                      </TableCell>
+                    )
+                )}
               </TableRow>
             </TableHead>
             <TableBody style={{ width: "100%" }}>
@@ -68,12 +85,7 @@ function MainTable({
                   selected={selectedIndex(selectedFolders, folder._id)}
                 >
                   <TableCell>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                      }}
-                    >
+                    <div className={classes.textContainer}>
                       <FolderIcon style={{ fill: "#5f6368" }} />
                       <span className="data">{folder.foldername}</span>
                       {currentMenu === "Home" && folder.isFavorited && (
@@ -81,13 +93,14 @@ function MainTable({
                       )}
                     </div>
                   </TableCell>
-
                   <TableCell>
                     <span className="details">
                       {convertISODate(folder.createdOn)}
                     </span>
                   </TableCell>
-                  <TableCell align="left">—</TableCell>
+                  <TableCell className={classes.fileSize} align="left">
+                    {"—"}
+                  </TableCell>
                 </TableRow>
               ))}
               {files?.map((file) => (
@@ -98,12 +111,7 @@ function MainTable({
                   selected={selectedIndex(selectedFiles, file._id)}
                 >
                   <TableCell>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                      }}
-                    >
+                    <div className={classes.textContainer}>
                       <FileIcon style={{ fill: "#5f6368" }} />
                       <span className="data">{file.filename}</span>
                       {currentMenu === "Home" && file.metadata.isFavorited && (
@@ -116,7 +124,7 @@ function MainTable({
                       {convertISODate(file.uploadDate)}
                     </span>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className={classes.fileSize}>
                     <span className="details">
                       {returnFileSize(file.length)}
                     </span>

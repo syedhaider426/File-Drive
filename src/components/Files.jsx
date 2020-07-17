@@ -45,6 +45,8 @@ class FileTable extends Component {
     deleteAllOpen: false,
     trashMenuOpen: false,
     trashAnchorEl: undefined,
+    moveMenuOpen: false,
+    moveAnchorEl: undefined,
   };
 
   fetchData = () => {
@@ -668,6 +670,8 @@ class FileTable extends Component {
       deleteAllOpen,
       trashMenuOpen,
       trashAnchorEl,
+      moveMenuOpen,
+      moveAnchorEl,
     } = {
       ...this.state,
     };
@@ -763,6 +767,8 @@ class FileTable extends Component {
               deleteAllOpen={deleteAllOpen}
               trashMenuOpen={trashMenuOpen}
               trashAnchorEl={trashAnchorEl}
+              moveMenuOpen={moveMenuOpen}
+              moveAnchorEl={moveAnchorEl}
             />
             <MainTable
               handleFolderClick={this.handleFolderClick}
