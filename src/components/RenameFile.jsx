@@ -143,7 +143,6 @@ class RenameFile extends Component {
       ...this.state,
     };
     const { selectedFiles, classes } = { ...this.props };
-    console.log(this.props);
     const renameSnack = (
       <Snack
         open={renamedSnack}

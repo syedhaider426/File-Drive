@@ -15,7 +15,7 @@ import RenameFile from "./RenameFile";
 import MoveItem from "./MoveItem";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import NavigateNextIcon from "@material-ui/icons/NavigateNext";
-import { Link } from "react-router-dom";
+import { Link, withRouter } from "react-router-dom";
 import {
   Breadcrumbs,
   Menu,
@@ -28,8 +28,8 @@ import {
   DialogActions,
   DialogContentText,
 } from "@material-ui/core";
-
 import MoreIcon from "@material-ui/icons/MoreVert";
+import getData from "../helpers/getData";
 
 const styles = (theme) => ({
   grow: {
@@ -74,6 +74,10 @@ class ActionHeader extends Component {
     moveItemDialogOpen: false,
     isMobileMenuOpen: false,
     anchorElement: undefined,
+    moveMenuOpen: false,
+    allFolders: [],
+    moveButtonDisabled: true,
+    homeFolderStatus: false,
   };
 
   handleRenameOpen = () => {
@@ -89,8 +93,46 @@ class ActionHeader extends Component {
   };
 
   handleMove = (e) => {
-    console.log(e.target);
-    this.props.handleSetState({ moveMenuOpen: true, moveAnchorEl: e.target });
+    const { selectedFolders } = { ...this.props };
+    const urlParam =
+      this.props.match.url === "/drive/home"
+        ? "/drive/home"
+        : `/drive/folders/${selectedFolders[0].id}`;
+    getData(`/api${urlParam}`).then((data) => {
+      let homeFolderStatus;
+      if (this.props.match.url === "/drive/home") homeFolderStatus = true;
+      else homeFolderStatus = false;
+      console.log(selectedFolders[0]);
+      this.setState({
+        allFolders: data.folders,
+        homeFolderStatus,
+        moveMenuOpen: true,
+        isMobileMenuOpen: false,
+        movedFolder: {
+          id: selectedFolders[0].id,
+          foldername: selectedFolders[0].foldername,
+          parent_id: selectedFolders[0].parent_id,
+        },
+      });
+    });
+  };
+
+  onMoveExit = () => {
+    this.setState({
+      allFolders: [],
+      homeFolderStatus: false,
+    });
+  };
+
+  handleMoveItemClose = () => {
+    this.setState({
+      moveMenuOpen: false,
+      movedFolder: {},
+    });
+  };
+
+  handleActionsSetState = (value) => {
+    this.setState(value);
   };
 
   handleMobileMenuOpen = (e) => {
@@ -174,8 +216,13 @@ class ActionHeader extends Component {
       currentMenu,
       trashMenuOpen,
     } = this.props;
-    const { isMobileMenuOpen } = this.state;
-    console.log(this.props.trashMenuOpen);
+    const {
+      isMobileMenuOpen,
+      moveMenuOpen,
+      allFolders,
+      homeFolderStatus,
+      movedFolder,
+    } = this.state;
     const renameFile = (
       <RenameFile
         renameFileDialogOpen={this.state.renameFileDialogOpen}
@@ -197,16 +244,16 @@ class ActionHeader extends Component {
         handleFocus={this.handleFocus}
       />
     );
-    console.log("movemenu", this.props.moveAnchorEl);
     const moveItem = (
       <MoveItem
-        moveMenuOpen={this.props.moveMenuOpen}
-        moveAnchorEl={this.props.moveAnchorEl}
-        files={files}
-        folders={folders}
-        selectedFiles={selectedFiles}
+        moveMenuOpen={moveMenuOpen}
+        handleSetState={this.handleActionsSetState}
+        allFolders={allFolders}
         selectedFolders={selectedFolders}
-        handleSetState={this.props.handleSetState}
+        handleMoveItemClose={this.handleMoveItemClose}
+        onMoveExit={this.onMoveExit}
+        homeFolderStatus={homeFolderStatus}
+        movedFolder={movedFolder}
       />
     );
     const trashMenu = (
@@ -466,24 +513,27 @@ class ActionHeader extends Component {
                   Home
                 </Box>
               ) : (
-                <Box fontSize={20} className={classes.hover}>
-                  <Link
-                    style={{ textDecoration: "none", color: "black" }}
-                    to={`/drive/home`}
-                    key={"Home"}
-                  >
-                    Home
-                  </Link>
+                <Box
+                  fontSize={20}
+                  className={classes.hover}
+                  component={Link}
+                  to={`/drive/home`}
+                  key={"Home"}
+                  style={{ textDecoration: "none", color: "black" }}
+                >
+                  Home
                 </Box>
               )}
               {currentFolder?.map((folder, index) => (
-                <Box key={index} fontSize={20} className={classes.hover}>
-                  <Link
-                    style={{ textDecoration: "none", color: "black" }}
-                    to={`/drive/folders/${folder._id}`}
-                  >
-                    {folder.foldername}
-                  </Link>
+                <Box
+                  fontSize={20}
+                  className={classes.hover}
+                  component={Link}
+                  to={`/drive/folders/${folder._id}`}
+                  key={index}
+                  style={{ textDecoration: "none", color: "black" }}
+                >
+                  {folder.foldername}
                 </Box>
               ))}
             </Breadcrumbs>
@@ -667,4 +717,4 @@ class ActionHeader extends Component {
   }
 }
 
-export default withStyles(styles)(ActionHeader);
+export default withRouter(withStyles(styles)(ActionHeader));

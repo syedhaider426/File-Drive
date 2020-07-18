@@ -8,6 +8,7 @@ import Dashboard from "../panel_left/Dashboard";
 import Register from "../components/Register";
 import Confirmation from "../components/Confirmation";
 import Profile from "../components/Profile";
+import MoveItem from "../components/MoveItem";
 
 /***
  * If the same component is used as the child of multiple <Route>s at the

@@ -10,54 +10,50 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
+  MenuItem,
+  Menu,
+  ListSubheader,
+  Typography,
 } from "@material-ui/core";
+import { Link, withRouter } from "react-router-dom";
 import postData from "../helpers/postData";
 import Snack from "./Snack";
 import { withStyles } from "@material-ui/core/styles";
 import CloseIcon from "@material-ui/icons/Close";
 import FolderIcon from "@material-ui/icons/Folder";
+import ArrowBackIcon from "@material-ui/icons/ArrowBack";
+import ArrowForwardIcon from "@material-ui/icons/ArrowForward";
+import getData from "../helpers/getData";
 
 const styles = (theme) => ({
+  dialogPaper: {
+    height: "100%",
+    minHeight: "49vh",
+    maxHeight: "50vh",
+    padding: 0,
+  },
   closeButton: {
     position: "absolute",
     right: theme.spacing(1),
     top: theme.spacing(1),
     color: theme.palette.grey[500],
   },
-  demo: {
-    backgroundColor: theme.palette.background.paper,
+  smallIcon: {
+    width: "1em",
+    height: "1em",
+    "&:hover": {
+      backgroundColor: "#5f6368",
+    },
+  },
+  textContainer: {
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    width: "35vw",
   },
 });
 
 class MoveItem extends Component {
-  state = {
-    moveOpen: false,
-    movedSnack: false,
-    movedFolder: {},
-    moveButtonDisabled: true,
-    selectedFiles: [],
-    selectedFolders: [],
-    selectedIndex: undefined,
-    tempSelectedFiles: {},
-    tempSelectedFolders: {},
-  };
-
-  handleMoveSnackClose = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    this.setState({
-      movedSnack: false,
-    });
-  };
-
-  handleMoveItemClose = () => {
-    this.setState(
-      { selectedIndex: undefined, moveButtonDisabled: true },
-      this.props.handleDialog({ moveItemDialogOpen: false })
-    );
-  };
-
   handleMoveItem = (e) => {
     e.preventDefault();
     const { movedFolder } = { ...this.state };
@@ -85,127 +81,98 @@ class MoveItem extends Component {
     });
   };
 
-  handleUndoMoveItem = (e) => {
-    e.preventDefault();
-    const { tempSelectedFolders, tempSelectedFiles } = {
-      ...this.state,
-    };
-    let originalFolder;
-    if (tempSelectedFolders.length > 0) {
-      originalFolder = tempSelectedFolders[0].parent_id;
-    } else originalFolder = tempSelectedFiles[0].folder_id;
-    const data = {
-      movedFolder: originalFolder,
-      selectedFolders: tempSelectedFolders,
-      selectedFiles: tempSelectedFiles,
-    };
-    postData("/api/files/move", data).then((data) => {
-      const { files, folders } = { ...data };
-      this.setState({
-        tempMovedFolder: {},
-        movedSnack: false,
-      });
-      this.props.handleSetState({
-        files,
-        folders,
-      });
-    });
+  handleNextFolder = (folder) => {
+    getData(`/api/drive/folders/${folder._id}`)
+      .then((data) => {
+        this.props.handleSetState({
+          allFolders: data.folders,
+          homeFolderStatus: false,
+          movedFolder: { id: folder._id, foldername: folder.foldername },
+        });
+      })
+      .catch((err) => console.log("Err", err));
   };
 
-  handleOnClick = (id, foldername, parent_id, selectedIndex) => {
-    this.setState({
-      selectedIndex: selectedIndex,
-      moveButtonDisabled: false,
-      movedFolder: { id, foldername },
-    });
-  };
+  handlePreviousFolder = (folder_id) => {
+    console.log("folder_id", folder_id);
 
-  handleSnackbarExit = () => {
-    if (this.state.tempMovedFolder) {
-      this.setState({
-        tempMovedFolder: {},
-        movedFolder: {},
-      });
-    }
-    return;
+    const urlParam =
+      folder_id === "" ? "drive/home" : `drive/folders/${folder_id}`;
+    getData(`/api/${urlParam}`)
+      .then((data) => {
+        this.props.handleSetState({
+          allFolders: data.folders,
+          homeFolderStatus: folder_id === "",
+          movedFolder: {},
+        });
+      })
+      .catch((err) => console.log("Err", err));
   };
 
   render() {
-    const { movedSnack, moveButtonDisabled } = {
-      ...this.state,
-    };
-    const { folders, classes } = {
+    const {
+      allFolders,
+      classes,
+      homeFolderStatus,
+      selectedFolders,
+      movedFolder,
+    } = {
       ...this.props,
     };
-    const moveSnack = (
-      <Snack
-        open={movedSnack}
-        onClose={this.handleMoveSnackClose}
-        onExited={this.handleSnackbarExit}
-        message={`Moved ${this.props.filesModified} items to "${this.state.movedFolder.foldername}"`}
-        onClick={this.handleUndoMoveItem}
-      />
-    );
-    let moveFolders = folders;
-
+    console.log(movedFolder);
     const moveFileDialog = (
       <Dialog
-        open={this.props.moveItemDialogOpen}
-        onClose={this.handleMoveItemClose}
-        aria-labelledby="form-dialog-title"
+        open={this.props.moveMenuOpen ? true : false}
+        onClose={this.props.handleMoveItemClose}
+        onExited={this.props.onMoveExit}
+        className={classes.dialogPaper}
+        style={{ padding: 0 }}
+        fullWidth
+        maxWidth={"xs"}
       >
-        <DialogTitle id="form-dialog-title">
-          <IconButton
-            aria-label="close"
-            className={classes.closeButton}
-            onClick={this.handleMoveItemClose}
-          >
-            <CloseIcon />
-          </IconButton>
+        {" "}
+        <DialogTitle style={{ padding: 0 }}>
+          {!homeFolderStatus ? (
+            <Fragment>
+              <IconButton
+                onClick={() => this.handlePreviousFolder(movedFolder.parent_id)}
+              >
+                <ArrowBackIcon />
+              </IconButton>
+              {movedFolder?.foldername}
+            </Fragment>
+          ) : (
+            <Fragment>
+              <IconButton style={{ visibility: "hidden" }}>
+                <ArrowBackIcon />
+              </IconButton>
+              My Drive
+            </Fragment>
+          )}
         </DialogTitle>
-        <form onSubmit={this.handleMoveItem} method="POST">
-          <DialogContent>
-            <div className={classes.demo}>
-              <List dense={true}>
-                {moveFolders?.map((folder, index) => (
-                  <ListItem
-                    alignItems="center"
-                    selected={index === this.state.selectedIndex}
-                    onClick={() =>
-                      this.handleOnClick(folder._id, folder.foldername, index)
-                    }
-                    key={folder._id}
-                  >
-                    <ListItemIcon>
-                      <FolderIcon />
-                    </ListItemIcon>
-                    <ListItemText primary={folder.foldername} />
-                  </ListItem>
-                ))}
-              </List>
-            </div>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              disabled={moveButtonDisabled}
-              onClick={this.handleMoveItemClose}
-              color="primary"
-              type="submit"
-            >
-              Move Here
-            </Button>
-          </DialogActions>
-        </form>
+        <DialogContent style={{ padding: 0 }}>
+          {allFolders?.map((folder, index) => (
+            <MenuItem alignItems="center" key={folder._id}>
+              <IconButton>
+                <FolderIcon />
+              </IconButton>
+              <span className={classes.textContainer}>{folder.foldername}</span>
+              <IconButton onClick={() => this.handleNextFolder(folder)}>
+                <ArrowForwardIcon />
+              </IconButton>
+            </MenuItem>
+          ))}
+        </DialogContent>
+        <DialogActions style={{ padding: 0 }}>
+          <Button onClick={this.handleMoveItem} color="primary">
+            Move Here
+          </Button>
+        </DialogActions>
       </Dialog>
     );
 
-    return (
-      <Fragment>
-        {moveSnack}
-        {moveFileDialog}
-      </Fragment>
-    );
+    return <Fragment>{moveFileDialog}</Fragment>;
   }
 }
 
-export default withStyles(styles)(MoveItem);
+export default withRouter(withStyles(styles)(MoveItem));

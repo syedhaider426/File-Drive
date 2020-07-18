@@ -32,12 +32,11 @@ const useStyles = makeStyles((theme) => ({
     left: theme.spacing(1),
   },
   textContainer: {
-    display: "block",
+    display: "flex",
     width: "40vw",
     whiteSpace: "nowrap",
     overflow: "hidden",
     textOverflow: "ellipsis",
-    display: "flex",
     alignItems: "center",
   },
   fileSize: {
@@ -66,14 +65,15 @@ function MainTable({
           <Table size="small" aria-label="a dense table" stickyHeader>
             <TableHead>
               <TableRow>
-                {headerList.map(
-                  (header, index) =>
-                    index !== headerList.length - 1 && (
-                      <TableCell key={header} style={{ width: "33%" }}>
-                        {header}
-                      </TableCell>
-                    )
-                )}
+                {headerList.map((header, index) => (
+                  <TableCell
+                    className={header === "File Size" ? classes.fileSize : ""}
+                    key={header}
+                    style={{ width: "33.33%" }}
+                  >
+                    {header}
+                  </TableCell>
+                ))}
               </TableRow>
             </TableHead>
             <TableBody style={{ width: "100%" }}>
