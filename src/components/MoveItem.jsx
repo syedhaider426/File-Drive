@@ -6,14 +6,7 @@ import {
   DialogActions,
   Button,
   IconButton,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
   MenuItem,
-  Menu,
-  ListSubheader,
-  Typography,
 } from "@material-ui/core";
 import { Link, withRouter } from "react-router-dom";
 import postData from "../helpers/postData";
@@ -54,33 +47,6 @@ const styles = (theme) => ({
 });
 
 class MoveItem extends Component {
-  handleMoveItem = (e) => {
-    e.preventDefault();
-    const { movedFolder } = { ...this.state };
-    const { selectedFolders, selectedFiles } = { ...this.props };
-    const data = {
-      movedFolder: movedFolder.id,
-      selectedFolders,
-      selectedFiles,
-    };
-    postData("/api/files/move", data).then((data) => {
-      const { files, folders } = { ...data };
-      const filesModified = selectedFolders.length + selectedFiles.length;
-      this.setState({
-        movedSnack: true,
-        tempSelectedFolders: selectedFolders,
-        tempSelectedFiles: selectedFiles,
-      });
-      this.props.handleSetState({
-        files,
-        folders,
-        filesModified,
-        selectedFiles: [],
-        selectedFolders: [],
-      });
-    });
-  };
-
   handleOnClick = (id, selectedIndex) => {
     this.props.handleSetState({
       selectedIndex: selectedIndex,
@@ -95,6 +61,8 @@ class MoveItem extends Component {
         this.props.handleSetState({
           allFolders: data.folders,
           homeFolderStatus: false,
+          moveFolder: "",
+          selectedIndex: undefined,
           movedFolder: {
             id: folder._id,
             foldername: folder.foldername,
@@ -114,6 +82,7 @@ class MoveItem extends Component {
         this.props.handleSetState({
           allFolders: folders,
           homeFolderStatus: folder_id === "",
+          selectedIndex: undefined,
           movedFolder: {
             foldername: moveTitleFolder.foldername,
             parent_id: moveTitleFolder.parent_id,
@@ -128,16 +97,24 @@ class MoveItem extends Component {
       allFolders,
       classes,
       homeFolderStatus,
-      movedFolder,
       handleMoveItem,
+      moveMenuOpen,
+      handleMoveItemClose,
+      onMoveExit,
+      selectedIndex,
+      moveFolder,
+      movedFolder,
+      selectedFolders,
+      selectedFiles,
     } = {
       ...this.props,
     };
+    console.log();
     const moveFileDialog = (
       <Dialog
-        open={this.props.moveMenuOpen ? true : false}
-        onClose={this.props.handleMoveItemClose}
-        onExited={this.props.onMoveExit}
+        open={moveMenuOpen ? true : false}
+        onClose={handleMoveItemClose}
+        onExited={onMoveExit}
         className={classes.dialogPaper}
         style={{ padding: 0 }}
         fullWidth
@@ -168,14 +145,13 @@ class MoveItem extends Component {
               alignItems="center"
               key={folder._id}
               onClick={() => this.handleOnClick(folder, index)}
+              selected={index === selectedIndex}
             >
               <IconButton>
                 <FolderIcon />
               </IconButton>
               <span className={classes.textContainer}>{folder.foldername}</span>
-              <IconButton
-                onClick={() => this.handleNextFolder(folder._id, index)}
-              >
+              <IconButton onClick={() => this.handleNextFolder(folder)}>
                 <ArrowForwardIcon />
               </IconButton>
             </MenuItem>
@@ -185,7 +161,9 @@ class MoveItem extends Component {
           <Button
             onClick={handleMoveItem}
             color="primary"
-            disabled={this.props.moveFolder === ""}
+            disabled={
+              selectedFolders[0]?._id === movedFolder?.id && moveFolder === ""
+            }
           >
             Move Here
           </Button>
