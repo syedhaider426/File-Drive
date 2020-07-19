@@ -30,6 +30,7 @@ import {
 } from "@material-ui/core";
 import MoreIcon from "@material-ui/icons/MoreVert";
 import getData from "../helpers/getData";
+import postData from "../helpers/postData";
 
 const styles = (theme) => ({
   grow: {
@@ -78,6 +79,9 @@ class ActionHeader extends Component {
     allFolders: [],
     moveButtonDisabled: true,
     homeFolderStatus: false,
+    selectedIndex: undefined,
+    moveButtonDisabled: true,
+    moveFolder: "",
   };
 
   handleRenameOpen = () => {
@@ -93,25 +97,24 @@ class ActionHeader extends Component {
   };
 
   handleMove = (e) => {
-    const { selectedFolders } = { ...this.props };
-    const urlParam =
-      this.props.match.url === "/drive/home"
-        ? "/drive/home"
-        : `/drive/folders/${selectedFolders[0].id}`;
-    getData(`/api${urlParam}`).then((data) => {
+    const { selectedFolders, selectedFiles } = { ...this.props };
+    const urlMove = this.props.match.url === "/drive/home" ? "" : "?move=true";
+    getData(`/api${this.props.match.url}${urlMove}`).then((data) => {
+      const { files, folders, moveTitleFolder } = { ...data };
       let homeFolderStatus;
       if (this.props.match.url === "/drive/home") homeFolderStatus = true;
       else homeFolderStatus = false;
-      console.log(selectedFolders[0]);
+      //user selects a file
+      //file has a folder_id
       this.setState({
-        allFolders: data.folders,
+        allFolders: folders,
         homeFolderStatus,
         moveMenuOpen: true,
         isMobileMenuOpen: false,
         movedFolder: {
-          id: selectedFolders[0].id,
-          foldername: selectedFolders[0].foldername,
-          parent_id: selectedFolders[0].parent_id,
+          id: selectedFiles[0]?.folder_id || selectedFolders[0]?._id,
+          foldername: moveTitleFolder.foldername,
+          parent_id: moveTitleFolder.parent_id,
         },
       });
     });
@@ -128,6 +131,35 @@ class ActionHeader extends Component {
     this.setState({
       moveMenuOpen: false,
       movedFolder: {},
+      selectedIndex: undefined,
+      moveButtonDisabled: true,
+      moveFolder: "",
+    });
+  };
+
+  handleMoveItem = (e) => {
+    e.preventDefault();
+    const { moveFolder } = { ...this.state };
+    const { selectedFolders, selectedFiles } = { ...this.props };
+    const data = { moveFolder: moveFolder._id, selectedFolders, selectedFiles };
+    postData("/api/files/move", data).then((data) => {
+      const { files, folders } = { ...data };
+      this.setState(
+        {
+          moveMenuOpen: false,
+          movedFolder: {},
+          selectedIndex: undefined,
+          moveButtonDisabled: true,
+          moveFolder: "",
+          moveMenuOpen: false,
+        },
+        this.props.handleSetState({
+          files,
+          folders,
+          selectedFiles: [],
+          selectedFolders: [],
+        })
+      );
     });
   };
 
@@ -222,6 +254,9 @@ class ActionHeader extends Component {
       allFolders,
       homeFolderStatus,
       movedFolder,
+      selectedIndex,
+      moveButtonDisabled,
+      moveFolder,
     } = this.state;
     const renameFile = (
       <RenameFile
@@ -250,10 +285,15 @@ class ActionHeader extends Component {
         handleSetState={this.handleActionsSetState}
         allFolders={allFolders}
         selectedFolders={selectedFolders}
+        selectedFiles={selectedFiles}
         handleMoveItemClose={this.handleMoveItemClose}
         onMoveExit={this.onMoveExit}
         homeFolderStatus={homeFolderStatus}
         movedFolder={movedFolder}
+        selectedIndex={selectedIndex}
+        moveButtonDisabled={moveButtonDisabled}
+        moveFolder={moveFolder}
+        handleMoveItem={this.handleMoveItem}
       />
     );
     const trashMenu = (

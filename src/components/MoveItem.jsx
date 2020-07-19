@@ -81,29 +81,43 @@ class MoveItem extends Component {
     });
   };
 
+  handleOnClick = (id, selectedIndex) => {
+    this.props.handleSetState({
+      selectedIndex: selectedIndex,
+      moveButtonDisabled: false,
+      moveFolder: id,
+    });
+  };
+
   handleNextFolder = (folder) => {
     getData(`/api/drive/folders/${folder._id}`)
       .then((data) => {
         this.props.handleSetState({
           allFolders: data.folders,
           homeFolderStatus: false,
-          movedFolder: { id: folder._id, foldername: folder.foldername },
+          movedFolder: {
+            id: folder._id,
+            foldername: folder.foldername,
+            parent_id: folder.parent_id,
+          },
         });
       })
       .catch((err) => console.log("Err", err));
   };
 
   handlePreviousFolder = (folder_id) => {
-    console.log("folder_id", folder_id);
-
     const urlParam =
-      folder_id === "" ? "drive/home" : `drive/folders/${folder_id}`;
+      folder_id === "" ? "drive/home" : `drive/folders/${folder_id}?move=true`;
     getData(`/api/${urlParam}`)
       .then((data) => {
+        const { folders, moveTitleFolder } = { ...data };
         this.props.handleSetState({
-          allFolders: data.folders,
+          allFolders: folders,
           homeFolderStatus: folder_id === "",
-          movedFolder: {},
+          movedFolder: {
+            foldername: moveTitleFolder.foldername,
+            parent_id: moveTitleFolder.parent_id,
+          },
         });
       })
       .catch((err) => console.log("Err", err));
@@ -114,12 +128,11 @@ class MoveItem extends Component {
       allFolders,
       classes,
       homeFolderStatus,
-      selectedFolders,
       movedFolder,
+      handleMoveItem,
     } = {
       ...this.props,
     };
-    console.log(movedFolder);
     const moveFileDialog = (
       <Dialog
         open={this.props.moveMenuOpen ? true : false}
@@ -130,7 +143,6 @@ class MoveItem extends Component {
         fullWidth
         maxWidth={"xs"}
       >
-        {" "}
         <DialogTitle style={{ padding: 0 }}>
           {!homeFolderStatus ? (
             <Fragment>
@@ -152,19 +164,29 @@ class MoveItem extends Component {
         </DialogTitle>
         <DialogContent style={{ padding: 0 }}>
           {allFolders?.map((folder, index) => (
-            <MenuItem alignItems="center" key={folder._id}>
+            <MenuItem
+              alignItems="center"
+              key={folder._id}
+              onClick={() => this.handleOnClick(folder, index)}
+            >
               <IconButton>
                 <FolderIcon />
               </IconButton>
               <span className={classes.textContainer}>{folder.foldername}</span>
-              <IconButton onClick={() => this.handleNextFolder(folder)}>
+              <IconButton
+                onClick={() => this.handleNextFolder(folder._id, index)}
+              >
                 <ArrowForwardIcon />
               </IconButton>
             </MenuItem>
           ))}
         </DialogContent>
         <DialogActions style={{ padding: 0 }}>
-          <Button onClick={this.handleMoveItem} color="primary">
+          <Button
+            onClick={handleMoveItem}
+            color="primary"
+            disabled={this.props.moveFolder === ""}
+          >
             Move Here
           </Button>
         </DialogActions>
