@@ -47,11 +47,11 @@ const styles = (theme) => ({
 });
 
 class MoveItem extends Component {
-  handleOnClick = (id, selectedIndex) => {
+  handleOnClick = (folder, selectedIndex) => {
     this.props.handleSetState({
       selectedIndex: selectedIndex,
       moveButtonDisabled: false,
-      moveFolder: id,
+      moveFolder: { id: folder._id, foldername: folder.foldername },
     });
   };
 
@@ -92,6 +92,16 @@ class MoveItem extends Component {
       .catch((err) => console.log("Err", err));
   };
 
+  handleMoveItemClose = () => {
+    this.props.handleSetState({
+      moveMenuOpen: false,
+      movedFolder: {},
+      selectedIndex: undefined,
+      moveButtonDisabled: true,
+      moveFolder: "",
+    });
+  };
+
   render() {
     const {
       allFolders,
@@ -99,21 +109,33 @@ class MoveItem extends Component {
       homeFolderStatus,
       handleMoveItem,
       moveMenuOpen,
-      handleMoveItemClose,
+      movedSnack,
       onMoveExit,
       selectedIndex,
-      moveFolder,
-      movedFolder,
+      moveFolder, //menu clicked folder
+      movedFolder, //title folder
       selectedFolders,
-      selectedFiles,
+      handleMoveSnackClose,
+      handleSnackbarExit,
+      handleUndoMoveItem,
     } = {
       ...this.props,
     };
-    console.log();
+    console.log("movednsack", movedSnack);
+    const moveSnack = (
+      <Snack
+        open={movedSnack}
+        onClose={handleMoveSnackClose}
+        onExited={handleSnackbarExit}
+        message={`Moved to "${moveFolder.foldername}"`}
+        onClick={handleUndoMoveItem}
+      />
+    );
+
     const moveFileDialog = (
       <Dialog
         open={moveMenuOpen ? true : false}
-        onClose={handleMoveItemClose}
+        onClose={this.handleMoveItemClose}
         onExited={onMoveExit}
         className={classes.dialogPaper}
         style={{ padding: 0 }}
@@ -146,6 +168,10 @@ class MoveItem extends Component {
               key={folder._id}
               onClick={() => this.handleOnClick(folder, index)}
               selected={index === selectedIndex}
+              disabled={
+                selectedFolders.length > 0 &&
+                selectedFolders[0].id === folder._id
+              }
             >
               <IconButton>
                 <FolderIcon />
@@ -171,7 +197,12 @@ class MoveItem extends Component {
       </Dialog>
     );
 
-    return <Fragment>{moveFileDialog}</Fragment>;
+    return (
+      <Fragment>
+        {moveFileDialog}
+        {moveSnack}
+      </Fragment>
+    );
   }
 }
 

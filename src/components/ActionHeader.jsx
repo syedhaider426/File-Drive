@@ -80,8 +80,10 @@ class ActionHeader extends Component {
     moveButtonDisabled: true,
     homeFolderStatus: false,
     selectedIndex: undefined,
-    moveButtonDisabled: true,
     moveFolder: "",
+    movedSnack: false,
+    tempSelectedFolders: [],
+    tempSelectedFiles: [],
   };
 
   handleRenameOpen = () => {
@@ -100,7 +102,7 @@ class ActionHeader extends Component {
     const { selectedFolders, selectedFiles } = { ...this.props };
     const urlMove = this.props.match.url === "/drive/home" ? "" : "?move=true";
     getData(`/api${this.props.match.url}${urlMove}`).then((data) => {
-      const { files, folders, moveTitleFolder } = { ...data };
+      const { folders, moveTitleFolder } = { ...data };
       let homeFolderStatus;
       if (this.props.match.url === "/drive/home") homeFolderStatus = true;
       else homeFolderStatus = false;
@@ -127,21 +129,21 @@ class ActionHeader extends Component {
     });
   };
 
-  handleMoveItemClose = () => {
+  handleMoveSnackClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
     this.setState({
-      moveMenuOpen: false,
-      movedFolder: {},
-      selectedIndex: undefined,
-      moveButtonDisabled: true,
-      moveFolder: "",
+      movedSnack: false,
     });
   };
 
   handleMoveItem = (e) => {
     e.preventDefault();
+    console.log("made it here");
     const { moveFolder } = { ...this.state };
     const { selectedFolders, selectedFiles } = { ...this.props };
-    const data = { moveFolder: moveFolder._id, selectedFolders, selectedFiles };
+    const data = { moveFolder: moveFolder.id, selectedFolders, selectedFiles };
     postData("/api/files/move", data).then((data) => {
       const { files, folders } = { ...data };
       this.setState(
@@ -150,8 +152,10 @@ class ActionHeader extends Component {
           movedFolder: {},
           selectedIndex: undefined,
           moveButtonDisabled: true,
-          moveFolder: "",
-          moveMenuOpen: false,
+
+          movedSnack: true,
+          tempSelectedFolders: selectedFolders,
+          tempSelectedFiles: selectedFiles,
         },
         this.props.handleSetState({
           files,
@@ -161,6 +165,43 @@ class ActionHeader extends Component {
         })
       );
     });
+  };
+
+  handleUndoMoveItem = (e) => {
+    e.preventDefault();
+    const { tempSelectedFolders, tempSelectedFiles } = {
+      ...this.state,
+    };
+    let originalFolder =
+      tempSelectedFolders[0]?.parent_id || tempSelectedFiles[0]?.folder_id;
+    const data = {
+      movedFolder: originalFolder,
+      selectedFolders: tempSelectedFolders,
+      selectedFiles: tempSelectedFiles,
+    };
+    postData("/api/files/move", data).then((data) => {
+      const { files, folders } = { ...data };
+      this.setState({
+        movedSnack: false,
+      });
+      this.props.handleSetState({
+        files,
+        folders,
+        selectedFolders: tempSelectedFolders,
+        selectedFiles: tempSelectedFiles,
+      });
+    });
+  };
+
+  handleSnackbarExit = () => {
+    if (this.state.tempSelectedFolders || this.state.tempSelectedFiles) {
+      this.setState({
+        tempSelectedFolders: [],
+        tempSelectedFiles: [],
+        moveFolder: "",
+      });
+    }
+    return;
   };
 
   handleActionsSetState = (value) => {
@@ -257,6 +298,7 @@ class ActionHeader extends Component {
       selectedIndex,
       moveButtonDisabled,
       moveFolder,
+      movedSnack,
     } = this.state;
     const renameFile = (
       <RenameFile
@@ -294,6 +336,10 @@ class ActionHeader extends Component {
         moveButtonDisabled={moveButtonDisabled}
         moveFolder={moveFolder}
         handleMoveItem={this.handleMoveItem}
+        movedSnack={movedSnack}
+        handleUndoMoveItem={this.handleUndoMoveItem}
+        handleSnackbarExit={this.handleSnackbarExit}
+        handleMoveSnackClose={this.handleMoveSnackClose}
       />
     );
     const trashMenu = (
