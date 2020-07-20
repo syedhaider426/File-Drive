@@ -136,7 +136,6 @@ class FileTable extends Component {
       });
       //Check if any of the folders are favorited
       const isFavorited = this.checkIsFavorited(selectedFolders);
-      console.log("SELECTED FOLDER", selectedFolders);
       //Set state
       this.setState({
         selectedFiles: [],
@@ -230,12 +229,6 @@ class FileTable extends Component {
   handleFileClick = (e, file) => {
     const { selectedFiles } = { ...this.state };
     if (selectedFiles.length === 0 && !e.ctrlKey) {
-      selectedFiles.push({
-        id: file._id,
-        filename: file.filename,
-        isFavorited: file.metadata.isFavorited,
-        folder_id: file.folder_id,
-      });
       selectedFiles.push({
         id: file._id,
         filename: file.filename,

@@ -16,21 +16,14 @@ import MoveItem from "./MoveItem";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import NavigateNextIcon from "@material-ui/icons/NavigateNext";
 import { Link, withRouter } from "react-router-dom";
-import {
-  Breadcrumbs,
-  Menu,
-  MenuItem,
-  Box,
-  DialogContent,
-  Dialog,
-  DialogTitle,
-  Button,
-  DialogActions,
-  DialogContentText,
-} from "@material-ui/core";
+import { Breadcrumbs, Menu, MenuItem, Box } from "@material-ui/core";
 import MoreIcon from "@material-ui/icons/MoreVert";
 import getData from "../helpers/getData";
 import postData from "../helpers/postData";
+import CloseIcon from "@material-ui/icons/Close";
+import RestoreAllDialog from "./RestoreAllDialog";
+import DeleteAllDialog from "./DeleteAllDialog";
+import TrashMenu from "./TrashMenu";
 
 const styles = (theme) => ({
   grow: {
@@ -70,11 +63,12 @@ const styles = (theme) => ({
 
 class ActionHeader extends Component {
   state = {
-    renameFolderDialogOpen: false,
     renameFileDialogOpen: false,
-    moveItemDialogOpen: false,
+    renameFolderDialogOpen: false,
+    // Mobile related state
     isMobileMenuOpen: false,
-    anchorElement: undefined,
+    mobileMoreAnchorEl: undefined,
+    // Move file/folder related state
     moveMenuOpen: false,
     allFolders: [],
     moveButtonDisabled: true,
@@ -86,16 +80,16 @@ class ActionHeader extends Component {
     tempSelectedFiles: [],
   };
 
-  handleRenameOpen = () => {
-    this.setState({ renameFileDialogOpen: true });
+  handleRenameFileOpen = () => {
+    this.setState({ isMobileMenuOpen: false, renameFileDialogOpen: true });
   };
 
   handleRenameFolderOpen = () => {
     this.setState({ renameFolderDialogOpen: true });
   };
 
-  handleDialog = (value) => {
-    this.setState(value);
+  handleDialog = (value, item) => {
+    this.setState(value, this.props.handleSetState(item));
   };
 
   handleMove = (e) => {
@@ -140,7 +134,6 @@ class ActionHeader extends Component {
 
   handleMoveItem = (e) => {
     e.preventDefault();
-    console.log("made it here");
     const { moveFolder } = { ...this.state };
     const { selectedFolders, selectedFiles } = { ...this.props };
     const data = { moveFolder: moveFolder.id, selectedFolders, selectedFiles };
@@ -240,8 +233,12 @@ class ActionHeader extends Component {
     event.preventDefault();
     const { target } = event;
     const extensionStarts = target.value.lastIndexOf(".");
-    target.focus();
-    target.setSelectionRange(0, extensionStarts);
+    console.log("extensionStarts", extensionStarts);
+    if (extensionStarts < 0) target.focus();
+    else {
+      target.focus();
+      target.setSelectionRange(0, extensionStarts);
+    }
   };
 
   handleDeleteAllDialog = (e) => {
@@ -267,6 +264,14 @@ class ActionHeader extends Component {
     this.props.handleSetState({ trashMenuOpen: false, restoreAllOpen: false });
   };
 
+  handleRenameFileClose = () => {
+    this.setState({
+      fileButtonDisabled: true,
+      filename: "",
+      renameFileDialogOpen: false,
+    });
+  };
+
   render() {
     const {
       classes,
@@ -288,6 +293,10 @@ class ActionHeader extends Component {
       currentFolder,
       currentMenu,
       trashMenuOpen,
+      trashAnchorEl,
+      restoreAllOpen,
+      handleSetState,
+      deleteAllOpen,
     } = this.props;
     const {
       isMobileMenuOpen,
@@ -299,25 +308,27 @@ class ActionHeader extends Component {
       moveButtonDisabled,
       moveFolder,
       movedSnack,
+      renameFileDialogOpen,
+      renameFolderDialogOpen,
     } = this.state;
     const renameFile = (
       <RenameFile
-        renameFileDialogOpen={this.state.renameFileDialogOpen}
+        renameFileDialogOpen={renameFileDialogOpen}
         handleDialog={this.handleDialog}
         files={files}
         selectedFiles={selectedFiles}
-        handleSetState={this.props.handleSetState}
+        handleSetState={handleSetState}
         handleFocus={this.handleFocus}
       />
     );
 
     const renameFolder = (
       <RenameFolder
-        renameFolderDialogOpen={this.state.renameFolderDialogOpen}
+        renameFolderDialogOpen={renameFolderDialogOpen}
         handleDialog={this.handleDialog}
         folders={folders}
         selectedFolders={selectedFolders}
-        handleSetState={this.props.handleSetState}
+        handleSetState={handleSetState}
         handleFocus={this.handleFocus}
       />
     );
@@ -343,81 +354,33 @@ class ActionHeader extends Component {
       />
     );
     const trashMenu = (
-      <Menu
-        anchorEl={this.props.trashAnchorEl}
-        id={"trash-menu"}
-        keepMounted
-        open={trashMenuOpen}
-        onClose={this.handleTrashMenuClose}
-      >
-        <MenuItem
-          onClick={this.handleDeleteAllDialog}
-          disabled={files?.length === 0 && folders?.length === 0}
-        >
-          Delete All Trash
-        </MenuItem>
-        <MenuItem
-          disabled={files?.length === 0 && folders?.length === 0}
-          onClick={this.handleRestoreAllDialog}
-        >
-          Restore All Items
-        </MenuItem>
-      </Menu>
+      <TrashMenu
+        trashAnchorEl={trashAnchorEl}
+        trashMenuOpen={trashMenuOpen}
+        handleTrashMenuClose={this.handleTrashMenuClose}
+        handleDeleteAllDialog={this.handleDeleteAllDialog}
+        handleRestoreAllDialog={this.handleRestoreAllDialog}
+        files={files}
+        folders={folders}
+      />
     );
 
     const deleteAllDialog = (
-      <Dialog
-        open={this.props.deleteAllOpen}
-        onClose={this.handleDeleteAllClose}
-        aria-labelledby="restore-all-trash"
-        aria-describedby="restore-all-trash"
-      >
-        <DialogTitle>Delete All</DialogTitle>
-        <DialogContent>
-          <form onSubmit={handleDeleteAll}>
-            <DialogContentText id="alert-dialog-description">
-              Are you sure you want to delete all files and folders?
-            </DialogContentText>
-            <DialogActions>
-              <Button onClick={this.handleDeleteAllClose} color="primary">
-                Cancel
-              </Button>
-              <Button color="primary" type="submit">
-                Confirm
-              </Button>
-            </DialogActions>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <DeleteAllDialog
+        deleteAllOpen={deleteAllOpen}
+        handleDeleteAllClose={this.handleDeleteAllClose}
+        handleDeleteAll={handleDeleteAll}
+      />
     );
     const restoreAllDialog = (
-      <Dialog
-        open={this.props.restoreAllOpen}
-        onClose={this.handleRestoreAllClose}
-        aria-labelledby="restore-all-trash"
-        aria-describedby="restore-all-trash"
-      >
-        <DialogTitle>Restore All</DialogTitle>
-        <DialogContent>
-          <form onSubmit={handleRestoreAll}>
-            <DialogContentText id="alert-dialog-description">
-              Are you sure you want to restore all files and folders?
-            </DialogContentText>
-            <DialogActions>
-              <Button onClick={this.handleRestoreAllClose} color="primary">
-                Cancel
-              </Button>
-              <Button color="primary" type="submit">
-                Confirm
-              </Button>
-            </DialogActions>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <RestoreAllDialog
+        restoreAllOpen={restoreAllOpen}
+        handleRestoreAllClose={this.handleRestoreAllClose}
+        handleRestoreAll={handleRestoreAll}
+      />
     );
 
     const mobileMenuId = "mobile-menu";
-
     const renderMobileMenu = (
       <Menu
         anchorEl={this.state.mobileMoreAnchorEl}
@@ -428,7 +391,6 @@ class ActionHeader extends Component {
         open={isMobileMenuOpen}
         onClose={this.handleMobileMenuClose}
       >
-        {renameFile}
         {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
           currentMenu !== "Trash" && (
             <MenuItem className={classes.menuItem} onClick={this.handleMove}>
@@ -440,7 +402,6 @@ class ActionHeader extends Component {
               Move To
             </MenuItem>
           )}
-        {moveItem}
         {!isFavorited
           ? (selectedFiles.length > 0 || selectedFolders.length > 0) &&
             (currentMenu === "Home" || currentMenu === "Folder") && (
@@ -476,7 +437,7 @@ class ActionHeader extends Component {
         {selectedFiles.length === 1 && currentMenu !== "Trash" && (
           <MenuItem
             className={classes.menuItem}
-            onClick={this.handleRenameOpen}
+            onClick={this.handleRenameFileOpen}
           >
             <Tooltip title="Rename">
               <IconButton style={{ color: "gray" }} aria-label="Rename">
@@ -500,7 +461,6 @@ class ActionHeader extends Component {
             Rename Folder
           </MenuItem>
         )}
-        {renameFolder}
         {selectedFiles.length >= 1 &&
           selectedFolders.length === 0 &&
           currentMenu !== "Trash" && (
@@ -640,8 +600,13 @@ class ActionHeader extends Component {
             <Box fontSize={20}>{currentMenu}</Box>
           )}
           {trashMenu}
-          {renameFile}
+
           <div className={classes.grow} />
+          {renameFile}
+          {renameFolder}
+          {moveItem}
+          {deleteAllDialog}
+          {restoreAllDialog}
           <div className={classes.sectionDesktop}>
             {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
               currentMenu !== "Trash" && (
@@ -655,7 +620,7 @@ class ActionHeader extends Component {
                   </IconButton>
                 </Tooltip>
               )}
-            {moveItem}
+
             {!isFavorited
               ? (selectedFiles.length > 0 || selectedFolders.length > 0) &&
                 (currentMenu === "Home" || currentMenu === "Folder") && (
@@ -686,7 +651,7 @@ class ActionHeader extends Component {
                 <IconButton
                   style={{ color: "gray" }}
                   aria-label="Rename"
-                  onClick={this.handleRenameOpen}
+                  onClick={this.handleRenameFileOpen}
                 >
                   <RenameIcon />
                 </IconButton>
@@ -778,8 +743,6 @@ class ActionHeader extends Component {
                   </Tooltip>
                 </div>
               )}
-            {deleteAllDialog}
-            {restoreAllDialog}
           </div>
           <div className={classes.sectionMobile}>
             {(selectedFiles.length > 0 || selectedFolders.length > 0) && (

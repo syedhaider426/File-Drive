@@ -121,7 +121,6 @@ class MoveItem extends Component {
     } = {
       ...this.props,
     };
-    console.log("movednsack", movedSnack);
     const moveSnack = (
       <Snack
         open={movedSnack}

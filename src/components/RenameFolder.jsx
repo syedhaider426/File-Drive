@@ -25,16 +25,9 @@ const styles = (theme) => ({
 class RenameFolder extends Component {
   state = {
     renamedSnack: false,
-    folderButtonDisabled: true,
     foldername: "",
     renamedFolder: {},
   };
-
-  shouldComponentUpdate(nextProps, nextState) {
-    if (this.props.renameFolderDialogOpen != nextProps.renameFolderDialogOpen)
-      return true;
-    return false;
-  }
 
   handleRenameSnackClose = (event, reason) => {
     if (reason === "clickaway") {
@@ -47,21 +40,17 @@ class RenameFolder extends Component {
 
   handleRenameFolderClose = () => {
     this.setState(
-      { folderButtonDisabled: true },
+      { foldername: "" },
       this.props.handleDialog({ renameFolderDialogOpen: false })
     );
   };
 
   handleFolderOnChange = (e) => {
-    console.log(e.target.value);
-    if (e.target.value === "") this.setState({ folderButtonDisabled: true });
-    else {
-      console.log(this.state.foldername);
+    if (e.target.value === "") this.setState({ foldername: "" });
+    else
       this.setState({
         foldername: e.target.value,
-        folderButtonDisabled: false,
       });
-    }
   };
 
   handleRenameFolder = (e) => {
@@ -75,6 +64,7 @@ class RenameFolder extends Component {
 
     postData("/api/folders/rename", data)
       .then((data) => {
+        const { selectedFolders } = { ...this.props };
         let folders = this.props.folders;
         folders.find((o, i, arr) => {
           if (o._id === selectedFolders[0].id) {
@@ -83,12 +73,17 @@ class RenameFolder extends Component {
           }
           return false;
         });
+        const selectFolders = selectedFolders;
+        selectFolders[0].foldername = foldername;
         this.setState(
           {
             renamedFolder: selectedFolders[0],
             renamedSnack: true,
           },
-          this.props.handleSetState({ folders })
+          this.props.handleDialog(
+            { renameFolderDialogOpen: false },
+            { folders, selectedFolders: selectFolders }
+          )
         );
       })
       .catch((err) => console.log("Err", err));
@@ -101,7 +96,7 @@ class RenameFolder extends Component {
       id: renamedFolder.id,
       newName: renamedFolder.foldername,
     };
-
+    console.log(data);
     postData("/api/folders/rename", data)
       .then((data) => {
         let folders = this.props.folders;
@@ -118,7 +113,14 @@ class RenameFolder extends Component {
             renamedSnack: false,
             folderName: "",
           },
-          this.props.handleSetState({ folders })
+          this.props.handleDialog(
+            { renameFolderDialogOpen: false },
+            {
+              folders,
+              selectedFolders: (selectedFolders[0].foldername =
+                renamedFolder.foldername),
+            }
+          )
         );
       })
       .catch((err) => console.log("Err", err));
@@ -133,7 +135,7 @@ class RenameFolder extends Component {
     return;
   };
   render() {
-    const { renamedSnack, folderButtonDisabled } = {
+    const { renamedSnack, foldername } = {
       ...this.state,
     };
     const { selectedFolders, classes } = { ...this.props };
@@ -146,7 +148,6 @@ class RenameFolder extends Component {
         onClick={this.handleUndoRenameFolder}
       />
     );
-    console.log("Folders", this.state.foldername);
     const renameFolderDialog = (
       <Dialog
         open={this.props.renameFolderDialogOpen}
@@ -167,15 +168,8 @@ class RenameFolder extends Component {
           <DialogContent>
             <TextField
               autoFocus
-              margin="dense"
-              onFocus={this.props.handleFocus}
               id="folder"
-              defaultValue={
-                selectedFolders[0] === undefined
-                  ? ""
-                  : selectedFolders[0].foldername
-              }
-              fullWidth
+              defaultValue={selectedFolders[0] && selectedFolders[0].foldername}
               onChange={this.handleFolderOnChange}
             />
           </DialogContent>
@@ -183,11 +177,7 @@ class RenameFolder extends Component {
             <Button onClick={this.handleRenameFolderClose} color="primary">
               Cancel
             </Button>
-            <Button
-              disabled={this.state.foldername === ""}
-              color="primary"
-              type="submit"
-            >
+            <Button disabled={foldername === ""} color="primary" type="submit">
               Confirm
             </Button>
           </DialogActions>

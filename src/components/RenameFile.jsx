@@ -24,9 +24,7 @@ const styles = (theme) => ({
 
 class RenameFile extends Component {
   state = {
-    renameOpen: false,
     renamedSnack: false,
-    fileButtonDisabled: true,
     filename: "",
     renamedFile: {},
   };
@@ -35,30 +33,23 @@ class RenameFile extends Component {
     if (reason === "clickaway") {
       return;
     }
-    this.setState({
+    this.props.handleSetState({
       renamedSnack: false,
     });
   };
 
-  shouldComponentUpdate(nextProps, nextState) {
-    if (this.props.renameFileDialogOpen != nextProps.renameFileDialogOpen)
-      return true;
-    return false;
-  }
-
   handleRenameFileClose = () => {
     this.setState(
-      { fileButtonDisabled: true, filename: "" },
+      { filename: "" },
       this.props.handleDialog({ renameFileDialogOpen: false })
     );
   };
 
   handleFileOnChange = (e) => {
-    if (e.target.value === "") this.setState({ fileButtonDisabled: true });
+    if (e.target.value === "") this.setState({ filename: "" });
     else
       this.setState({
         filename: e.target.value,
-        fileButtonDisabled: false,
       });
   };
 
@@ -85,7 +76,10 @@ class RenameFile extends Component {
             renamedFile: selectedFiles[0],
             renamedSnack: true,
           },
-          this.props.handleSetState({ files })
+          this.props.handleDialog(
+            { renameFileDialogOpen: false },
+            { files, selectedFiles }
+          )
         );
       })
       .catch((err) => console.log("Err", err));
@@ -109,13 +103,15 @@ class RenameFile extends Component {
           }
           return false;
         });
+        const selectFiles = selectedFiles;
+        selectFiles[0].filename = renamedFile.filename;
         this.setState(
           {
             renamedFile: {},
             renamedSnack: false,
             fileName: "",
           },
-          this.props.handleSetState({ files })
+          this.props.handleSetState({ files, selectedFiles: selectFiles })
         );
       })
       .catch((err) => console.log("Err", err));
@@ -130,16 +126,8 @@ class RenameFile extends Component {
     return;
   };
 
-  handleFocus = (event) => {
-    event.preventDefault();
-    const { target } = event;
-    const extensionStarts = target.value.lastIndexOf(".");
-    target.focus();
-    target.setSelectionRange(0, extensionStarts);
-  };
-
   render() {
-    const { renamedSnack, fileButtonDisabled } = {
+    const { renamedSnack, filename } = {
       ...this.state,
     };
     const { selectedFiles, classes } = { ...this.props };
@@ -177,6 +165,7 @@ class RenameFile extends Component {
               id="file"
               fullWidth
               defaultValue={defaultValue}
+              onFocus={this.props.handleFocus}
               onChange={this.handleFileOnChange}
             />
           </DialogContent>
@@ -184,7 +173,7 @@ class RenameFile extends Component {
             <Button onClick={this.handleRenameFileClose} color="primary">
               Cancel
             </Button>
-            <Button disabled={fileButtonDisabled} color="primary" type="submit">
+            <Button disabled={filename === ""} color="primary" type="submit">
               Confirm
             </Button>
           </DialogActions>

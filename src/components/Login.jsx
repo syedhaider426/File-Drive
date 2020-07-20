@@ -174,7 +174,7 @@ class Login extends Component {
                   {"Copyright © "}
                   <Link color="inherit" to="https://g-drive-clone.com/">
                     G-Drive Clone
-                  </Link>
+                  </Link>{" "}
                   {new Date().getFullYear()}
                   {"."}
                 </Typography>
