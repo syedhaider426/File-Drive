@@ -100,7 +100,7 @@ class Header extends Component {
                 color="inherit"
                 aria-label="open drawer"
                 edge="start"
-                onClick={this.handleDrawerToggle}
+                onClick={this.props.handleDrawerToggle}
                 className={classes.menuButton}
               >
                 <MenuIcon />

@@ -10,6 +10,8 @@ import getData from "../helpers/getData";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import ActionsDrawer from "./ActionsDrawer";
 import Header from "./Header";
+import axios from "axios";
+import { Dialog, DialogContent } from "@material-ui/core";
 
 const layout = (theme) => ({
   root: {
@@ -47,6 +49,9 @@ class FileTable extends Component {
     trashAnchorEl: undefined,
     moveMenuOpen: false,
     moveAnchorEl: undefined,
+    mobileOpen: false,
+    fileData: undefined,
+    contentType: "",
   };
 
   fetchData = () => {
@@ -246,7 +251,14 @@ class FileTable extends Component {
       selectedFiles[0].id === file._id &&
       !e.ctrlKey
     ) {
-      this.props.history.push(`/file/${file._id}`);
+      axios.get(`/api/files/${file._id}`).then((d) => {
+        this.setState({
+          fileData: `/api/files/${file._id}`,
+          modalOpen: true,
+          contentType: d.headers["content-type"],
+        });
+      });
+      //this.props.history.push(`/file/${file._id}`);
     } else if (
       selectedFiles.length === 1 &&
       selectedFiles[0].id === file._id &&
@@ -290,15 +302,21 @@ class FileTable extends Component {
 
   handleFileCopy = () => {
     const { selectedFiles } = { ...this.state };
+    let urlParam = "";
+    if (this.props.match.url !== "/drive/home")
+      urlParam = `/${this.props.match.params.folder}`;
     const data = { selectedFiles };
-    postData("/api/files/copy", data)
+    postData(`/api/files/copy${urlParam}`, data)
       .then((data) => {
         const { files } = { ...this.state };
         for (let file of data.files) {
           files.push(file);
         }
+        console.log("newfiles", data.newFiles);
+        console.log("files", data.files);
         //Slice will clone the array and return reference to new array
-        const tempFiles = data.newFiles.slice();
+        //id is an array of new files
+        const tempFiles = data.newFiles.id.slice();
         const filesModified = tempFiles.length;
         /***
          * Files - Updated files
@@ -321,7 +339,10 @@ class FileTable extends Component {
   handleUndoCopy = () => {
     const { tempFiles } = { ...this.state };
     const data = { selectedFiles: tempFiles };
-    postData("/api/files/undoCopy", data)
+    let urlParam = "";
+    if (this.props.match.url !== "/drive/home")
+      urlParam = `/${this.props.match.params.folder}`;
+    postData(`/api/files/undoCopy${urlParam}`, data)
       .then((data) => {
         const { files } = { ...data };
         this.setState({
@@ -649,6 +670,10 @@ class FileTable extends Component {
     this.setState({ mobileOpen: !this.state.mobileOpen });
   };
 
+  handleFileClose = () => {
+    this.setState({ modalOpen: false });
+  };
+
   render() {
     const {
       files,
@@ -671,6 +696,9 @@ class FileTable extends Component {
       trashAnchorEl,
       moveMenuOpen,
       moveAnchorEl,
+      modalOpen,
+      fileData,
+      contentType,
     } = {
       ...this.state,
     };
@@ -727,20 +755,84 @@ class FileTable extends Component {
     );
 
     const actions = (
-      <Actions
-        handleSetState={this.handleSetState}
-        menu={this.props.menu}
-        mobileOpen={mobileOpen}
-      />
+      <Actions handleSetState={this.handleSetState} menu={this.props.menu} />
+    );
+
+    let fileType;
+    if (contentType.startsWith("image"))
+      fileType = (
+        <img
+          style={{
+            width: "100%",
+            height: "auto",
+            maxWidth: "100%",
+            objectFit: "cover",
+          }}
+          src={fileData}
+        ></img>
+      );
+    else if (contentType.startsWith("video"))
+      fileType = (
+        <video
+          autoplay
+          controls={true}
+          muted={false}
+          style={{
+            width: "100%",
+            height: "auto",
+            maxHeight: "90vh",
+            maxWidth: "100%",
+            objectFit: "cover",
+          }}
+        >
+          <source src={fileData} type={contentType} />
+          Your browser does not support the video tag.
+        </video>
+      );
+    else if (contentType.startsWith("audio"))
+      fileType = (
+        <audio controls>
+          <source src={fileData} type={contentType} />
+          Your browser does not support the audio element.
+        </audio>
+      );
+    else if (contentType === "application/pdf")
+      fileType = (
+        <iframe
+          src="https://docs.google.com/viewer?url=http://www.pdf995.com/samples/pdf.pdf&embedded=true"
+          style={{ frameborder: "0", height: "500px", width: "100%" }}
+        ></iframe>
+      );
+    const fileModal = (
+      <Dialog
+        open={modalOpen}
+        onClose={this.handleFileClose}
+        PaperProps={{
+          style: {
+            backgroundColor: "transparent",
+            boxShadow: "none",
+          },
+        }}
+      >
+        <DialogContent>{fileType}</DialogContent>
+      </Dialog>
     );
 
     return (
       <Fragment>
         <div className={classes.root}>
           <CssBaseline />
-          <Header homePage={"Home"} />
-          <ActionsDrawer actions={actions} />
+          <Header
+            homePage={"Home"}
+            handleDrawerToggle={this.handleDrawerToggle}
+          />
+          <ActionsDrawer
+            actions={actions}
+            mobileOpen={mobileOpen}
+            handleDrawerToggle={this.handleDrawerToggle}
+          />
           <main className={classes.content}>
+            {fileModal}
             <div className={classes.toolbar} />
             <ActionHeader
               files={files}

@@ -19,9 +19,10 @@ import Divider from "@material-ui/core/Divider";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import Typography from "@material-ui/core/Typography";
-
+import axios from "axios";
 import CreateNewFolderOutlinedIcon from "@material-ui/icons/CreateNewFolderOutlined";
 import FileIcon from "@material-ui/icons/InsertDriveFile";
+import CustomizedAccordions from "../components/Accordion";
 
 class Actions extends Component {
   state = {
@@ -30,7 +31,13 @@ class Actions extends Component {
     folder: "",
     folderButtonDisabled: true,
     anchorEl: undefined,
+    uploadedPercentage: 0,
+    accordionOpen: false,
+    uploadFiles: [],
+    accordionMsg: "",
+    uploadFiles: [],
   };
+
   handleClickOpen = (e) => {
     this.setState({ menuOpen: true, anchorEl: e.currentTarget });
   };
@@ -53,6 +60,7 @@ class Actions extends Component {
   };
 
   handleFileUploadOpen = () => {
+    this.setState({ menuOpen: false });
     document.getElementById("upload-file").click();
   };
 
@@ -81,31 +89,52 @@ class Actions extends Component {
   handleFileUpload = (e) => {
     const files = e.target.files;
     const form = new FormData();
+    const uploadFiles = [];
     for (let i = 0; i < files.length; i++) {
       form.append("files", files[i], files[i].name);
+      uploadFiles.push(files[i].name);
     }
+    this.setState({
+      accordionOpen: true,
+      accordionMsg: `Uploading ${files.length} files...`,
+      uploadFiles,
+      filesStatus: false,
+    });
     const folder = this.props.match.params.folder
       ? `/${this.props.match.params.folder}`
       : "";
-    fetch(`/api/files/upload${folder}`, { method: "POST", body: form })
-      .then((res) => res.json())
-      .then((data) => {
+    axios
+      .post(`/api/files/upload${folder}`, form)
+      .then((d) => {
+        const { data } = { ...d };
         const { files, uploadedFiles } = data;
-        this.setState(
-          { menuOpen: false },
-          this.props.handleSetState({
-            files,
-            mobileOpen: false,
-            selectedFiles: uploadedFiles,
-            selectedFolders: [],
-          })
-        );
+        this.setState({
+          menuOpen: false,
+          filesStatus: true,
+          accordionMsg: `Uploaded ${uploadedFiles.length} files`,
+        });
+        this.props.handleSetState({
+          files,
+          mobileOpen: false,
+          selectedFiles: uploadedFiles,
+          selectedFolders: [],
+        });
       })
-      .catch((err) => console.log("Errasdasdsa", err));
+      .catch((err) => console.log("Error", err));
   };
 
   render() {
-    const { menuOpen, newFolderOpen, folderButtonDisabled } = { ...this.state };
+    const {
+      menuOpen,
+      newFolderOpen,
+      folderButtonDisabled,
+      accordionOpen,
+      uploadFiles,
+      accordionMsg,
+      filesStatus,
+    } = {
+      ...this.state,
+    };
     const {
       handleClose,
       handleClickOpen,
@@ -238,6 +267,12 @@ class Actions extends Component {
           </ListItem>
         </List>
         <Divider />
+        <CustomizedAccordions
+          accordionOpen={accordionOpen}
+          uploadFiles={uploadFiles}
+          accordionMsg={accordionMsg}
+          filesStatus={filesStatus}
+        />
       </Fragment>
     );
   }

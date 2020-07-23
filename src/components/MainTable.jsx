@@ -40,7 +40,7 @@ const useStyles = makeStyles((theme) => ({
     alignItems: "center",
   },
   fileSize: {
-    [theme.breakpoints.down("xs")]: {
+    [theme.breakpoints.down("sm")]: {
       display: "none",
     },
   },
@@ -113,6 +113,7 @@ function MainTable({
                   <TableCell>
                     <div className={classes.textContainer}>
                       <FileIcon style={{ fill: "#5f6368" }} />
+
                       <span className="data">{file.filename}</span>
                       {currentMenu === "Home" && file.metadata.isFavorited && (
                         <StarIcon className="data" />

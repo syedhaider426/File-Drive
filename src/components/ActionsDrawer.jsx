@@ -15,18 +15,6 @@ const styles = (theme) => ({
       flexShrink: 0,
     },
   },
-  appBar: {
-    [theme.breakpoints.up("sm")]: {
-      width: `calc(100% - ${drawerWidth}px)`,
-      marginLeft: drawerWidth,
-    },
-  },
-  menuButton: {
-    marginRight: theme.spacing(2),
-    [theme.breakpoints.up("sm")]: {
-      display: "none",
-    },
-  },
   // necessary for content to be below app bar
   toolbar: theme.mixins.toolbar,
   drawerPaper: {
@@ -40,12 +28,6 @@ const styles = (theme) => ({
 
 class ActionsDrawer extends Component {
   state = { mobileOpen: false, profileOpen: false };
-
-  handleDrawerToggle = () => {
-    this.setState({
-      mobileOpen: !this.state.mobileOpen,
-    });
-  };
 
   handleProfileMenuOpen = (e) => {
     this.setState({ profileOpen: true, profileAnchorEl: e.currentTarget });
@@ -81,8 +63,8 @@ class ActionsDrawer extends Component {
           <Hidden smUp implementation="css">
             <Drawer
               variant="temporary"
-              open={mobileOpen}
-              onClose={this.handleDrawerToggle}
+              open={this.props.mobileOpen}
+              onClose={this.props.handleDrawerToggle}
               classes={{
                 paper: classes.drawerPaper,
               }}
