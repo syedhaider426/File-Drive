@@ -11,7 +11,13 @@ import CssBaseline from "@material-ui/core/CssBaseline";
 import ActionsDrawer from "./ActionsDrawer";
 import Header from "./Header";
 import axios from "axios";
-import { Dialog, DialogContent } from "@material-ui/core";
+import {
+  Dialog,
+  DialogContent,
+  Typography,
+  Button,
+  Box,
+} from "@material-ui/core";
 
 const layout = (theme) => ({
   root: {
@@ -773,6 +779,10 @@ class FileTable extends Component {
     );
 
     let fileType;
+    let style = {
+      backgroundColor: "transparent",
+      boxShadow: "none",
+    };
     if (contentType.startsWith("image"))
       fileType = (
         <img
@@ -811,25 +821,32 @@ class FileTable extends Component {
           Your browser does not support the audio element.
         </audio>
       );
-    else if (contentType === "application/pdf")
+    else {
       fileType = (
-        <iframe
-          title={selectedFiles[0].filename}
-          src="https://docs.google.com/viewer?url=http://www.pdf995.com/samples/pdf.pdf&embedded=true"
-          style={{ frameborder: "0", height: "500px", width: "100%" }}
-        ></iframe>
+        <div>
+          <Typography style={{ textAlign: "center" }}>
+            <Box fontWeight="fontWeightMedium">
+              {selectedFiles[0]?.filename}{" "}
+            </Box>
+          </Typography>
+          <div style={{ textAlign: "center" }}>
+            <Button
+              color="primary"
+              variant="contained"
+              onClick={() => this.handleSingleDownload(selectedFiles[0])}
+            >
+              Download
+            </Button>{" "}
+          </div>
+        </div>
       );
-
+      style = {};
+    }
     const fileModal = (
       <Dialog
         open={modalOpen}
         onClose={this.handleFileClose}
-        PaperProps={{
-          style: {
-            backgroundColor: "transparent",
-            boxShadow: "none",
-          },
-        }}
+        PaperProps={(style = { style })}
       >
         <DialogContent>{fileType}</DialogContent>
       </Dialog>
