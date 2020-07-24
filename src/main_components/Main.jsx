@@ -4,7 +4,6 @@ import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import ForgotPassword from "../components/ForgotPassword";
 import Files from "../components/Files";
 import SignInSide from "../components/Login";
-import Dashboard from "../panel_left/Dashboard";
 import Register from "../components/Register";
 import Confirmation from "../components/Confirmation";
 import Profile from "../components/Profile";
@@ -41,9 +40,6 @@ const Main = () => {
           </Route>
           <Route path="/drive/folders/:folder">
             <Files menu={"Folder"} />
-          </Route>
-          <Route path="/dashboard">
-            <Dashboard />
           </Route>
           <Route path="/register">
             <Register />

@@ -27,7 +27,7 @@ const styles = (theme) => ({
 });
 
 class ActionsDrawer extends Component {
-  state = { mobileOpen: false, profileOpen: false };
+  state = { profileOpen: false };
 
   handleProfileMenuOpen = (e) => {
     this.setState({ profileOpen: true, profileAnchorEl: e.currentTarget });
@@ -38,7 +38,7 @@ class ActionsDrawer extends Component {
   };
 
   render() {
-    const { mobileOpen, profileOpen, profileAnchorEl } = { ...this.state };
+    const { profileOpen, profileAnchorEl } = { ...this.state };
     const { actions, classes } = { ...this.props };
 
     const profileMenu = (

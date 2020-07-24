@@ -49,7 +49,7 @@ class FileTable extends Component {
     trashAnchorEl: undefined,
     moveMenuOpen: false,
     moveAnchorEl: undefined,
-    mobileOpen: false,
+
     fileData: undefined,
     contentType: "",
   };
@@ -674,6 +674,20 @@ class FileTable extends Component {
     this.setState({ modalOpen: false });
   };
 
+  handleSingleDownload = (file) => {
+    fetch(`/api/files/${file.id}`)
+      .then((response) => response.blob())
+      .then((blob) => {
+        const url = URL.createObjectURL(new Blob([blob]));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", file.filename);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+      });
+  };
+
   render() {
     const {
       files,
@@ -768,6 +782,7 @@ class FileTable extends Component {
             maxWidth: "100%",
             objectFit: "cover",
           }}
+          alt={selectedFiles[0].filename}
           src={fileData}
         ></img>
       );
@@ -799,10 +814,12 @@ class FileTable extends Component {
     else if (contentType === "application/pdf")
       fileType = (
         <iframe
+          title={selectedFiles[0].filename}
           src="https://docs.google.com/viewer?url=http://www.pdf995.com/samples/pdf.pdf&embedded=true"
           style={{ frameborder: "0", height: "500px", width: "100%" }}
         ></iframe>
       );
+
     const fileModal = (
       <Dialog
         open={modalOpen}
@@ -860,6 +877,7 @@ class FileTable extends Component {
               trashAnchorEl={trashAnchorEl}
               moveMenuOpen={moveMenuOpen}
               moveAnchorEl={moveAnchorEl}
+              handleSingleDownload={this.handleSingleDownload}
             />
             <MainTable
               handleFolderClick={this.handleFolderClick}

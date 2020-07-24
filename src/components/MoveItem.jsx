@@ -8,8 +8,7 @@ import {
   IconButton,
   MenuItem,
 } from "@material-ui/core";
-import { Link, withRouter } from "react-router-dom";
-import postData from "../helpers/postData";
+import { withRouter } from "react-router-dom";
 import Snack from "./Snack";
 import { withStyles } from "@material-ui/core/styles";
 import CloseIcon from "@material-ui/icons/Close";

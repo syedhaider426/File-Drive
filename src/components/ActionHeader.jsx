@@ -24,6 +24,7 @@ import CloseIcon from "@material-ui/icons/Close";
 import RestoreAllDialog from "./RestoreAllDialog";
 import DeleteAllDialog from "./DeleteAllDialog";
 import TrashMenu from "./TrashMenu";
+import GetAppIcon from "@material-ui/icons/GetApp";
 
 const styles = (theme) => ({
   grow: {
@@ -297,6 +298,7 @@ class ActionHeader extends Component {
       restoreAllOpen,
       handleSetState,
       deleteAllOpen,
+      handleSingleDownload,
     } = this.props;
     const {
       isMobileMenuOpen,
@@ -485,6 +487,22 @@ class ActionHeader extends Component {
                 </IconButton>
               </Tooltip>
               Remove from Favorites
+            </MenuItem>
+          )}
+
+        {selectedFiles.length > 0 &&
+          selectedFolders.length <= 0 &&
+          currentMenu !== "Trash" && (
+            <MenuItem
+              className={classes.menuItem}
+              onClick={() => handleSingleDownload(selectedFiles[0])}
+            >
+              <Tooltip title="Download">
+                <IconButton style={{ color: "gray" }} aria-label="Download">
+                  <GetAppIcon />
+                </IconButton>
+              </Tooltip>
+              Download
             </MenuItem>
           )}
         {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
@@ -693,6 +711,20 @@ class ActionHeader extends Component {
                     onClick={handleUnfavorited}
                   >
                     <StarOutlineOutlinedIcon />
+                  </IconButton>
+                </Tooltip>
+              )}
+
+            {selectedFiles.length > 0 &&
+              selectedFolders.length <= 0 &&
+              currentMenu !== "Trash" && (
+                <Tooltip title="Download">
+                  <IconButton
+                    style={{ color: "gray" }}
+                    aria-label="Download"
+                    onClick={() => handleSingleDownload(selectedFiles[0])}
+                  >
+                    <GetAppIcon />
                   </IconButton>
                 </Tooltip>
               )}

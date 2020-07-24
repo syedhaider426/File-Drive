@@ -35,7 +35,6 @@ class Actions extends Component {
     accordionOpen: false,
     uploadFiles: [],
     accordionMsg: "",
-    uploadFiles: [],
   };
 
   handleClickOpen = (e) => {

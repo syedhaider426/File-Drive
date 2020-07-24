@@ -4,7 +4,7 @@ import MuiAccordion from "@material-ui/core/Accordion";
 import MuiAccordionSummary from "@material-ui/core/AccordionSummary";
 import MuiAccordionDetails from "@material-ui/core/AccordionDetails";
 import Typography from "@material-ui/core/Typography";
-import { Snackbar, Divider, CircularProgress } from "@material-ui/core";
+import { Snackbar, CircularProgress } from "@material-ui/core";
 import CheckCircleOutlineIcon from "@material-ui/icons/CheckCircleOutline";
 
 const Accordion = withStyles({
