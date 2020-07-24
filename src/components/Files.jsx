@@ -49,7 +49,6 @@ class FileTable extends Component {
     trashAnchorEl: undefined,
     moveMenuOpen: false,
     moveAnchorEl: undefined,
-
     fileData: undefined,
     contentType: "",
   };
@@ -675,7 +674,8 @@ class FileTable extends Component {
   };
 
   handleSingleDownload = (file) => {
-    fetch(`/api/files/${file.id}`)
+    let id = file.id || file._id;
+    fetch(`/api/files/${id}`)
       .then((response) => response.blob())
       .then((blob) => {
         const url = URL.createObjectURL(new Blob([blob]));
