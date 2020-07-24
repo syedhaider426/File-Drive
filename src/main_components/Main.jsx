@@ -1,12 +1,18 @@
 import Login from "../components/Login";
 import React, { Fragment } from "react";
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Redirect,
+} from "react-router-dom";
 import ForgotPassword from "../components/ForgotPassword";
 import Files from "../components/Files";
 import SignInSide from "../components/Login";
 import Register from "../components/Register";
 import Confirmation from "../components/Confirmation";
 import Profile from "../components/Profile";
+import NotFound from "../components/NotFound";
 
 /***
  * If the same component is used as the child of multiple <Route>s at the
@@ -23,6 +29,10 @@ const Main = () => {
     <Fragment>
       <Router>
         <Switch>
+          <Route path="/not-found" component={NotFound}></Route>
+          <Route path="/" exact>
+            <Login />
+          </Route>
           <Route path="/login">
             <SignInSide />
           </Route>
@@ -61,9 +71,7 @@ const Main = () => {
           <Route path="/drive/profile">
             <Profile />
           </Route>
-          <Route path="/" exact>
-            <Login />
-          </Route>
+          <Redirect to="/not-found" />
         </Switch>
       </Router>
     </Fragment>
