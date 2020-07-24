@@ -33,7 +33,7 @@ class RenameFile extends Component {
     if (reason === "clickaway") {
       return;
     }
-    this.props.handleSetState({
+    this.setState({
       renamedSnack: false,
     });
   };

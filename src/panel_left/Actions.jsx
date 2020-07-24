@@ -112,6 +112,10 @@ class Actions extends Component {
           filesStatus: true,
           accordionMsg: `Uploaded ${uploadedFiles.length} files`,
         });
+        console.log(this.props.match.url);
+        if (this.props.match.url !== "/drive/home") {
+          this.props.history.push("/drive/home");
+        }
         this.props.handleSetState({
           files,
           mobileOpen: false,

@@ -57,6 +57,10 @@ class FileTable extends Component {
     moveAnchorEl: undefined,
     fileData: undefined,
     contentType: "",
+    sortColumn: {
+      name: "Name",
+      order: "asc",
+    },
   };
 
   fetchData = () => {
@@ -694,10 +698,65 @@ class FileTable extends Component {
       });
   };
 
+  handleSort = (column) => {
+    const { sortColumn } = { ...this.state };
+    sortColumn.order =
+      sortColumn.name === column && sortColumn.order === "asc" ? "desc" : "asc";
+    sortColumn.name = column;
+    this.setState({ sortColumn });
+  };
+
+  sortFolders = (folders) => {
+    const { sortColumn } = { ...this.state };
+    let value = sortColumn.order === "asc" ? 1 : -1;
+    console.log(sortColumn);
+    if (sortColumn.name === "Name") {
+      return folders.sort((a, b) => {
+        /* Storing case insensitive comparison */
+        var comparison = a.foldername
+          .toString()
+          .toLowerCase()
+          .localeCompare(b.foldername.toString().toLowerCase());
+        return value * comparison;
+      });
+    } else if (sortColumn.name === "Uploaded On") {
+      return folders.sort((a, b) => {
+        if (a.createdOn > b.createdOn) return 1 * value;
+        if (a.createdOn < b.createdOn) return -1 * value;
+        return 0;
+      });
+    } else return folders;
+  };
+
+  sortFiles = (files) => {
+    const { sortColumn } = { ...this.state };
+    let value = sortColumn.order === "asc" ? 1 : -1;
+    if (sortColumn.name === "Name") {
+      return files.sort((a, b) => {
+        /* Storing case insensitive comparison */
+        var comparison = a.filename
+          .toString()
+          .toLowerCase()
+          .localeCompare(b.filename.toString().toLowerCase());
+        return value * comparison;
+      });
+    } else if (sortColumn.name === "Uploaded On") {
+      return files.sort((a, b) => {
+        if (a.uploadDate > b.uploadDate) return 1 * value;
+        if (a.uploadDate < b.uploadDate) return -1 * value;
+        return 0;
+      });
+    } else if (sortColumn.name === "File Size") {
+      return files.sort((a, b) => {
+        return value * (a.length - b.length);
+      });
+    } else return files;
+  };
+
   render() {
     const {
-      files,
       folders,
+      files,
       selectedFolders,
       selectedFiles,
       filesModified,
@@ -719,6 +778,7 @@ class FileTable extends Component {
       modalOpen,
       fileData,
       contentType,
+      sortColumn,
     } = {
       ...this.state,
     };
@@ -852,6 +912,8 @@ class FileTable extends Component {
       </Dialog>
     );
 
+    let sortedFolders = this.sortFolders(folders);
+    let sortedFiles = this.sortFiles(files);
     return (
       <Fragment>
         <div className={classes.root}>
@@ -869,8 +931,8 @@ class FileTable extends Component {
             {fileModal}
             <div className={classes.toolbar} />
             <ActionHeader
-              files={files}
-              folders={folders}
+              files={sortedFiles}
+              folders={sortedFolders}
               selectedFiles={selectedFiles}
               selectedFolders={selectedFolders}
               handleTrash={this.handleTrash}
@@ -899,12 +961,14 @@ class FileTable extends Component {
             <MainTable
               handleFolderClick={this.handleFolderClick}
               handleFileClick={this.handleFileClick}
-              folders={folders}
-              files={files}
+              handleSort={this.handleSort}
+              folders={sortedFolders}
+              files={sortedFiles}
               selectedFolders={selectedFolders}
               selectedFiles={selectedFiles}
               currentMenu={this.props.menu}
               isLoaded={isLoaded}
+              sortColumn={sortColumn}
             />
             {copySnack}
             {trashSnack}

@@ -6,6 +6,7 @@ import MuiAccordionDetails from "@material-ui/core/AccordionDetails";
 import Typography from "@material-ui/core/Typography";
 import { Snackbar, CircularProgress } from "@material-ui/core";
 import CheckCircleOutlineIcon from "@material-ui/icons/CheckCircleOutline";
+import CloseIcon from "@material-ui/icons/Close";
 
 const Accordion = withStyles({
   root: {

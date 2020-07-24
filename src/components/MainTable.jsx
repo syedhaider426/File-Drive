@@ -12,6 +12,8 @@ import { CircularProgress, TableContainer } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import StarIcon from "@material-ui/icons/Star";
 import selectedIndex from "../helpers/selectedIndex";
+import ArrowUpwardIcon from "@material-ui/icons/ArrowUpward";
+import ArrowDownwardIcon from "@material-ui/icons/ArrowDownward";
 
 const useStyles = makeStyles((theme) => ({
   tableRow: {
@@ -46,6 +48,13 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const renderSortIcon = (sortColumn, column) => {
+  if (sortColumn.name === column && sortColumn.order === "asc")
+    return <ArrowUpwardIcon fontSize="small" />;
+  else if (sortColumn.name === column && sortColumn.order === "desc")
+    return <ArrowDownwardIcon fontSize="small" />;
+};
+
 function MainTable({
   handleFolderClick,
   handleFileClick,
@@ -55,6 +64,8 @@ function MainTable({
   selectedFiles,
   currentMenu,
   isLoaded,
+  handleSort,
+  sortColumn,
 }) {
   const classes = useStyles();
   const headerList = ["Name", "Uploaded On", "File Size"];
@@ -67,11 +78,14 @@ function MainTable({
               <TableRow>
                 {headerList.map((header, index) => (
                   <TableCell
+                    onClick={() => handleSort(header)}
                     className={header === "File Size" ? classes.fileSize : ""}
                     key={header}
                     style={{ width: "33.33%" }}
                   >
-                    {header}
+                    <span style={{ display: "flex" }}>
+                      {header} {renderSortIcon(sortColumn, header)}
+                    </span>
                   </TableCell>
                 ))}
               </TableRow>
