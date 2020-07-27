@@ -754,6 +754,7 @@ class FileTable extends Component {
   };
 
   render() {
+    document.body.style.cursor = "default";
     const {
       folders,
       files,
@@ -912,8 +913,8 @@ class FileTable extends Component {
       </Dialog>
     );
 
-    let sortedFolders = this.sortFolders(folders);
-    let sortedFiles = this.sortFiles(files);
+    this.sortFolders(folders);
+    this.sortFiles(files);
     return (
       <Fragment>
         <div className={classes.root}>
@@ -921,6 +922,7 @@ class FileTable extends Component {
           <Header
             homePage={"Home"}
             handleDrawerToggle={this.handleDrawerToggle}
+            handleSetState={this.handleSetState}
           />
           <ActionsDrawer
             actions={actions}
@@ -931,8 +933,8 @@ class FileTable extends Component {
             {fileModal}
             <div className={classes.toolbar} />
             <ActionHeader
-              files={sortedFiles}
-              folders={sortedFolders}
+              files={files}
+              folders={folders}
               selectedFiles={selectedFiles}
               selectedFolders={selectedFolders}
               handleTrash={this.handleTrash}
@@ -962,8 +964,8 @@ class FileTable extends Component {
               handleFolderClick={this.handleFolderClick}
               handleFileClick={this.handleFileClick}
               handleSort={this.handleSort}
-              folders={sortedFolders}
-              files={sortedFiles}
+              folders={folders}
+              files={files}
               selectedFolders={selectedFolders}
               selectedFiles={selectedFiles}
               currentMenu={this.props.menu}

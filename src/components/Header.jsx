@@ -14,6 +14,12 @@ import MenuIcon from "@material-ui/icons/Menu";
 import { Link } from "react-router-dom";
 import { withRouter } from "react-router-dom";
 import postData from "../helpers/postData";
+import TextField from "@material-ui/core/TextField";
+import Autocomplete from "@material-ui/lab/Autocomplete";
+import SearchIcon from "@material-ui/icons/Search";
+import FileIcon from "@material-ui/icons/InsertDriveFile";
+import FolderIcon from "@material-ui/icons/Folder";
+import getData from "../helpers/getData";
 
 const drawerWidth = 150;
 
@@ -48,10 +54,23 @@ const styles = (theme) => ({
     flexGrow: 1,
     padding: theme.spacing(1),
   },
+  centeredContent: {
+    display: "flex",
+    alignItems: "center",
+    textAlign: "center",
+  },
 });
 
 class Header extends Component {
-  state = { profileOpen: false };
+  state = { profileOpen: false, item: "", itemID: "", buttonDisabled: true };
+
+  componentDidMount() {
+    getData(`/api${this.props.match.url}`)
+      .then((data) => {
+        this.sortAlphabetically(data.files, data.folders);
+      })
+      .catch((err) => console.log("Err", err));
+  }
 
   handleProfileMenuOpen = (e) => {
     this.setState({ profileOpen: true, profileAnchorEl: e.currentTarget });
@@ -67,10 +86,70 @@ class Header extends Component {
     });
   };
 
+  handleAutoComplete = (e, value) => {
+    if (value === null)
+      return this.setState({ buttonDisabled: true, itemID: undefined });
+    this.setState({ buttonDisabled: false, itemID: value });
+  };
+
+  handleSubmit = () => {
+    const { itemID } = { ...this.state };
+    document.body.style.cursor = "wait";
+    if (itemID.foldername !== undefined)
+      this.props.history.push(`/drive/folders/${itemID._id}`);
+    else if (itemID.filename !== undefined) {
+      getData(`/api/files/${itemID._id}`).then((d) => {
+        document.body.style.cursor = "default";
+        this.props.handleSetState({
+          fileData: `/api/files/${itemID._id}`,
+          modalOpen: true,
+          contentType: d.headers["content-type"],
+        });
+      });
+    }
+  };
+
+  sortAlphabetically = (files, folders) => {
+    files.sort((a, b) => {
+      /* Storing case insensitive comparison */
+      var comparison = a.filename
+        .toString()
+        .toLowerCase()
+        .localeCompare(b.filename.toString().toLowerCase());
+      return comparison;
+    });
+    folders.sort((a, b) => {
+      /* Storing case insensitive comparison */
+      var comparison = a.foldername
+        .toString()
+        .toLowerCase()
+        .localeCompare(b.foldername.toString().toLowerCase());
+      return comparison;
+    });
+    return this.setState({ files, folders });
+  };
+
   render() {
-    const { profileOpen, profileAnchorEl } = { ...this.state };
+    const { profileOpen, profileAnchorEl, buttonDisabled, files, folders } = {
+      ...this.state,
+    };
     const { classes, homePage } = { ...this.props };
 
+    let options = [];
+    for (let i = 0; i < folders?.length; ++i) {
+      options.push({
+        _id: folders[i]._id,
+        item: folders[i].foldername,
+        foldername: folders[i].foldername,
+      });
+    }
+    for (let i = 0; i < files?.length; ++i) {
+      options.push({
+        _id: files[i]._id,
+        item: files[i].filename,
+        filename: files[i].filename,
+      });
+    }
     const profileMenu = (
       <Menu
         anchorEl={profileAnchorEl}
@@ -118,6 +197,36 @@ class Header extends Component {
                 "G-Drive"
               )}
             </Typography>
+            <Autocomplete
+              id="combo-box-demo"
+              options={options}
+              getOptionLabel={(option) => option.item}
+              style={{ width: 300 }}
+              renderInput={(params) => (
+                <TextField {...params} label="Search..." variant="outlined" />
+              )}
+              renderOption={(option) => {
+                return (
+                  <Typography>
+                    {option.filename !== undefined ? (
+                      <div className={classes.centeredContent}>
+                        <FileIcon></FileIcon>
+                        {option.filename}
+                      </div>
+                    ) : (
+                      <div className={classes.centeredContent}>
+                        <FolderIcon></FolderIcon>
+                        {option.foldername}
+                      </div>
+                    )}
+                  </Typography>
+                );
+              }}
+              onChange={(e, v) => this.handleAutoComplete(e, v)}
+            />
+            <IconButton disabled={buttonDisabled} onClick={this.handleSubmit}>
+              <SearchIcon />
+            </IconButton>
             {homePage === "Home" && (
               <IconButton
                 edge="end"
