@@ -57,40 +57,36 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function validateEmail(email) {
-  const re = /\S+@\S+\.\S+/;
-  return re.test(String(email).toLowerCase());
-}
-
 function Login() {
-  const [errors, setErrors] = useState({ email: "", password: "", login: "" });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loginFailed, setLoginFailed] = useState(false);
+  const [errors, setErrors] = useState({ email: "", password: "" });
   let history = useHistory();
 
   const handleEmailChange = ({ target }) => {
-    let err = {};
-    if (target.value === "") err.email = "Email is required";
-    else delete err.email;
+    if (target.value === "") errors.email = "Email is required";
+    else delete errors.email;
     setEmail(target.value);
-    setErrors(err);
+    setErrors(errors);
   };
 
   const handleEmailBlur = ({ target }) => {
-    let err = {};
-    if (!validateEmail(target.value) && !err.email)
-      err.email = "Please enter a valid email";
-    else delete err.email;
-    setErrors(err);
+    if (!validateEmail(target.value) && !errors.email)
+      errors.email = "Please enter a valid email";
+    else delete errors.email;
+    setErrors(errors);
+  };
+
+  const validateEmail = (email) => {
+    const re = /\S+@\S+\.\S+/;
+    return re.test(String(email).toLowerCase());
   };
 
   const handlePasswordChange = ({ target }) => {
-    let err = {};
-    if (target.value === "") err.password = "Password is required";
-    else delete err.password;
+    if (target.value === "") errors.password = "Password is required";
+    else delete errors.password;
     setPassword(target.value);
-    setErrors(err);
+    setErrors(errors);
   };
 
   const handleLogin = (e) => {
@@ -98,27 +94,27 @@ function Login() {
     let err = {};
     if (email === "") err.email = "Email is required.";
     if (password === "") err.password = "Password is required.";
-    if (Object.keys(err).length !== 0) {
+    if (Object.keys(err).length > 0) {
       setErrors(err);
     } else {
       const data = { email, password };
-      postData("/api/users/login", data).then((data) => {
-        if (data.error) {
-          let err = {};
-          err.login = "Login failed. Please try again.";
-          setErrors(err);
-        } else {
-          history.push("/drive/home");
-        }
-      });
+      postData("/api/users/login", data)
+        .then((data) => {
+          if (data.error) {
+            err.login = "Login failed. Please try again.";
+            setErrors(err);
+          } else {
+            history.push("/drive/home");
+          }
+        })
+        .catch((e) => {
+          err.login = "Unable to login at this. Please try again later.";
+          setErrors(errors);
+        });
     }
   };
 
-  const handleClose = () => {
-    let err = {};
-    setErrors(err);
-  };
-
+  const handleClose = () => {};
   const classes = useStyles();
   const failLogin = (
     <Snackbar
