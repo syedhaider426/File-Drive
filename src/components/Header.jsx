@@ -81,9 +81,11 @@ class Header extends Component {
   };
 
   handleLogOut = () => {
-    postData("/logout").then(() => {
-      this.props.history.push("/");
-    });
+    postData("/logout")
+      .then(() => {
+        this.props.history.push("/");
+      })
+      .catch((err) => console.log(err));
   };
 
   handleAutoComplete = (e, value) => {

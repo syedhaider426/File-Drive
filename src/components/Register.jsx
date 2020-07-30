@@ -10,6 +10,7 @@ import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import Typography from "@material-ui/core/Typography";
 import { withStyles } from "@material-ui/core/styles";
 import { Container } from "@material-ui/core";
+import Axios from "axios";
 
 const styles = (theme) => ({
   paper: {
@@ -79,12 +80,11 @@ class Register extends Component {
       this.setState({ errors });
     } else {
       const data = { email, password, confirmPassword };
-      postData("/api/user/register", data)
+      Axios.post("/api/users/registration", data)
         .then((data) => {
-          console.log("test");
           this.props.history.push("/confirmRegistration");
         })
-        .catch((err) => console.log("Err"));
+        .catch((err) => console.log("Error", err));
     }
   };
 
