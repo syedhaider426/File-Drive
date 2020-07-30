@@ -199,47 +199,59 @@ class Header extends Component {
                 "G-Drive"
               )}
             </Typography>
-            <Autocomplete
-              id="combo-box-demo"
-              options={options}
-              getOptionLabel={(option) => option.item}
-              style={{ width: 300 }}
-              renderInput={(params) => (
-                <TextField {...params} label="Search..." variant="outlined" />
-              )}
-              renderOption={(option) => {
-                return (
-                  <Typography>
-                    {option.filename !== undefined ? (
-                      <div className={classes.centeredContent}>
-                        <FileIcon></FileIcon>
-                        {option.filename}
-                      </div>
-                    ) : (
-                      <div className={classes.centeredContent}>
-                        <FolderIcon></FolderIcon>
-                        {option.foldername}
-                      </div>
-                    )}
-                  </Typography>
-                );
-              }}
-              onChange={(e, v) => this.handleAutoComplete(e, v)}
-            />
-            <IconButton disabled={buttonDisabled} onClick={this.handleSubmit}>
-              <SearchIcon />
-            </IconButton>
             {homePage === "Home" && (
-              <IconButton
-                edge="end"
-                aria-label="account of current user"
-                aria-controls={"profile-menu"}
-                aria-haspopup="true"
-                onClick={this.handleProfileMenuOpen}
-                color="inherit"
-              >
-                <AccountCircle />
-              </IconButton>
+              <Fragment>
+                <Autocomplete
+                  id="combo-box-demo"
+                  options={options}
+                  getOptionLabel={(option) => option.item}
+                  style={{ width: 300 }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Search..."
+                      variant="outlined"
+                    />
+                  )}
+                  renderOption={(option) => {
+                    return (
+                      <Typography>
+                        {option.filename !== undefined ? (
+                          <div className={classes.centeredContent}>
+                            <FileIcon></FileIcon>
+                            {option.filename}
+                          </div>
+                        ) : (
+                          <div className={classes.centeredContent}>
+                            <FolderIcon></FolderIcon>
+                            {option.foldername}
+                          </div>
+                        )}
+                      </Typography>
+                    );
+                  }}
+                  onChange={(e, v) => this.handleAutoComplete(e, v)}
+                />
+
+                <IconButton
+                  disabled={buttonDisabled}
+                  onClick={this.handleSubmit}
+                >
+                  <SearchIcon />
+                </IconButton>
+                {homePage === "Home" && (
+                  <IconButton
+                    edge="end"
+                    aria-label="account of current user"
+                    aria-controls={"profile-menu"}
+                    aria-haspopup="true"
+                    onClick={this.handleProfileMenuOpen}
+                    color="inherit"
+                  >
+                    <AccountCircle />
+                  </IconButton>
+                )}
+              </Fragment>
             )}
             {homePage !== "Home" && (
               <Button color="inherit" onClick={this.props.history.goBack}>

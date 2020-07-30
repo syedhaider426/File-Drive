@@ -1,5 +1,5 @@
-import React, { Component } from "react";
-import { Link, withRouter } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useHistory } from "react-router-dom";
 import postData from "../helpers/postData";
 import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
@@ -8,11 +8,16 @@ import TextField from "@material-ui/core/TextField";
 import Box from "@material-ui/core/Box";
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import Typography from "@material-ui/core/Typography";
-import { withStyles } from "@material-ui/core/styles";
-import { Container } from "@material-ui/core";
-import Axios from "axios";
+import { Container, makeStyles } from "@material-ui/core";
+import MuiAlert from "@material-ui/lab/Alert";
+import { Snackbar } from "@material-ui/core";
+import Header from "./Header";
 
-const styles = (theme) => ({
+function Alert(props) {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
+
+const useStyles = makeStyles((theme) => ({
   paper: {
     marginTop: theme.spacing(8),
     display: "flex",
@@ -30,148 +35,176 @@ const styles = (theme) => ({
   submit: {
     margin: theme.spacing(3, 0, 2),
   },
-});
-class Register extends Component {
-  state = {
+}));
+
+export default function Register() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [errors, setErrors] = useState({
     email: "",
     password: "",
-    errors: {
-      email: "",
-      password: "",
-      confirmPassword: "",
-    },
     confirmPassword: "",
-  };
+  });
+  let history = useHistory();
 
-  handleEmailChange = ({ target }) => {
-    const { errors } = this.state;
+  const handleEmailChange = ({ target }) => {
     if (target.value === "") errors.email = "Email is required";
     else delete errors.email;
-    this.setState({ email: target.value, errors });
+    setEmail(target.value);
+    setErrors(errors);
   };
 
-  handlePasswordChange = ({ target }) => {
-    const { errors, confirmPassword } = this.state;
+  const handleEmailBlur = ({ target }) => {
+    if (!validateEmail(target.value) && !errors.email)
+      errors.email = "Please enter a valid email";
+    else delete errors.email;
+    setErrors(errors);
+  };
+
+  const validateEmail = (email) => {
+    const re = /\S+@\S+\.\S+/;
+    return re.test(String(email).toLowerCase());
+  };
+
+  const handlePasswordChange = ({ target }) => {
     if (target.value === "") errors.password = "Password is required";
     else if (target.value !== confirmPassword && confirmPassword !== "")
       errors.password = "Passwords do not match";
     else delete errors.password;
-    this.setState({ password: target.value, errors });
+    setPassword(target.value);
+    setErrors(errors);
   };
 
-  handleConfirmPasswordChange = ({ target }) => {
-    const { errors, password } = this.state;
+  const handleConfirmPasswordChange = ({ target }) => {
     if (target.value === "") errors.confirmPassword = "Please confirm password";
     if (target.value !== password)
       errors.confirmPassword = "Passwords do not match";
     else delete errors.confirmPassword;
-    this.setState({ confirmPassword: target.value, errors });
+    setConfirmPassword(target.value);
+    setErrors(errors);
+  };
+  const handleClose = () => {
+    delete errors.register;
+    setErrors(errors);
   };
 
-  handleSubmit = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    const { email, password, confirmPassword } = { ...this.state };
-    const errors = {};
-    if (email === "") errors.email = "Email is required.";
-    if (password === "") errors.password = "Password is required.";
-    if (confirmPassword === "")
-      errors.confirmPassword = "Please confirm password";
-    if (Object.keys(errors).length !== 0) {
-      this.setState({ errors });
+    let err = {};
+    if (email === "") err.email = "Email is required.";
+    if (password === "") err.password = "Password is required.";
+    if (confirmPassword === "") err.confirmPassword = "Please confirm password";
+    if (Object.keys(err).length !== 0) {
+      setErrors(err);
     } else {
       const data = { email, password, confirmPassword };
-      Axios.post("/api/users/registration", data)
+      postData("/api/users/registration", data)
         .then((data) => {
-          this.props.history.push("/confirmRegistration");
+          const { error, success } = data;
+          if (success) history.push("/confirmRegistration");
+          else {
+            console.log(data);
+            err.register =
+              "User already exists. Please login or try to register again.";
+            setErrors(err);
+          }
         })
         .catch((err) => console.log("Error", err));
     }
   };
 
-  render() {
-    const { errors } = { ...this.state };
-    const { classes } = this.props;
-    return (
-      <Container component="main" maxWidth="xs">
-        <CssBaseline />
-        <div className={classes.paper}>
-          <Avatar className={classes.avatar}>
-            <LockOutlinedIcon />
-          </Avatar>
-          <Typography component="h1" variant="h5">
-            Register
-          </Typography>
-          <form
-            className={classes.form}
-            noValidate
-            onSubmit={this.handleSubmit}
-          >
-            <TextField
-              variant="outlined"
-              margin="normal"
-              required
-              fullWidth
-              id="email"
-              label="Email Address"
-              name="email"
-              autoComplete="email"
-              autoFocus
-              onChange={this.handleEmailChange}
-              error={errors.email}
-              helperText={errors.email}
-            />
-            <TextField
-              variant="outlined"
-              margin="normal"
-              required
-              fullWidth
-              name="password"
-              label="Password"
-              type="password"
-              id="password"
-              autoComplete="current-password"
-              error={errors.password}
-              helperText={errors.password}
-              onChange={this.handlePasswordChange}
-            />
-            <TextField
-              variant="outlined"
-              margin="normal"
-              required
-              fullWidth
-              name="password"
-              label="Confirm Password"
-              type="password"
-              id="password"
-              autoComplete="current-password"
-              error={errors.confirmPassword}
-              helperText={errors.confirmPassword}
-              onChange={this.handleConfirmPasswordChange}
-            />
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              color="primary"
-              className={classes.submit}
-            >
-              Submit
-            </Button>
-            <Box mt={5}>
-              <Typography variant="body2" color="textSecondary" align="center">
-                {"Copyright © "}
-                <Link color="inherit" to="https://g-drive-clone.com/">
-                  G-Drive Clone
-                </Link>{" "}
-                {new Date().getFullYear()}
-                {"."}
-              </Typography>
-            </Box>
-          </form>
-        </div>
-      </Container>
-    );
-  }
-}
+  const classes = useStyles();
 
-export default withRouter(withStyles(styles)(Register));
+  const failRegister = (
+    <Snackbar
+      anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      open={errors.register?.length > 0}
+      autoHideDuration={3000}
+      onClose={handleClose}
+    >
+      <Alert onClose={handleClose} severity="error">
+        {errors.register}
+      </Alert>
+    </Snackbar>
+  );
+  return (
+    <Container component="main" maxWidth="xs">
+      <CssBaseline />
+      <Header></Header>
+      <div className={classes.paper}>
+        <Avatar className={classes.avatar}>
+          <LockOutlinedIcon />
+        </Avatar>
+        <Typography component="h1" variant="h5">
+          Register
+        </Typography>
+        {failRegister}
+        <form className={classes.form} noValidate onSubmit={handleSubmit}>
+          <TextField
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            id="email"
+            label="Email Address"
+            name="email"
+            autoComplete="email"
+            autoFocus
+            error={errors.email?.length > 0}
+            helperText={errors.email}
+            onChange={handleEmailChange}
+            onBlur={handleEmailBlur}
+          />
+          <TextField
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            name="password"
+            label="Password"
+            type="password"
+            id="password"
+            autoComplete="current-password"
+            error={errors.password?.length > 0}
+            helperText={errors.password}
+            onChange={handlePasswordChange}
+          />
+          <TextField
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            name="password"
+            label="Confirm Password"
+            type="password"
+            id="password"
+            autoComplete="current-password"
+            error={errors.confirmPassword?.length > 0}
+            helperText={errors.confirmPassword}
+            onChange={handleConfirmPasswordChange}
+          />
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            color="primary"
+            className={classes.submit}
+          >
+            Submit
+          </Button>
+          <Box mt={5}>
+            <Typography variant="body2" color="textSecondary" align="center">
+              {"Copyright © "}
+              <Link color="inherit" to="https://g-drive-clone.com/">
+                G-Drive Clone
+              </Link>{" "}
+              {new Date().getFullYear()}
+              {"."}
+            </Typography>
+          </Box>
+        </form>
+      </div>
+    </Container>
+  );
+}
