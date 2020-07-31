@@ -45,7 +45,6 @@ function Confirmation(props) {
           <Avatar className={classes.avatar}>
             <LockOutlinedIcon />
           </Avatar>
-
           <Typography component="h5" variant="h6">
             {props.message}
           </Typography>

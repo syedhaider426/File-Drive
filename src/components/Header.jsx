@@ -56,7 +56,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Header({ homePage, handleDrawerToggle }) {
+export default function Header({
+  homePage,
+  handleDrawerToggle,
+  handleSetState,
+}) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [profileAnchorEl, setProfileAnchorEl] = useState(undefined);
   const history = useHistory();
@@ -129,7 +133,7 @@ export default function Header({ homePage, handleDrawerToggle }) {
           </Typography>
           {homePage === "Home" && (
             <Fragment>
-              <AutoComplete />
+              <AutoComplete handleSetState={handleSetState} />
               <IconButton
                 edge="end"
                 aria-label="account of current user"

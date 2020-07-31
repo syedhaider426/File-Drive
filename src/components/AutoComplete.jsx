@@ -1,19 +1,18 @@
-import React, { Fragment, Component } from "react";
-import { withStyles } from "@material-ui/core/styles";
-import { IconButton, Typography, Menu, MenuItem } from "@material-ui/core";
-import { Link } from "react-router-dom";
-import { withRouter } from "react-router-dom";
+import React, { Fragment, useState, useEffect } from "react";
+import { makeStyles } from "@material-ui/core/styles";
+import { IconButton, Typography } from "@material-ui/core";
+import { useHistory, useLocation } from "react-router-dom";
 import TextField from "@material-ui/core/TextField";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import SearchIcon from "@material-ui/icons/Search";
 import FileIcon from "@material-ui/icons/InsertDriveFile";
 import FolderIcon from "@material-ui/icons/Folder";
 import getData from "../helpers/getData";
-import postData from "../helpers/postData";
+import Axios from "axios";
 
 const drawerWidth = 150;
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     display: "flex",
   },
@@ -49,50 +48,44 @@ const styles = (theme) => ({
     alignItems: "center",
     textAlign: "center",
   },
-});
+}));
 
-class AutoComplete extends Component {
-  state = { profileOpen: false, item: "", itemID: "", buttonDisabled: true };
+export default function AutoComplete({ handleSetState }) {
+  const [itemID, setItemID] = useState("");
+  const [buttonDisabled, setButtonDisabled] = useState(true);
+  const [files, setFiles] = useState([]);
+  const [folders, setFolders] = useState([]);
+  const history = useHistory();
+  const location = useLocation();
 
-  componentDidMount() {
-    getData(`/api${this.props.match.url}`)
+  const fetchFilesFolders = () => {
+    getData(`/api${location.pathname}`)
       .then((data) => {
-        this.sortAlphabetically(data.files, data.folders);
+        sortAlphabetically(data.files, data.folders);
       })
       .catch((err) => console.log("Err", err));
-  }
-
-  handleProfileMenuOpen = (e) => {
-    this.setState({ profileOpen: true, profileAnchorEl: e.currentTarget });
   };
 
-  handleProfileMenuClose = () => {
-    this.setState({ profileOpen: false });
+  useEffect(fetchFilesFolders, []);
+
+  const handleAutoComplete = (e, value) => {
+    if (value === null) {
+      setButtonDisabled(true);
+      setItemID(undefined);
+    } else {
+      setButtonDisabled(false);
+      setItemID(value);
+    }
   };
 
-  handleLogOut = () => {
-    postData("/logout")
-      .then(() => {
-        this.props.history.push("/");
-      })
-      .catch((err) => console.log(err));
-  };
-
-  handleAutoComplete = (e, value) => {
-    if (value === null)
-      return this.setState({ buttonDisabled: true, itemID: undefined });
-    this.setState({ buttonDisabled: false, itemID: value });
-  };
-
-  handleSubmit = () => {
-    const { itemID } = { ...this.state };
+  const handleSubmit = () => {
     document.body.style.cursor = "wait";
     if (itemID.foldername !== undefined)
-      this.props.history.push(`/drive/folders/${itemID._id}`);
+      history.push(`/drive/folders/${itemID._id}`);
     else if (itemID.filename !== undefined) {
-      getData(`/api/files/${itemID._id}`).then((d) => {
+      Axios.get(`/api/files/${itemID._id}`).then((d) => {
         document.body.style.cursor = "default";
-        this.props.handleSetState({
+        handleSetState({
           fileData: `/api/files/${itemID._id}`,
           modalOpen: true,
           contentType: d.headers["content-type"],
@@ -101,7 +94,7 @@ class AutoComplete extends Component {
     }
   };
 
-  sortAlphabetically = (files, folders) => {
+  const sortAlphabetically = (files, folders) => {
     files.sort((a, b) => {
       /* Storing case insensitive comparison */
       var comparison = a.filename
@@ -118,66 +111,60 @@ class AutoComplete extends Component {
         .localeCompare(b.foldername.toString().toLowerCase());
       return comparison;
     });
-    return this.setState({ files, folders });
+    setFiles(files);
+    setFolders(folders);
   };
 
-  render() {
-    const { buttonDisabled, files, folders } = {
-      ...this.state,
-    };
-    const { classes } = { ...this.props };
+  const classes = useStyles();
 
-    let options = [];
-    for (let i = 0; i < folders?.length; ++i) {
-      options.push({
-        _id: folders[i]._id,
-        item: folders[i].foldername,
-        foldername: folders[i].foldername,
-      });
-    }
-    for (let i = 0; i < files?.length; ++i) {
-      options.push({
-        _id: files[i]._id,
-        item: files[i].filename,
-        filename: files[i].filename,
-      });
-    }
+  let options = [];
+  folders.forEach((folder) => {
+    options.push({
+      _id: folder._id,
+      item: folder.foldername,
+      foldername: folder.foldername,
+    });
+  });
+  files.forEach((file) => {
+    options.push({
+      _id: file._id,
+      item: file.filename,
+      filename: file.filename,
+    });
+  });
 
-    return (
-      <Fragment>
-        <Autocomplete
-          id="combo-box-demo"
-          options={options}
-          getOptionLabel={(option) => option.item}
-          style={{ width: 300 }}
-          renderInput={(params) => (
-            <TextField {...params} label="Search..." variant="outlined" />
-          )}
-          renderOption={(option) => {
-            return (
-              <Typography>
-                {option.filename !== undefined ? (
-                  <div className={classes.centeredContent}>
-                    <FileIcon></FileIcon>
-                    {option.filename}
-                  </div>
-                ) : (
-                  <div className={classes.centeredContent}>
-                    <FolderIcon></FolderIcon>
-                    {option.foldername}
-                  </div>
-                )}
-              </Typography>
-            );
-          }}
-          onChange={(e, v) => this.handleAutoComplete(e, v)}
-        />
-        <IconButton disabled={buttonDisabled} onClick={this.handleSubmit}>
-          <SearchIcon />
-        </IconButton>
-      </Fragment>
-    );
-  }
+  return (
+    <Fragment>
+      <Autocomplete
+        id="combo-box-demo"
+        options={options}
+        getOptionLabel={(option) => option.item}
+        style={{ width: 300 }}
+        renderInput={(params) => (
+          <TextField {...params} label="Search..." variant="outlined" />
+        )}
+        renderOption={(option) => {
+          return (
+            <Typography>
+              {option.filename !== undefined ? (
+                <div className={classes.centeredContent}>
+                  <FileIcon></FileIcon>
+                  {option.filename}
+                </div>
+              ) : (
+                <div className={classes.centeredContent}>
+                  <FolderIcon></FolderIcon>
+                  {option.foldername}
+                </div>
+              )}
+            </Typography>
+          );
+        }}
+        onChange={(e, v) => handleAutoComplete(e, v)}
+      />
+      <IconButton disabled={buttonDisabled} onClick={handleSubmit}>
+        <SearchIcon />
+      </IconButton>
+    </Fragment>
+  );
 }
-
-export default withRouter(withStyles(styles)(AutoComplete));
