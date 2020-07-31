@@ -1,5 +1,5 @@
-import React, { Component, Fragment } from "react";
-import { Link, withRouter } from "react-router-dom";
+import React, { useState, Fragment } from "react";
+import { Link, useParams, useHistory, useLocation } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
 import DialogTitle from "@material-ui/core/DialogTitle";
@@ -24,68 +24,69 @@ import CreateNewFolderOutlinedIcon from "@material-ui/icons/CreateNewFolderOutli
 import FileIcon from "@material-ui/icons/InsertDriveFile";
 import CustomizedAccordions from "../components/Accordion";
 
-class Actions extends Component {
-  state = {
-    menuOpen: false,
-    newFolderOpen: false,
-    folder: "",
-    folderButtonDisabled: true,
-    anchorEl: undefined,
-    uploadedPercentage: 0,
-    accordionOpen: false,
-    uploadFiles: [],
-    accordionMsg: "",
+export default function Actions({ handleSetState, menu }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [newFolderOpen, setNewFolderOpen] = useState(false);
+  const [folder, setFolder] = useState("");
+  const [folderButtonDisabled, setFolderButtonDisabled] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(undefined);
+  const [accordionOpen, setAccordionOpen] = useState(false);
+  const [uploadFiles, setUploadFiles] = useState([]);
+  const [accordionMsg, setAccordionMsg] = useState("");
+  const [filesStatus, setFilesStatus] = useState(false);
+  const params = useParams();
+  const history = useHistory();
+  const location = useLocation();
+  const handleClickOpen = (e) => {
+    setMenuOpen(true);
+    setAnchorEl(e.currentTarget);
   };
 
-  handleClickOpen = (e) => {
-    this.setState({ menuOpen: true, anchorEl: e.currentTarget });
+  const handleClose = (e) => {
+    setMenuOpen(false);
   };
 
-  handleClose = (e) => {
-    this.setState({ menuOpen: false });
+  const handleCreateFolderOpen = () => {
+    setMenuOpen(false);
+    setNewFolderOpen(true);
   };
 
-  handleCreateFolderOpen = () => {
-    this.setState({ menuOpen: false, newFolderOpen: true });
+  const handleCreateFolderClose = () => {
+    setNewFolderOpen(false);
   };
 
-  handleCreateFolderClose = () => {
-    this.setState({ newFolderOpen: false });
+  const handleFolderOnChange = (e) => {
+    if (e.target.value === "") setFolderButtonDisabled(true);
+    else {
+      setFolder(e.target.value);
+      setFolderButtonDisabled(false);
+    }
   };
 
-  handleFolderOnChange = (e) => {
-    if (e.target.value === "") this.setState({ folderButtonDisabled: true });
-    else this.setState({ folder: e.target.value, folderButtonDisabled: false });
-  };
-
-  handleFileUploadOpen = () => {
-    this.setState({ menuOpen: false });
+  const handleFileUploadOpen = () => {
+    setMenuOpen(false);
     document.getElementById("upload-file").click();
   };
 
-  handleCreateFolder = (e) => {
+  const handleCreateFolder = (e) => {
     e.preventDefault();
-    const data = { folder: this.state.folder };
-    const folder = this.props.match.params.folder
-      ? `/${this.props.match.params.folder}`
-      : "";
-    postData(`/api/folders${folder}`, data)
+    const data = { folder: folder };
+    const folderId = params.folder ? `/${params.folder}` : "";
+    postData(`/api/folders${folderId}`, data)
       .then((data) => {
         const { folders, newFolder } = { ...data };
-        this.setState(
-          { newFolderOpen: false },
-          this.props.handleSetState({
-            folders,
-            mobileOpen: false,
-            selectedFolders: newFolder,
-            selectedFiles: [],
-          })
-        );
+        setNewFolderOpen(false);
+        handleSetState({
+          folders,
+          mobileOpen: false,
+          selectedFolders: newFolder,
+          selectedFiles: [],
+        });
       })
       .catch((err) => console.log("Err", err));
   };
 
-  handleFileUpload = (e) => {
+  const handleFileUpload = (e) => {
     const files = e.target.files;
     const form = new FormData();
     const uploadFiles = [];
@@ -93,30 +94,23 @@ class Actions extends Component {
       form.append("files", files[i], files[i].name);
       uploadFiles.push(files[i].name);
     }
-    this.setState({
-      accordionOpen: true,
-      accordionMsg: `Uploading ${files.length} files...`,
-      uploadFiles,
-      filesStatus: false,
-    });
-    const folder = this.props.match.params.folder
-      ? `/${this.props.match.params.folder}`
-      : "";
+    setAccordionOpen(true);
+    setAccordionMsg(`Uploading ${files.length} files...`);
+    setUploadFiles(uploadFiles);
+    setFilesStatus(false);
+    const folder = params.folder ? `/${params.folder}` : "";
     axios
       .post(`/api/files/upload${folder}`, form)
       .then((d) => {
         const { data } = { ...d };
         const { files, uploadedFiles } = data;
-        this.setState({
-          menuOpen: false,
-          filesStatus: true,
-          accordionMsg: `Uploaded ${uploadedFiles.length} files`,
-        });
-        console.log(this.props.match.url);
-        if (this.props.match.url !== "/drive/home") {
-          this.props.history.push("/drive/home");
+        setMenuOpen(false);
+        setFilesStatus(true);
+        setAccordionMsg(`Uploaded ${uploadedFiles.length} files`);
+        if (location.pathname !== "/drive/home") {
+          history.push("/drive/home");
         }
-        this.props.handleSetState({
+        handleSetState({
           files,
           mobileOpen: false,
           selectedFiles: uploadedFiles,
@@ -126,159 +120,123 @@ class Actions extends Component {
       .catch((err) => console.log("Error", err));
   };
 
-  render() {
-    const {
-      menuOpen,
-      newFolderOpen,
-      folderButtonDisabled,
-      accordionOpen,
-      uploadFiles,
-      accordionMsg,
-      filesStatus,
-    } = {
-      ...this.state,
-    };
-    const {
-      handleClose,
-      handleClickOpen,
-      handleFileUploadOpen,
-      handleCreateFolderOpen,
-      handleCreateFolderClose,
-      handleCreateFolder,
-      handleFolderOnChange,
-      handleFileUpload,
-    } = { ...this };
+  const actionsMenu = (
+    <Menu open={menuOpen} onClose={handleClose} anchorEl={anchorEl}>
+      <MenuItem onClick={handleCreateFolderOpen}>
+        <CreateNewFolderOutlinedIcon />
+        <Typography variant="inherit">New Folder</Typography>
+      </MenuItem>
+      <MenuItem onClick={handleFileUploadOpen}>
+        <FileIcon />
+        <Typography variant="inherit">File Upload</Typography>
+      </MenuItem>
+    </Menu>
+  );
 
-    const actionsMenu = (
-      <Menu
-        open={menuOpen}
-        onClose={handleClose}
-        anchorEl={this.state.anchorEl}
-      >
-        <MenuItem onClick={handleCreateFolderOpen}>
-          <CreateNewFolderOutlinedIcon />
-          <Typography variant="inherit">New Folder</Typography>
-        </MenuItem>
-        <MenuItem onClick={handleFileUploadOpen}>
-          <FileIcon />
-          <Typography variant="inherit">File Upload</Typography>
-        </MenuItem>
-      </Menu>
-    );
-
-    const newFolderDialog = (
-      <Dialog
-        open={newFolderOpen}
-        onClose={handleCreateFolderClose}
-        aria-labelledby="form-dialog-title"
-      >
-        <DialogTitle id="form-dialog-title">Create Folder </DialogTitle>
-        <form onSubmit={handleCreateFolder} method="POST">
-          <DialogContent>
-            <TextField
-              autoFocus
-              margin="dense"
-              id="folder"
-              label="Folder"
-              fullWidth
-              onChange={handleFolderOnChange}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCreateFolderClose} color="primary">
-              Cancel
-            </Button>
-            <Button
-              disabled={folderButtonDisabled}
-              onClick={handleCreateFolderClose}
-              color="primary"
-              type="submit"
-            >
-              Confirm
-            </Button>
-          </DialogActions>
-        </form>
-      </Dialog>
-    );
-
-    const HomeLink = React.forwardRef((props, ref) => (
-      <Link to={"/drive/home"} {...props} ref={ref} />
-    ));
-    const FavoritesLink = React.forwardRef((props, ref) => (
-      <Link to={"/drive/favorites"} {...props} ref={ref} />
-    ));
-
-    const TrashLink = React.forwardRef((props, ref) => (
-      <Link to={"/drive/trash"} {...props} ref={ref} />
-    ));
-    return (
-      <Fragment>
-        {actionsMenu}
-        {newFolderDialog}
-        <input
-          style={{ display: "none" }}
-          id="upload-file"
-          name="upload-file"
-          type="file"
-          multiple="multiple"
-          onChange={(e) => handleFileUpload(e)}
-        />
-
-        <List>
-          <ListItem>
-            <Button
-              variant="outlined"
-              onClick={handleClickOpen}
-              color="default"
-              elevation={3}
-              startIcon={<CloudUploadIcon />}
-            >
-              Upload
-            </Button>
-          </ListItem>
-          <ListItem
-            button
-            component={HomeLink}
-            selected={
-              this.props.menu !== "Trash" && this.props.menu !== "Favorites"
-            }
+  const newFolderDialog = (
+    <Dialog
+      open={newFolderOpen}
+      onClose={handleCreateFolderClose}
+      aria-labelledby="form-dialog-title"
+    >
+      <DialogTitle id="form-dialog-title">Create Folder </DialogTitle>
+      <form onSubmit={handleCreateFolder} method="POST">
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            id="folder"
+            label="Folder"
+            fullWidth
+            onChange={handleFolderOnChange}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCreateFolderClose} color="primary">
+            Cancel
+          </Button>
+          <Button
+            disabled={folderButtonDisabled}
+            onClick={handleCreateFolderClose}
+            color="primary"
+            type="submit"
           >
-            <ListItemIcon>
-              <HomeIcon />
-            </ListItemIcon>
-            <ListItemText primary="Home" />
-          </ListItem>
-          <ListItem
-            button
-            component={FavoritesLink}
-            selected={this.props.menu === "Favorites"}
+            Confirm
+          </Button>
+        </DialogActions>
+      </form>
+    </Dialog>
+  );
+
+  const HomeLink = React.forwardRef((props, ref) => (
+    <Link to={"/drive/home"} {...props} ref={ref} />
+  ));
+  const FavoritesLink = React.forwardRef((props, ref) => (
+    <Link to={"/drive/favorites"} {...props} ref={ref} />
+  ));
+
+  const TrashLink = React.forwardRef((props, ref) => (
+    <Link to={"/drive/trash"} {...props} ref={ref} />
+  ));
+  return (
+    <Fragment>
+      {actionsMenu}
+      {newFolderDialog}
+      <input
+        style={{ display: "none" }}
+        id="upload-file"
+        name="upload-file"
+        type="file"
+        multiple="multiple"
+        onChange={(e) => handleFileUpload(e)}
+      />
+
+      <List>
+        <ListItem>
+          <Button
+            variant="outlined"
+            onClick={handleClickOpen}
+            color="default"
+            elevation={3}
+            startIcon={<CloudUploadIcon />}
           >
-            <ListItemIcon>
-              <StarIcon />
-            </ListItemIcon>
-            <ListItemText primary="Favorites" />
-          </ListItem>
-          <ListItem
-            button
-            component={TrashLink}
-            selected={this.props.menu === "Trash"}
-          >
-            <ListItemIcon>
-              <DeleteIcon />
-            </ListItemIcon>
-            <ListItemText primary="Trash" />
-          </ListItem>
-        </List>
-        <Divider />
-        <CustomizedAccordions
-          accordionOpen={accordionOpen}
-          uploadFiles={uploadFiles}
-          accordionMsg={accordionMsg}
-          filesStatus={filesStatus}
-        />
-      </Fragment>
-    );
-  }
+            Upload
+          </Button>
+        </ListItem>
+        <ListItem
+          button
+          component={HomeLink}
+          selected={menu !== "Trash" && menu !== "Favorites"}
+        >
+          <ListItemIcon>
+            <HomeIcon />
+          </ListItemIcon>
+          <ListItemText primary="Home" />
+        </ListItem>
+        <ListItem
+          button
+          component={FavoritesLink}
+          selected={menu === "Favorites"}
+        >
+          <ListItemIcon>
+            <StarIcon />
+          </ListItemIcon>
+          <ListItemText primary="Favorites" />
+        </ListItem>
+        <ListItem button component={TrashLink} selected={menu === "Trash"}>
+          <ListItemIcon>
+            <DeleteIcon />
+          </ListItemIcon>
+          <ListItemText primary="Trash" />
+        </ListItem>
+      </List>
+      <Divider />
+      <CustomizedAccordions
+        accordionOpen={accordionOpen}
+        uploadFiles={uploadFiles}
+        accordionMsg={accordionMsg}
+        filesStatus={filesStatus}
+      />
+    </Fragment>
+  );
 }
-
-export default withRouter(Actions);
