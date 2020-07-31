@@ -69,7 +69,7 @@ class Actions extends Component {
     const folder = this.props.match.params.folder
       ? `/${this.props.match.params.folder}`
       : "";
-    postData(`/api/folders/create${folder}`, data)
+    postData(`/api/folders${folder}`, data)
       .then((data) => {
         const { folders, newFolder } = { ...data };
         this.setState(

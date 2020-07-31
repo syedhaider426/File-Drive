@@ -55,7 +55,7 @@ const renderSortIcon = (sortColumn, column) => {
     return <ArrowDownwardIcon fontSize="small" />;
 };
 
-function MainTable({
+export default function MainTable({
   handleFolderClick,
   handleFileClick,
   folders,
@@ -157,5 +157,3 @@ function MainTable({
     </Fragment>
   );
 }
-
-export default MainTable;

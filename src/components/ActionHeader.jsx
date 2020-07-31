@@ -19,12 +19,11 @@ import { Link, withRouter } from "react-router-dom";
 import { Breadcrumbs, Menu, MenuItem, Box } from "@material-ui/core";
 import MoreIcon from "@material-ui/icons/MoreVert";
 import getData from "../helpers/getData";
-import postData from "../helpers/postData";
-import CloseIcon from "@material-ui/icons/Close";
 import RestoreAllDialog from "./RestoreAllDialog";
 import DeleteAllDialog from "./DeleteAllDialog";
 import TrashMenu from "./TrashMenu";
 import GetAppIcon from "@material-ui/icons/GetApp";
+import patchData from "../helpers/patchData";
 
 const styles = (theme) => ({
   grow: {
@@ -138,7 +137,7 @@ class ActionHeader extends Component {
     const { moveFolder } = { ...this.state };
     const { selectedFolders, selectedFiles } = { ...this.props };
     const data = { moveFolder: moveFolder.id, selectedFolders, selectedFiles };
-    postData("/api/files/move", data).then((data) => {
+    patchData("/api/files/move", data).then((data) => {
       const { files, folders } = { ...data };
       this.setState(
         {
@@ -173,7 +172,7 @@ class ActionHeader extends Component {
       selectedFolders: tempSelectedFolders,
       selectedFiles: tempSelectedFiles,
     };
-    postData("/api/files/move", data).then((data) => {
+    patchData("/api/files/move", data).then((data) => {
       const { files, folders } = { ...data };
       this.setState({
         movedSnack: false,
