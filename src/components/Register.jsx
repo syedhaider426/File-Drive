@@ -101,10 +101,9 @@ export default function Register() {
       const data = { email, password, confirmPassword };
       postData("/api/users/registration", data)
         .then((data) => {
-          const { error, success } = data;
+          const { success } = data;
           if (success) history.push("/confirmRegistration");
           else {
-            console.log(data);
             err.register =
               "User already exists. Please login or try to register again.";
             setErrors(err);

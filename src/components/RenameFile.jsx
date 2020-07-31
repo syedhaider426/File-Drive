@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from "react";
+import React, { Fragment } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -8,94 +8,78 @@ import {
   Button,
   IconButton,
 } from "@material-ui/core";
-import postData from "../helpers/postData";
+import patchData from "../helpers/patchData";
 import Snack from "./Snack";
-import { withStyles } from "@material-ui/core/styles";
+import { makeStyles } from "@material-ui/core/styles";
 import CloseIcon from "@material-ui/icons/Close";
+import { useState } from "react";
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   closeButton: {
     position: "absolute",
     right: theme.spacing(1),
     top: theme.spacing(1),
     color: theme.palette.grey[500],
   },
-});
+}));
 
-class RenameFile extends Component {
-  state = {
-    renamedSnack: false,
-    filename: "",
-    renamedFile: {},
-  };
+export default function RenameFile({
+  handleSetState,
+  handleDialog,
+  handleFocus,
+  renameFileDialogOpen,
+  files,
+  selectedFiles,
+}) {
+  const [renamedSnack, setRenamedSnack] = useState(false);
+  const [renamedFile, setRenamedFile] = useState({});
+  const [fileName, setFileName] = useState("");
 
-  handleRenameSnackClose = (event, reason) => {
+  const handleRenameSnackClose = (event, reason) => {
     if (reason === "clickaway") {
       return;
     }
-    this.setState({
-      renamedSnack: false,
-    });
+    setRenamedSnack(false);
   };
 
-  handleRenameFileClose = () => {
-    this.setState(
-      { filename: "" },
-      this.props.handleDialog({ renameFileDialogOpen: false })
-    );
+  const handleRenameFileClose = () => {
+    setFileName("");
+    handleDialog({ renameFileDialogOpen: false });
   };
 
-  handleFileOnChange = (e) => {
-    if (e.target.value === "") this.setState({ filename: "" });
-    else
-      this.setState({
-        filename: e.target.value,
-      });
+  const handleFileOnChange = (e) => {
+    setFileName(e.target.value);
   };
 
-  handleRenameFile = (e) => {
+  const handleRenameFile = (e) => {
     e.preventDefault();
-    const { selectedFiles } = { ...this.props };
-    const { filename } = { ...this.state };
     const data = {
       id: selectedFiles[0].id,
-      newName: filename,
+      newName: fileName,
     };
-    postData("/api/files/rename", data)
+    patchData("/api/files/name", data)
       .then((data) => {
-        let files = this.props.files;
         files.find((o, i, arr) => {
           if (o._id === selectedFiles[0].id) {
-            arr[i].filename = filename;
+            arr[i].filename = fileName;
             return true;
           }
           return false;
         });
-        this.setState(
-          {
-            renamedFile: selectedFiles[0],
-            renamedSnack: true,
-          },
-          this.props.handleDialog(
-            { renameFileDialogOpen: false },
-            { files, selectedFiles }
-          )
-        );
+        setRenamedFile(selectedFiles[0]);
+        setRenamedSnack(true);
+        handleDialog({ renameFileDialogOpen: false }, { files, selectedFiles });
       })
       .catch((err) => console.log("Err", err));
   };
 
-  handleUndoRenameFile = () => {
-    const { renamedFile } = { ...this.state };
-    const { selectedFiles } = { ...this.props };
+  const handleUndoRenameFile = () => {
     const data = {
       id: renamedFile.id,
       newName: renamedFile.filename,
     };
-
-    postData("/api/files/rename", data)
+    patchData("/api/files/name", data)
       .then((data) => {
-        let files = this.props.files;
         files.find((o, i, arr) => {
           if (o._id === selectedFiles[0].id) {
             arr[i].filename = selectedFiles[0].filename;
@@ -105,89 +89,73 @@ class RenameFile extends Component {
         });
         const selectFiles = selectedFiles;
         selectFiles[0].filename = renamedFile.filename;
-        this.setState(
-          {
-            renamedFile: {},
-            renamedSnack: false,
-            fileName: "",
-          },
-          this.props.handleSetState({ files, selectedFiles: selectFiles })
-        );
+        setRenamedSnack(false);
+        setRenamedFile({});
+        setFileName("");
+        handleSetState({ files, selectedFiles: selectFiles });
       })
       .catch((err) => console.log("Err", err));
   };
 
-  handleSnackbarExit = () => {
-    if (this.state.renamedFile) {
-      this.setState({
-        renamedFile: {},
-      });
-    }
-    return;
+  const handleSnackbarExit = () => {
+    if (renamedFile) setRenamedFile({});
   };
 
-  render() {
-    const { renamedSnack, filename } = {
-      ...this.state,
-    };
-    const { selectedFiles, classes } = { ...this.props };
-    const renameSnack = (
-      <Snack
-        open={renamedSnack}
-        onClose={this.handleRenameSnackClose}
-        onExited={this.handleSnackbarExit}
-        message={`Renamed "${this.state.renamedFile.filename}" to "${this.state.filename}"`}
-        onClick={this.handleUndoRenameFile}
-      />
-    );
-    const defaultValue = selectedFiles[0] && selectedFiles[0].filename;
-    const renameFileDialog = (
-      <Dialog
-        open={this.props.renameFileDialogOpen}
-        onClose={this.handleRenameFileClose}
-        aria-labelledby="form-dialog-title"
-      >
-        <DialogTitle id="form-dialog-title">
-          Rename
-          <IconButton
-            aria-label="close"
-            className={classes.closeButton}
-            onClick={this.handleRenameFileClose}
-          >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <form onSubmit={this.handleRenameFile} method="POST">
-          <DialogContent>
-            <TextField
-              autoFocus
-              margin="dense"
-              id="file"
-              fullWidth
-              defaultValue={defaultValue}
-              onFocus={this.props.handleFocus}
-              onChange={this.handleFileOnChange}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={this.handleRenameFileClose} color="primary">
-              Cancel
-            </Button>
-            <Button disabled={filename === ""} color="primary" type="submit">
-              Confirm
-            </Button>
-          </DialogActions>
-        </form>
-      </Dialog>
-    );
+  const classes = useStyles();
+  const renameSnack = (
+    <Snack
+      open={renamedSnack}
+      onClose={handleRenameSnackClose}
+      onExited={handleSnackbarExit}
+      message={`Renamed "${renamedFile.filename}" to "${fileName}"`}
+      onClick={handleUndoRenameFile}
+    />
+  );
+  const defaultValue = selectedFiles[0] && selectedFiles[0].filename;
+  const renameFileDialog = (
+    <Dialog
+      open={renameFileDialogOpen}
+      onClose={handleRenameFileClose}
+      aria-labelledby="form-dialog-title"
+    >
+      <DialogTitle id="form-dialog-title">
+        Rename
+        <IconButton
+          aria-label="close"
+          className={classes.closeButton}
+          onClick={handleRenameFileClose}
+        >
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
+      <form onSubmit={handleRenameFile} method="POST">
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            id="file"
+            fullWidth
+            defaultValue={defaultValue}
+            onFocus={handleFocus}
+            onChange={handleFileOnChange}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleRenameFileClose} color="primary">
+            Cancel
+          </Button>
+          <Button disabled={fileName === ""} color="primary" type="submit">
+            Confirm
+          </Button>
+        </DialogActions>
+      </form>
+    </Dialog>
+  );
 
-    return (
-      <Fragment>
-        {renameSnack}
-        {renameFileDialog}
-      </Fragment>
-    );
-  }
+  return (
+    <Fragment>
+      {renameSnack}
+      {renameFileDialog}
+    </Fragment>
+  );
 }
-
-export default withStyles(styles)(RenameFile);
