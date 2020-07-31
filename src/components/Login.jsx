@@ -57,7 +57,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function Login() {
+export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({ email: "", password: "" });
@@ -114,9 +114,7 @@ function Login() {
     }
   };
 
-  const handleClose = () => {
-    
-  };
+  const handleClose = () => {};
   const classes = useStyles();
   const failLogin = (
     <Snackbar
@@ -211,4 +209,3 @@ function Login() {
     </Grid>
   );
 }
-export default Login;

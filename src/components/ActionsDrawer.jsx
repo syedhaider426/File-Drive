@@ -1,11 +1,9 @@
-import React, { Fragment, Component } from "react";
-import { withStyles } from "@material-ui/core/styles";
-import { Hidden, Drawer, Divider, Menu, MenuItem } from "@material-ui/core";
-import { Link } from "react-router-dom";
-
+import React, { Fragment } from "react";
+import makeStyles from "@material-ui/core/styles/makeStyles";
+import { Hidden, Drawer, Divider } from "@material-ui/core";
 const drawerWidth = 150;
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     display: "flex",
   },
@@ -24,77 +22,49 @@ const styles = (theme) => ({
     flexGrow: 1,
     padding: theme.spacing(1),
   },
-});
+}));
 
-class ActionsDrawer extends Component {
-  state = { profileOpen: false };
+export default function ActionsDrawer({
+  actions,
+  mobileOpen,
+  handleDrawerToggle,
+}) {
+  const classes = useStyles();
 
-  handleProfileMenuOpen = (e) => {
-    this.setState({ profileOpen: true, profileAnchorEl: e.currentTarget });
-  };
-
-  handleProfileMenuClose = () => {
-    this.setState({ profileOpen: false });
-  };
-
-  render() {
-    const { profileOpen, profileAnchorEl } = { ...this.state };
-    const { actions, classes } = { ...this.props };
-
-    const profileMenu = (
-      <Menu
-        anchorEl={profileAnchorEl}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}
-        id={"profile-menu"}
-        keepMounted
-        transformOrigin={{ vertical: "top", horizontal: "right" }}
-        open={profileOpen}
-        onClose={this.handleProfileMenuClose}
-      >
-        <MenuItem>
-          <Link to="/drive/profile">Profile</Link>
-        </MenuItem>
-      </Menu>
-    );
-
-    return (
-      <Fragment>
-        <nav className={classes.drawer}>
-          <Hidden smUp implementation="css">
-            <Drawer
-              variant="temporary"
-              open={this.props.mobileOpen}
-              onClose={this.props.handleDrawerToggle}
-              classes={{
-                paper: classes.drawerPaper,
-              }}
-              ModalProps={{
-                keepMounted: true, // Better open performance on mobile.
-              }}
-            >
-              <div className={classes.toolbar} />
-              <Divider />
-              {actions}
-            </Drawer>
-          </Hidden>
-          <Hidden xsDown implementation="css">
-            <Drawer
-              classes={{
-                paper: classes.drawerPaper,
-              }}
-              variant="permanent"
-              open
-            >
-              <div className={classes.toolbar} />
-              <Divider />
-              {actions}
-            </Drawer>
-          </Hidden>
-        </nav>
-        {profileMenu}
-      </Fragment>
-    );
-  }
+  return (
+    <Fragment>
+      <nav className={classes.drawer}>
+        <Hidden smUp implementation="css">
+          <Drawer
+            variant="temporary"
+            open={mobileOpen}
+            onClose={handleDrawerToggle}
+            classes={{
+              paper: classes.drawerPaper,
+            }}
+            ModalProps={{
+              keepMounted: true, // Better open performance on mobile.
+            }}
+          >
+            <div className={classes.toolbar} />
+            <Divider />
+            {actions}
+          </Drawer>
+        </Hidden>
+        <Hidden xsDown implementation="css">
+          <Drawer
+            classes={{
+              paper: classes.drawerPaper,
+            }}
+            variant="permanent"
+            open
+          >
+            <div className={classes.toolbar} />
+            <Divider />
+            {actions}
+          </Drawer>
+        </Hidden>
+      </nav>
+    </Fragment>
+  );
 }
-
-export default withStyles(styles)(ActionsDrawer);
