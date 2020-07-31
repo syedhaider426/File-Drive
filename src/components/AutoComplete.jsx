@@ -115,8 +115,6 @@ export default function AutoComplete({ handleSetState }) {
     setFolders(folders);
   };
 
-  const classes = useStyles();
-
   let options = [];
   folders.forEach((folder) => {
     options.push({
@@ -132,6 +130,8 @@ export default function AutoComplete({ handleSetState }) {
       filename: file.filename,
     });
   });
+
+  const classes = useStyles();
 
   return (
     <Fragment>
