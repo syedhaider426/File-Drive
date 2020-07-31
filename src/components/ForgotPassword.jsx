@@ -11,6 +11,7 @@ import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 import { Container } from "@material-ui/core";
+import patchData from "../helpers/patchData";
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -48,7 +49,7 @@ export default function ForgotPassword() {
       setErrors("Please enter your email address");
     } else {
       const data = { email };
-      postData("/api/user/forgotPassword", data).then((data) => {
+      patchData("/api/users/password-reset", data).then((data) => {
         console.log(data);
       });
     }
