@@ -19,7 +19,6 @@ import Divider from "@material-ui/core/Divider";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import Typography from "@material-ui/core/Typography";
-import axios from "axios";
 import CreateNewFolderOutlinedIcon from "@material-ui/icons/CreateNewFolderOutlined";
 import FileIcon from "@material-ui/icons/InsertDriveFile";
 import CustomizedAccordions from "../components/Accordion";
@@ -99,10 +98,8 @@ export default function Actions({ handleSetState, menu }) {
     setUploadFiles(uploadFiles);
     setFilesStatus(false);
     const folder = params.folder ? `/${params.folder}` : "";
-    axios
-      .post(`/api/files/upload${folder}`, form)
-      .then((d) => {
-        const { data } = { ...d };
+    postData(`/api/files/upload${folder}`, form)
+      .then((data) => {
         const { files, uploadedFiles } = data;
         setMenuOpen(false);
         setFilesStatus(true);

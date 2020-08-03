@@ -12,7 +12,7 @@ import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import Typography from "@material-ui/core/Typography";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import MuiAlert from "@material-ui/lab/Alert";
-import { Snackbar } from "@material-ui/core";
+import Snackbar from "@material-ui/core/Snackbar";
 
 function Alert(props) {
   return <MuiAlert elevation={6} variant="filled" {...props} />;

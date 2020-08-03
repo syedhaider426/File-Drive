@@ -1,6 +1,7 @@
 import React, { Fragment, useState, useEffect } from "react";
-import { makeStyles } from "@material-ui/core/styles";
-import { IconButton, Typography } from "@material-ui/core";
+import makeStyles from "@material-ui/core/styles/makeStyles";
+import IconButton from "@material-ui/core";
+import Typography from "@material-ui/core";
 import { useHistory, useLocation } from "react-router-dom";
 import TextField from "@material-ui/core/TextField";
 import Autocomplete from "@material-ui/lab/Autocomplete";

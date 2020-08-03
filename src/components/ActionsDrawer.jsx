@@ -1,8 +1,10 @@
 import React, { Fragment } from "react";
 import makeStyles from "@material-ui/core/styles/makeStyles";
-import { Hidden, Drawer, Divider } from "@material-ui/core";
-const drawerWidth = 150;
+import Hidden from "@material-ui/core/Hidden";
+import Drawer from "@material-ui/core/Drawer";
+import Divider from "@material-ui/core/Divider";
 
+const drawerWidth = 150;
 const useStyles = makeStyles((theme) => ({
   root: {
     display: "flex",

@@ -1,5 +1,7 @@
 import React, { Fragment } from "react";
-import { Button, IconButton, Snackbar } from "@material-ui/core";
+import Button from "@material-ui/core/Button";
+import IconButton from "@material-ui/core/IconButton";
+import Snackbar from "@material-ui/core/Snackbar";
 import CloseIcon from "@material-ui/icons/Close";
 
 const Snack = ({ open, onClose, onExited, message, onClick }) => {
