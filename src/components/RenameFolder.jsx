@@ -1,5 +1,5 @@
 import React, { useState, Fragment } from "react";
-import Dialog from "@material-ui/core";
+import Dialog from "@material-ui/core/Dialog";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import DialogContent from "@material-ui/core/DialogContent";
 import TextField from "@material-ui/core/TextField";

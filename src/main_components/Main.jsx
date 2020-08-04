@@ -1,4 +1,4 @@
-import Login from "../components/Login";
+import Login from "../components/user-related-components/Login";
 import React, { Fragment } from "react";
 import {
   BrowserRouter as Router,
@@ -6,12 +6,12 @@ import {
   Route,
   Redirect,
 } from "react-router-dom";
-import ForgotPassword from "../components/ForgotPassword";
+import ForgotPassword from "../components/user-related-components/ForgotPassword";
 import Files from "../components/Files";
-import SignInSide from "../components/Login";
-import Register from "../components/Register";
-import Confirmation from "../components/Confirmation";
-import Profile from "../components/Profile";
+import SignInSide from "../components/user-related-components/Login";
+import Register from "../components/user-related-components/Register";
+import Confirmation from "../components/user-related-components/Confirmation";
+import Profile from "../components/user-related-components/Profile";
 import NotFound from "../components/NotFound";
 
 /***
@@ -40,16 +40,16 @@ const Main = () => {
             <ForgotPassword />
           </Route>
           <Route path="/drive/home">
-            <Files menu={"Home"} />
+            <Files menu={"Home"} isLoaded={false} />
           </Route>
           <Route path="/drive/favorites">
-            <Files menu={"Favorites"} />
+            <Files menu={"Favorites"} isLoaded={false} />
           </Route>
           <Route path="/drive/trash">
-            <Files menu={"Trash"} />
+            <Files menu={"Trash"} isLoaded={false} />
           </Route>
           <Route path="/drive/folders/:folder">
-            <Files menu={"Folder"} />
+            <Files menu={"Folder"} isLoaded={false} />
           </Route>
           <Route path="/register">
             <Register />

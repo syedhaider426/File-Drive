@@ -1,10 +1,10 @@
 import React from "react";
-import DialogContent from "@material-ui/core";
-import Dialog from "@material-ui/core";
-import DialogTitle from "@material-ui/core";
-import Button from "@material-ui/core";
-import DialogActions from "@material-ui/core";
-import DialogContentText from "@material-ui/core";
+import DialogContent from "@material-ui/core/DialogContent";
+import Dialog from "@material-ui/core/Dialog";
+import DialogTitle from "@material-ui/core/DialogTitle";
+import Button from "@material-ui/core/Button";
+import DialogActions from "@material-ui/core/DialogActions";
+import DialogContentText from "@material-ui/core/DialogContentText";
 
 const DeleteAllDialog = ({
   deleteAllOpen,

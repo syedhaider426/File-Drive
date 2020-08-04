@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Fragment } from "react";
 import withStyles from "@material-ui/core/styles/withStyles";
 import MuiAccordion from "@material-ui/core/Accordion";
 import MuiAccordionSummary from "@material-ui/core/AccordionSummary";
@@ -64,7 +64,7 @@ export default function CustomizedAccordions({
   };
 
   return (
-    <div>
+    <Fragment>
       <Snackbar
         anchorOrigin={{
           vertical: "bottom",
@@ -93,12 +93,12 @@ export default function CustomizedAccordions({
             </Typography>
           </AccordionSummary>
           {uploadFiles?.map((file) => (
-            <AccordionDetails>
+            <AccordionDetails key={file}>
               <Typography>{file}</Typography>
             </AccordionDetails>
           ))}
         </Accordion>
       </Snackbar>
-    </div>
+    </Fragment>
   );
 }

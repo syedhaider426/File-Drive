@@ -1,5 +1,5 @@
 import React, { useState, Fragment } from "react";
-import { Link, useParams, useHistory, useLocation } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
 import DialogTitle from "@material-ui/core/DialogTitle";
@@ -22,8 +22,15 @@ import Typography from "@material-ui/core/Typography";
 import CreateNewFolderOutlinedIcon from "@material-ui/icons/CreateNewFolderOutlined";
 import FileIcon from "@material-ui/icons/InsertDriveFile";
 import CustomizedAccordions from "../components/Accordion";
+import Axios from "axios";
 
-export default function Actions({ handleSetState, menu }) {
+export default function Actions({
+  setFiles,
+  setFolders,
+  setSelectedFiles,
+  setSelectedFolders,
+  menu,
+}) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [newFolderOpen, setNewFolderOpen] = useState(false);
   const [folder, setFolder] = useState("");
@@ -34,8 +41,6 @@ export default function Actions({ handleSetState, menu }) {
   const [accordionMsg, setAccordionMsg] = useState("");
   const [filesStatus, setFilesStatus] = useState(false);
   const params = useParams();
-  const history = useHistory();
-  const location = useLocation();
   const handleClickOpen = (e) => {
     setMenuOpen(true);
     setAnchorEl(e.currentTarget);
@@ -75,12 +80,9 @@ export default function Actions({ handleSetState, menu }) {
       .then((data) => {
         const { folders, newFolder } = { ...data };
         setNewFolderOpen(false);
-        handleSetState({
-          folders,
-          mobileOpen: false,
-          selectedFolders: newFolder,
-          selectedFiles: [],
-        });
+        setFolders(folders);
+        setSelectedFolders(newFolder);
+        setSelectedFiles([]);
       })
       .catch((err) => console.log("Err", err));
   };
@@ -93,26 +95,29 @@ export default function Actions({ handleSetState, menu }) {
       form.append("files", files[i], files[i].name);
       uploadFiles.push(files[i].name);
     }
+    const folder = params.folder ? `/${params.folder}` : "";
     setAccordionOpen(true);
-    setAccordionMsg(`Uploading ${files.length} files...`);
+    setAccordionMsg(
+      `Uploading ${files.length} file${files.length > 1 ? "s" : ""}...`
+    );
     setUploadFiles(uploadFiles);
     setFilesStatus(false);
-    const folder = params.folder ? `/${params.folder}` : "";
-    postData(`/api/files/upload${folder}`, form)
-      .then((data) => {
-        const { files, uploadedFiles } = data;
+    Axios.post(`/api/files/upload${folder}`, form, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    })
+      .then((d) => {
+        const { data } = { ...d };
+        const { files, uploadedFiles } = { ...data };
         setMenuOpen(false);
         setFilesStatus(true);
-        setAccordionMsg(`Uploaded ${uploadedFiles.length} files`);
-        if (location.pathname !== "/drive/home") {
-          history.push("/drive/home");
-        }
-        handleSetState({
-          files,
-          mobileOpen: false,
-          selectedFiles: uploadedFiles,
-          selectedFolders: [],
-        });
+        setAccordionMsg(
+          `Uploaded ${uploadedFiles.length} file${files.length > 1 ? "s" : ""}`
+        );
+        setFiles(files);
+        setSelectedFolders([]);
+        setSelectedFiles(uploadedFiles);
       })
       .catch((err) => console.log("Error", err));
   };

@@ -1,9 +1,10 @@
-import React, { Fragment, Component } from "react";
-import { withStyles } from "@material-ui/core/styles";
-import { withRouter } from "react-router-dom";
+import React, { Fragment, useState } from "react";
+import makeStyles from "@material-ui/core/styles/makeStyles";
+import { useHistory, useLocation, useParams } from "react-router-dom";
 import ActionHeader from "./ActionHeader";
 import postData from "../helpers/postData";
-import Actions from "../panel_left/Actions";
+import deleteData from "../helpers/deleteData";
+import Actions from "./Actions";
 import Snack from "./Snack";
 import MainTable from "./MainTable";
 import getData from "../helpers/getData";
@@ -11,15 +12,15 @@ import CssBaseline from "@material-ui/core/CssBaseline";
 import ActionsDrawer from "./ActionsDrawer";
 import Header from "./Header";
 import axios from "axios";
-import {
-  Dialog,
-  DialogContent,
-  Typography,
-  Button,
-  Box,
-} from "@material-ui/core";
-
-const layout = (theme) => ({
+import Dialog from "@material-ui/core/Dialog";
+import DialogContent from "@material-ui/core/DialogContent";
+import { useEffect } from "react";
+import sortFiles from "../helpers/sortFiles";
+import sortFolders from "../helpers/sortFolders";
+import getContentType from "../helpers/getContentType";
+import { useRef } from "react";
+import patchData from "../helpers/patchData";
+const useStyles = makeStyles((theme) => ({
   root: {
     display: "flex",
   },
@@ -29,117 +30,128 @@ const layout = (theme) => ({
     flexGrow: 1,
     padding: theme.spacing(1),
   },
-});
+}));
 
-class FileTable extends Component {
-  state = {
-    files: [],
-    folders: [],
-    selectedFiles: [],
-    selectedFolders: [],
-    isFavorited: false,
-    filesModified: 0,
-    tempFiles: [],
-    tempFolders: [],
-    copySnackOpen: false,
-    trashSnackOpen: false,
-    favoritesSnackOpen: false,
-    restoreSnackOpen: false,
-    currentFolder: ["Home"],
-    currentID: this.props.match.url,
-    isLoaded: false,
-    mobileOpen: false,
-    restoreAllOpen: false,
-    deleteAllOpen: false,
-    trashMenuOpen: false,
-    trashAnchorEl: undefined,
-    moveMenuOpen: false,
-    moveAnchorEl: undefined,
-    fileData: undefined,
-    contentType: "",
-    sortColumn: {
-      name: "Name",
-      order: "asc",
-    },
-  };
-
-  fetchData = () => {
-    getData(`/api${this.props.match.url}`)
-      .then((data) => {
-        this.setState({
-          files: data.files,
-          folders: data.folders,
-          selectedFolders: [],
-          selectedFiles: [],
-          currentFolder: data.folderPath,
-          currentID: this.props.match.url,
-          isLoaded: true,
-        });
-      })
-      .catch((err) => console.log("Err", err));
-  };
-
-  componentDidMount() {
-    this.fetchData();
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (this.props.match.url !== prevState.currentID) {
-      this.fetchData();
+export default function Files({ menu }) {
+  const history = useHistory();
+  const location = useLocation();
+  const params = useParams();
+  const [files, setFiles] = useState([]);
+  const [folders, setFolders] = useState([]);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [selectedFolders, setSelectedFolders] = useState([]);
+  const [tempFiles, setTempFiles] = useState([]);
+  const [tempFolders, setTempFolders] = useState([]);
+  const [currentFolder, setCurrentFolder] = useState([]);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [drawerMobileOpen, setDrawerMobileOpen] = useState(false);
+  const [fileData, setFileData] = useState(undefined);
+  const [fileModalOpen, setFileModalOpen] = useState(false);
+  const [contentType, setContentType] = useState("");
+  const [trashSnackOpen, setTrashSnackOpen] = useState(false);
+  const [copySnackOpen, setCopySnackOpen] = useState(false);
+  const [restoreSnackOpen, setRestoreSnackOpen] = useState(false);
+  const [favoritesSnackOpen, setFavoritesSnackOpen] = useState(false);
+  const [unfavoriteSnackOpen, setUnfavoriteSnackOpen] = useState(false);
+  const [deleteAllOpen, setDeleteAllOpen] = useState(false);
+  const [restoreAllOpen, setRestoreAllOpen] = useState(false);
+  const [trashMenuOpen, setTrashMenuOpen] = useState(false);
+  const [filesModified, setFilesModified] = useState(0);
+  const [trashAnchorEl, setTrashAnchorEl] = useState(undefined);
+  const [moveMenuOpen, setMoveMenuOpen] = useState(false);
+  const [moveAnchorEl, setMoveAnchorEl] = useState(false);
+  const [sortColumn, setSortColumn] = useState({
+    name: "Name",
+    order: "asc",
+  });
+  const handleSnackbarExit = () => {
+    if (tempFiles || tempFolders) {
+      setTempFiles([]);
+      setTempFolders([]);
     }
-  }
-
-  handleSetState = (value) => {
-    this.setState(value);
+    return;
   };
 
-  handleFavoritesSnackClose = (event, reason) => {
-    if (reason === "clickaway") {
+  const openSnack = (currentSnack) => {
+    if (currentSnack === "Copy") {
+      setCopySnackOpen(true);
+      setTrashSnackOpen(false);
+      setFavoritesSnackOpen(false);
+      setUnfavoriteSnackOpen(false);
+      setRestoreSnackOpen(false);
+    } else if (currentSnack === "Favorites") {
+      setFavoritesSnackOpen(true);
+      setCopySnackOpen(false);
+      setTrashSnackOpen(false);
+      setUnfavoriteSnackOpen(false);
+      setRestoreSnackOpen(false);
+    } else if (currentSnack === "Trash") {
+      setTrashSnackOpen(true);
+      setFavoritesSnackOpen(false);
+      setCopySnackOpen(false);
+      setUnfavoriteSnackOpen(false);
+      setRestoreSnackOpen(false);
+    } else if (currentSnack === "Unfavorites") {
+      setUnfavoriteSnackOpen(true);
+      setFavoritesSnackOpen(false);
+      setCopySnackOpen(false);
+      setTrashSnackOpen(false);
+      setRestoreSnackOpen(false);
+    } else if (currentSnack === "Restore") {
+      setRestoreSnackOpen(true);
+      setFavoritesSnackOpen(false);
+      setCopySnackOpen(false);
+      setTrashSnackOpen(false);
+      setUnfavoriteSnackOpen(false);
+    }
+  };
+
+  const getFilesFolders = async () => {
+    try {
+      const data = await getData(`/api${location.pathname}`);
+      setFiles(data.files);
+      setFolders(data.folders);
+      setSelectedFiles([]);
+      setSelectedFolders([]);
+      setCurrentFolder(data.folderPath);
+      setIsLoaded(true);
+    } catch (err) {
+      console.log("Err", err);
+    }
+  };
+  const mounted = useRef();
+  useEffect(() => {
+    document.body.style.cursor = "wait";
+    if (!mounted.current) {
+      mounted.current = false;
+      (async () => await getFilesFolders())();
+      document.body.style.cursor = "default";
       return;
+    } else {
+      setIsLoaded(false);
+      (async () => await getFilesFolders())();
+      document.body.style.cursor = "default";
     }
-    this.setState({
-      favoritesSnackOpen: false,
-    });
+  }, [location.pathname, isLoaded]);
+
+  const checkIsFavorited = (items) => {
+    let isFavorited = 0;
+    for (let i = 0; i < items.length; ++i) {
+      if (items[i].isFavorited) isFavorited++;
+    }
+    if (isFavorited > 0 && isFavorited === items.length) return true;
+    return false;
   };
 
-  handleCopySnackClose = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    this.setState({
-      copySnackOpen: false,
-    });
+  const handleSort = (column) => {
+    sortColumn.order =
+      sortColumn.name === column && sortColumn.order === "asc" ? "desc" : "asc";
+    sortColumn.name = column;
+    setSortColumn(sortColumn);
   };
 
-  handleTrashSnackClose = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    this.setState({
-      trashSnackOpen: false,
-    });
-  };
-
-  handleRestoreSnackClose = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    this.setState({
-      restoreSnackOpen: false,
-    });
-  };
-
-  handleUnFavoriteSnackClose = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    this.setState({
-      undoFavoriteSnackOpen: false,
-    });
-  };
-
-  handleFolderClick = (e, folder) => {
-    const { selectedFolders } = { ...this.state };
+  const handleFolderClick = (e, folder) => {
     // No folders selected
     if (selectedFolders.length === 0 && !e.ctrlKey) {
       // Add selected folder to array
@@ -149,63 +161,55 @@ class FileTable extends Component {
         parent_id: folder.parent_id,
       });
       //Check if any of the folders are favorited
-      const isFavorited = this.checkIsFavorited(selectedFolders);
+      const isFavorited = checkIsFavorited(selectedFolders);
       //Set state
-      this.setState({
-        selectedFiles: [],
-        selectedFolders,
-        isFavorited,
-      });
+      setSelectedFiles([]);
+      setSelectedFolders(selectedFolders);
+      setIsFavorited(isFavorited);
     } else if (
       /***
        * User double clicks the same folder and the current menu is not 'Trash',
        * If the folder was clicked without the ctrlkey and there is only one
        * value in the selectedfolders list, go to the next page
        */
-      this.props.currentMenu !== "Trash" &&
+      menu !== "Trash" &&
       selectedFolders.length === 1 &&
       !e.ctrlKey
     ) {
-      if (selectedFolders[0].id === folder._id)
-        this.props.history.push(`/drive/folders/${folder._id}`, {
-          selectedFolders: [],
-          selectedFiles: [],
-        });
-      else {
+      if (selectedFolders[0].id === folder._id) {
+        setSelectedFolders([]);
+        setSelectedFiles([]);
+        history.push(`/drive/folders/${folder._id}`);
+      } else {
         let folders = [];
         folders[0] = {
           id: folder._id,
           foldername: folder.foldername,
           parent_id: folder.parent_id,
         };
-        const isFavorited = this.checkIsFavorited(folders);
-        this.setState({
-          selectedFiles: [],
-          selectedFolders: folders,
-          isFavorited,
-        });
+        const isFavorited = checkIsFavorited(folders);
+        setSelectedFiles([]);
+        setSelectedFolders(folders);
+        setIsFavorited(isFavorited);
       }
     } else if (
       /**
        * Clear the list of folders if user ctrl clicks the same folder
        */
-      this.props.menu !== "Trash" &&
+      menu !== "Trash" &&
       selectedFolders.length === 1 &&
       e.ctrlKey
     ) {
-      if (selectedFolders[0].id === folder._id)
-        this.setState({ selectedFolders: [] });
+      if (selectedFolders[0].id === folder._id) setSelectedFolders([]);
       else {
         selectedFolders.push({
           id: folder._id,
           foldername: folder.foldername,
           parent_id: folder.parent_id,
         });
-        const isFavorited = this.checkIsFavorited(selectedFolders);
-        this.setState({
-          selectedFolders,
-          isFavorited,
-        });
+        const isFavorited = checkIsFavorited(selectedFolders);
+        setSelectedFolders(selectedFolders);
+        setIsFavorited(isFavorited);
       }
     } else if (e.ctrlKey) {
       let folders = [];
@@ -222,8 +226,9 @@ class FileTable extends Component {
           foldername: folder.foldername,
           parent_id: folder.parent_id,
         });
-      const isFavorited = this.checkIsFavorited(folders);
-      this.setState({ selectedFolders: folders, isFavorited });
+      const isFavorited = checkIsFavorited(folders);
+      setSelectedFolders(folders);
+      setIsFavorited(isFavorited);
     } else {
       let folders = [];
       folders[0] = {
@@ -231,17 +236,14 @@ class FileTable extends Component {
         foldername: folder.foldername,
         parent_id: folder.parent_id,
       };
-      const isFavorited = this.checkIsFavorited(folders);
-      this.setState({
-        selectedFiles: [],
-        selectedFolders: folders,
-        isFavorited,
-      });
+      const isFavorited = checkIsFavorited(folders);
+      setSelectedFiles([]);
+      setSelectedFolders(folders);
+      setIsFavorited(isFavorited);
     }
   };
 
-  handleFileClick = (e, file) => {
-    const { selectedFiles } = { ...this.state };
+  const handleFileClick = (e, file) => {
     if (selectedFiles.length === 0 && !e.ctrlKey) {
       selectedFiles.push({
         id: file._id,
@@ -249,31 +251,26 @@ class FileTable extends Component {
         isFavorited: file.metadata.isFavorited,
         folder_id: file.folder_id,
       });
-      const isFavorited = this.checkIsFavorited(selectedFiles);
-      this.setState({
-        selectedFolders: [],
-        selectedFiles,
-        isFavorited,
-      });
+      const isFavorited = checkIsFavorited(selectedFiles);
+      setSelectedFiles(selectedFiles);
+      setSelectedFolders([]);
+      setIsFavorited(isFavorited);
     } else if (
       selectedFiles.length === 1 &&
       selectedFiles[0].id === file._id &&
       !e.ctrlKey
     ) {
       axios.get(`/api/files/${file._id}`).then((d) => {
-        this.setState({
-          fileData: `/api/files/${file._id}`,
-          modalOpen: true,
-          contentType: d.headers["content-type"],
-        });
+        setFileData(`/api/files/${file._id}`);
+        setFileModalOpen(true);
+        setContentType(d.headers["content-type"]);
       });
-      //this.props.history.push(`/file/${file._id}`);
     } else if (
       selectedFiles.length === 1 &&
       selectedFiles[0].id === file._id &&
       e.ctrlKey
     ) {
-      this.setState({ selectedFiles: [] });
+      setSelectedFiles([]);
     } else if (e.ctrlKey) {
       let files = [];
       let count = 0;
@@ -290,8 +287,9 @@ class FileTable extends Component {
           isFavorited: file.metadata.isFavorited,
           folder_id: file.folder_id,
         });
-      const isFavorited = this.checkIsFavorited(files);
-      this.setState({ selectedFiles: files, isFavorited });
+      const isFavorited = checkIsFavorited(files);
+      setSelectedFiles(files);
+      setIsFavorited(isFavorited);
     } else {
       let files = [];
       files[0] = {
@@ -300,390 +298,305 @@ class FileTable extends Component {
         isFavorited: file.metadata.isFavorited,
         folder_id: file.folder_id,
       };
-      const isFavorited = this.checkIsFavorited(files);
-      this.setState({
-        selectedFolders: [],
-        selectedFiles: files,
-        isFavorited,
-      });
+      const isFavorited = checkIsFavorited(files);
+      setSelectedFolders([]);
+      setSelectedFiles(files);
+      setIsFavorited(isFavorited);
     }
   };
 
-  handleFileCopy = () => {
-    const { selectedFiles } = { ...this.state };
+  const handleFileCopy = () => {
     let urlParam = "";
-    if (this.props.match.url !== "/drive/home")
-      urlParam = `/${this.props.match.params.folder}`;
-    const data = { selectedFiles };
+    if (location.pathname !== "/drive/home") urlParam = `/${params.folder}`;
+    const data = { selectedFiles: selectedFiles };
     postData(`/api/files/copy${urlParam}`, data)
       .then((data) => {
-        const { files } = { ...this.state };
         for (let file of data.files) {
           files.push(file);
         }
-        console.log("newfiles", data.newFiles);
-        console.log("files", data.files);
-        //Slice will clone the array and return reference to new array
-        //id is an array of new files
         const tempFiles = data.newFiles.id.slice();
         const filesModified = tempFiles.length;
-        /***
-         * Files - Updated files
-         * Files Modified - Length of selected files that were copied
-         * TempFiles - Reference to selected files (if user chooses to undo, reference the tempfiles)
-         */
-        this.setState({
-          trashSnackOpen: false,
-          copySnackOpen: true,
-          favoritesSnackOpen: false,
-          selectedFiles: [],
-          files,
-          filesModified,
-          tempFiles,
-        });
+        setFiles(files); //updated files
+        setFilesModified(filesModified); //Length of selected files that were copied
+        setTempFiles(tempFiles); //Reference to selected files (if user chooses to undo, reference the tempfiles)
+        setSelectedFiles([]);
+        openSnack("Copy");
       })
       .catch((err) => console.log("Err", err));
   };
 
-  handleUndoCopy = () => {
-    const { tempFiles } = { ...this.state };
+  const handleUndoCopy = () => {
     const data = { selectedFiles: tempFiles };
     let urlParam = "";
-    if (this.props.match.url !== "/drive/home")
-      urlParam = `/${this.props.match.params.folder}`;
-    postData(`/api/files/undoCopy${urlParam}`, data)
+    if (location.pathname !== "/drive/home") urlParam = `/${params.folder}`;
+    deleteData(`/api/files/copy${urlParam}`, data)
       .then((data) => {
         const { files } = { ...data };
-        this.setState({
-          files,
-          tempFiles: [],
-          filesModified: 0,
-          copySnackOpen: false,
-        });
+        setFiles(files);
+        setTempFiles([]);
+        setFilesModified(0);
+        setCopySnackOpen(false);
       })
       .catch((err) => console.log("Err", err));
   };
 
-  handleTrash = () => {
-    let { selectedFolders, selectedFiles } = { ...this.state };
-    const data = { selectedFolders, selectedFiles, isFavorited: [false, true] };
-    const folder = this.props.match.params.folder
-      ? `/${this.props.match.params.folder}`
-      : "";
-    postData(`/api/files/trash${folder}`, data)
+  const handleTrash = () => {
+    const data = {
+      selectedFolders: selectedFolders,
+      selectedFiles: selectedFiles,
+      isFavorited: [false, true],
+    };
+    const folder = params.folder ? `/${params.folder}` : "";
+    patchData(`/api/files/trash${folder}`, data)
       .then((data) => {
         const { files, folders } = { ...data };
         //Slice will clone the array and return reference to new array
         const tempFiles = selectedFiles.slice();
         const tempFolders = selectedFolders.slice();
         const filesModified = tempFiles.length + tempFolders.length;
-        /***
-         * Files - Updated files
-         * Files Modified - Length of selected files that were copied
-         * TempFiles - Reference to selected files (if user chooses to undo, reference the tempfiles)
-         */
-
-        this.setState({
-          files,
-          folders,
-          trashSnackOpen: true,
-          copySnackOpen: false,
-          favoritesSnackOpen: false,
-          selectedFiles: [],
-          selectedFolders: [],
-          tempFiles,
-          tempFolders,
-          filesModified,
-        });
+        setFiles(files);
+        setFolders(folders);
+        setSelectedFolders([]);
+        setSelectedFiles([]);
+        setTempFiles(tempFiles);
+        setTempFolders(tempFolders);
+        setFilesModified(filesModified);
+        openSnack("Trash");
       })
       .catch((err) => console.log("Err", err));
   };
 
-  handleUndoTrash = () => {
-    let { tempFolders, tempFiles } = { ...this.state };
+  const handleUndoTrash = () => {
     const data = { selectedFolders: tempFolders, selectedFiles: tempFiles };
-    const folder = this.props.match.params.folder
-      ? `/${this.props.match.params.folder}`
-      : "";
+    const folder = params.folder ? `/${params.folder}` : "";
     postData(`/api/files/undoTrash${folder}`, data)
       .then((data) => {
         const { files, folders } = { ...data };
-        this.setState({
-          files,
-          folders,
-          tempFiles: [],
-          tempFolders: [],
-          filesModified: 0,
-          trashSnackOpen: false,
-        });
+        setFiles(files);
+        setFolders(folders);
+        setTrashSnackOpen(false);
+        setTempFiles([]);
+        setTempFolders([]);
+        setFilesModified(0);
       })
       .catch((err) => console.log("Err", err));
   };
 
-  handleFavoritesTrash = () => {
-    let { selectedFolders, selectedFiles } = { ...this.state };
-    const data = { selectedFolders, selectedFiles, isFavorited: [true] };
-    postData("/api/files/trash", data)
+  const handleFavoritesTrash = () => {
+    const data = {
+      selectedFolders: selectedFolders,
+      selectedFiles: selectedFiles,
+      isFavorited: [true],
+    };
+    patchData("/api/files/trash", data)
       .then((data) => {
         const { files, folders } = { ...data };
-        this.setState({
-          files,
-          folders,
-          selectedFiles: [],
-          selectedFolders: [],
-        });
+        setFiles(files);
+        setFolders(folders);
+        setSelectedFiles([]);
+        setSelectedFolders([]);
       })
       .catch((err) => console.log("Err", err));
   };
 
-  handleDeleteForever = () => {
-    let { selectedFolders, selectedFiles } = { ...this.state };
-    const data = { selectedFolders, selectedFiles };
-    postData("/api/files/delete", data)
-      .then((data) => {
-        const { files, folders } = { ...data };
-        //Trashed files and folders
-        this.setState({
-          files,
-          folders,
-          selectedFiles: [],
-          selectedFolders: [],
-        });
-      })
-      .catch((err) => console.log("Err", err));
-  };
-
-  handleRestore = () => {
-    const { selectedFolders, selectedFiles } = { ...this.state };
-    const data = { selectedFolders, selectedFiles };
-    postData("/api/files/restore", data)
+  const handleRestore = () => {
+    const data = {
+      selectedFolders: selectedFolders,
+      selectedFiles: selectedFiles,
+    };
+    patchData("/api/files/restore", data)
       .then((data) => {
         const { files, folders } = { ...data };
         //Slice will clone the array and return reference to new array
         const tempFiles = selectedFiles.slice();
         const tempFolders = selectedFolders.slice();
         const filesModified = tempFiles.length + tempFolders.length;
-        /***
-         * Files - Updated files
-         * Files Modified - Length of selected files that were copied
-         * TempFiles - Reference to selected files (if user chooses to undo, reference the tempfiles)
-         */
-        this.setState({
-          files,
-          folders,
-          trashSnackOpen: false,
-          copySnackOpen: false,
-          favoritesSnackOpen: false,
-          restoreSnackOpen: true,
-          selectedFiles: [],
-          selectedFolders: [],
-          tempFiles,
-          tempFolders,
-          filesModified,
-        });
+        setFiles(files);
+        setFolders(folders);
+        setSelectedFolders([]);
+        setSelectedFiles([]);
+        setTempFiles(tempFiles);
+        setTempFolders(tempFolders);
+        setFilesModified(filesModified);
+        openSnack("Restore");
       })
       .catch((err) => console.log("Err", err));
   };
 
-  handleUndoRestore = () => {
-    let { tempFolders, tempFiles } = { ...this.state };
+  const handleUndoRestore = () => {
     const data = {
       selectedFolders: tempFolders,
       selectedFiles: tempFiles,
       isFavorited: [false, true],
       trashMenu: true,
     };
-    postData(`/api/files/trash`, data)
+    patchData(`/api/files/trash`, data)
       .then((data) => {
         const { files, folders } = { ...data };
-        this.setState({
-          files,
-          folders,
-          restoreSnackOpen: false,
-          tempFiles: [],
-          tempFolders: [],
-          filesModified: 0,
-        });
+        setFiles(files);
+        setFolders(folders);
+        setRestoreSnackOpen(false);
+        setTempFiles([]);
+        setTempFolders([]);
+        setFilesModified(0);
       })
       .catch((err) => console.log("Err", err));
   };
 
   //When you favorite an item from Home
-  handleFavorites = () => {
-    let { selectedFolders, selectedFiles } = { ...this.state };
-    const data = { selectedFolders, selectedFiles };
-    postData("/api/files/favorite", data)
+  const handleFavorites = () => {
+    const data = {
+      selectedFolders: selectedFolders,
+      selectedFiles: selectedFiles,
+    };
+    patchData("/api/files/favorites", data)
       .then((data) => {
         const { files, folders } = { ...data };
         //Slice will clone the array and return reference to new array
         const tempFiles = selectedFiles.slice();
         const tempFolders = selectedFolders.slice();
         const filesModified = tempFiles.length + tempFolders.length;
-        /***
-         * Files - Updated files
-         * Files Modified - Length of selected files that were copied
-         * TempFiles - Reference to selected files (if user chooses to undo, reference the tempfiles)
-         */
-        this.setState({
-          isFavorited: true,
-          files,
-          folders,
-          favoritesSnackOpen: true,
-          tempFiles,
-          tempFolders,
-          filesModified,
-        });
+        setFiles(files);
+        setFolders(folders);
+        setIsFavorited(true);
+        setFavoritesSnackOpen(true);
+        setTempFiles(tempFiles);
+        setTempFolders(tempFolders);
+        setFilesModified(filesModified);
       })
       .catch((err) => console.log("Err", err));
   };
 
   //When you unfavorite an item from 'Home', and then click undo
-  handleUndoFavorite = () => {
-    const { tempFolders, tempFiles } = { ...this.state };
+  const handleUndoFavorite = () => {
     const data = { selectedFolders: tempFolders, selectedFiles: tempFiles };
-    postData("/api/files/undoFavorite", data)
+    patchData("/api/files/undo-favorites", data)
       .then((data) => {
         const { files, folders } = { ...data };
-        this.setState({
-          files,
-          folders,
-          tempFiles: [],
-          tempFolders: [],
-          filesModified: 0,
-          favoritesSnackOpen: false,
-        });
+        setFiles(files);
+        setFolders(folders);
+        setTempFiles([]);
+        setTempFolders([]);
+        setFilesModified(0);
+        setFavoritesSnackOpen(false);
       })
       .catch((err) => console.log("Err", err));
   };
 
   //When you unfavorite an item in 'Favorites'
-  handleUnfavorited = () => {
-    let { selectedFolders, selectedFiles } = { ...this.state };
-    const data = { selectedFolders, selectedFiles };
-    postData("/api/files/unfavorite", data)
+  const handleUnfavorited = () => {
+    const data = {
+      selectedFolders: selectedFolders,
+      selectedFiles: selectedFiles,
+    };
+    patchData("/api/files/unfavorite", data)
       .then((data) => {
         const { files, folders } = { ...data };
-        //Slice will clone the array and return reference to new array
         const tempFiles = selectedFiles.slice();
         const tempFolders = selectedFolders.slice();
         const filesModified = tempFiles.length + tempFolders.length;
-        /***
-         * Files - Updated files
-         * Files Modified - Length of selected files that were copied
-         * TempFiles - Reference to selected files (if user chooses to undo, reference the tempfiles)
-         */
-        this.setState({
-          files,
-          folders,
-          undoFavoriteSnackOpen: true,
-          tempFiles,
-          tempFolders,
-          filesModified,
-        });
+        setFiles(files);
+        setFolders(folders);
+        setTempFiles(tempFiles);
+        setTempFolders(tempFolders);
+        setUnfavoriteSnackOpen(true);
+        setFilesModified(filesModified);
       })
       .catch((err) => console.log("Err", err));
   };
 
   //When you unfavorite an item in 'Favorites', and then click undo
-  handleUndoUnfavorite = () => {
-    const { tempFolders, tempFiles } = { ...this.state };
+  const handleUndoUnfavorite = () => {
     const data = {
       selectedFolders: tempFolders,
       selectedFiles: tempFiles,
       favoritesMenu: true,
     };
-    postData("/api/files/favorite", data)
+    patchData("/api/files/favorites", data)
       .then((data) => {
         const { files, folders } = { ...data };
-        this.setState({
-          files,
-          folders,
-          tempFiles: [],
-          tempFolders: [],
-          filesModified: 0,
-          undoFavoriteSnackOpen: false,
-        });
+        setFiles(files);
+        setFolders(folders);
+        setSelectedFiles([]);
+        setSelectedFolders([]);
+        setTempFolders([]);
+        setTempFiles([]);
+        setFilesModified(0);
+        setUnfavoriteSnackOpen(false);
       })
       .catch((err) => console.log("Err", err));
   };
 
-  handleSnackbarExit = () => {
-    if (this.props.tempFiles || this.props.tempFolders) {
-      this.setState({
-        tempFiles: [],
-        tempFolders: [],
-      });
-    }
-    return;
-  };
-
-  checkIsFavorited = (items) => {
-    let isFavorited = 0;
-    for (let i = 0; i < items.length; ++i) {
-      if (items[i].isFavorited) isFavorited++;
-    }
-    if (isFavorited > 0 && isFavorited === items.length) return true;
-    return false;
-  };
-
-  handleHomeUnfavorited = () => {
-    let { selectedFolders, selectedFiles } = { ...this.state };
-    const data = { selectedFolders, selectedFiles };
-    postData("/api/files/homeUnfavorite", data)
+  const handleHomeUnfavorited = () => {
+    const data = {
+      selectedFolders: selectedFolders,
+      selectedFiles: selectedFiles,
+    };
+    patchData("/api/files/home-undo-favorite", data)
       .then((data) => {
         const { files, folders } = { ...data };
-        this.setState({
-          files,
-          folders,
-          isFavorited: false,
-        });
+        setFiles(files);
+        setFolders(folders);
+        setIsFavorited(false);
+      })
+      .catch((err) => console.log("Err", err));
+  };
+  const handleDeleteForever = () => {
+    const data = {
+      selectedFolders: selectedFolders,
+      selectedFiles: selectedFiles,
+    };
+    deleteData("/api/files/selected", data)
+      .then((data) => {
+        const { files, folders } = { ...data };
+        //Trashed files and folders
+        setFiles(files);
+        setFolders(folders);
+        setSelectedFiles([]);
+        setSelectedFolders([]);
       })
       .catch((err) => console.log("Err", err));
   };
 
-  handleDeleteAll = (e) => {
+  const handleDeleteAll = (e) => {
     e.preventDefault();
     document.body.style.cursor = "wait";
-    postData("/api/files/deleteAll")
+    deleteData("/api/files/all")
       .then((data) => {
         document.body.style.cursor = "default";
         const { files, folders } = { ...data };
-        this.setState({
-          files,
-          folders,
-          deleteAllOpen: false,
-          trashMenuOpen: false,
-        });
+        setFiles(files);
+        setFolders(folders);
+        setDeleteAllOpen(false);
+        setTrashMenuOpen(false);
       })
       .catch((err) => console.log("Err", err));
   };
 
-  handleRestoreAll = (e) => {
+  const handleRestoreAll = (e) => {
     e.preventDefault();
     document.body.style.cursor = "wait";
-    postData("/api/files/restoreAll")
+    patchData("/api/files/all/restore")
       .then((data) => {
         document.body.style.cursor = "default";
         const { files, folders } = { ...data };
-        this.setState({
-          files,
-          folders,
-          restoreAllOpen: false,
-          trashMenuOpen: false,
-        });
+        setFiles(files);
+        setFolders(folders);
+        setRestoreAllOpen(false);
+        setTrashMenuOpen(false);
       })
       .catch((err) => console.log("Err", err));
   };
 
-  handleDrawerToggle = () => {
-    this.setState({ mobileOpen: !this.state.mobileOpen });
+  const handleFileClose = () => {
+    setFileModalOpen(false);
   };
 
-  handleFileClose = () => {
-    this.setState({ modalOpen: false });
+  const handleDrawerToggle = () => {
+    setDrawerMobileOpen((open) => !open);
   };
 
-  handleSingleDownload = (file) => {
+  const handleSingleDownload = (file) => {
     let id = file.id || file._id;
     fetch(`/api/files/${id}`)
       .then((response) => response.blob())
@@ -698,290 +611,174 @@ class FileTable extends Component {
       });
   };
 
-  handleSort = (column) => {
-    const { sortColumn } = { ...this.state };
-    sortColumn.order =
-      sortColumn.name === column && sortColumn.order === "asc" ? "desc" : "asc";
-    sortColumn.name = column;
-    this.setState({ sortColumn });
+  const handleFavoritesSnackClose = (event, reason) => {
+    setFavoritesSnackOpen(false);
   };
 
-  sortFolders = (folders) => {
-    const { sortColumn } = { ...this.state };
-    let value = sortColumn.order === "asc" ? 1 : -1;
-    console.log(sortColumn);
-    if (sortColumn.name === "Name") {
-      return folders.sort((a, b) => {
-        /* Storing case insensitive comparison */
-        var comparison = a.foldername
-          .toString()
-          .toLowerCase()
-          .localeCompare(b.foldername.toString().toLowerCase());
-        return value * comparison;
-      });
-    } else if (sortColumn.name === "Uploaded On") {
-      return folders.sort((a, b) => {
-        if (a.createdOn > b.createdOn) return 1 * value;
-        if (a.createdOn < b.createdOn) return -1 * value;
-        return 0;
-      });
-    } else return folders;
+  const handleCopySnackClose = (event, reason) => {
+    setCopySnackOpen(false);
   };
 
-  sortFiles = (files) => {
-    const { sortColumn } = { ...this.state };
-    let value = sortColumn.order === "asc" ? 1 : -1;
-    if (sortColumn.name === "Name") {
-      return files.sort((a, b) => {
-        /* Storing case insensitive comparison */
-        var comparison = a.filename
-          .toString()
-          .toLowerCase()
-          .localeCompare(b.filename.toString().toLowerCase());
-        return value * comparison;
-      });
-    } else if (sortColumn.name === "Uploaded On") {
-      return files.sort((a, b) => {
-        if (a.uploadDate > b.uploadDate) return 1 * value;
-        if (a.uploadDate < b.uploadDate) return -1 * value;
-        return 0;
-      });
-    } else if (sortColumn.name === "File Size") {
-      return files.sort((a, b) => {
-        return value * (a.length - b.length);
-      });
-    } else return files;
+  const handleTrashSnackClose = (event, reason) => {
+    setTrashSnackOpen(false);
   };
 
-  render() {
-    document.body.style.cursor = "default";
-    const {
-      folders,
-      files,
-      selectedFolders,
-      selectedFiles,
-      filesModified,
-      copySnackOpen,
-      trashSnackOpen,
-      favoritesSnackOpen,
-      restoreSnackOpen,
-      undoFavoriteSnackOpen,
-      isFavorited,
-      currentFolder,
-      isLoaded,
-      mobileOpen,
-      restoreAllOpen,
-      deleteAllOpen,
-      trashMenuOpen,
-      trashAnchorEl,
-      moveMenuOpen,
-      moveAnchorEl,
-      modalOpen,
-      fileData,
-      contentType,
-      sortColumn,
-    } = {
-      ...this.state,
-    };
+  const handleRestoreSnackClose = (event, reason) => {
+    setRestoreSnackOpen(false);
+  };
 
-    const { classes } = { ...this.props };
+  const handleUnFavoriteSnackClose = (event, reason) => {
+    setUnfavoriteSnackOpen(false);
+  };
 
-    const copySnack = (
-      <Snack
-        open={copySnackOpen}
-        onClose={this.handleCopySnackClose}
-        onExited={this.handleSnackbarExit}
-        message={`Copied ${filesModified} file(s).`}
-        onClick={this.handleUndoCopy}
-      />
-    );
+  const copySnack = (
+    <Snack
+      open={copySnackOpen}
+      onClose={handleCopySnackClose}
+      onExited={handleSnackbarExit}
+      message={`Copied ${filesModified} file(s).`}
+      onClick={handleUndoCopy}
+    />
+  );
 
-    const trashSnack = (
-      <Snack
-        open={trashSnackOpen}
-        onClose={this.handleTrashSnackClose}
-        onExited={this.handleSnackbarExit}
-        message={`Trashed ${filesModified} item(s).`}
-        onClick={this.handleUndoTrash}
-      />
-    );
-    const favoritesSnack = (
-      <Snack
-        open={favoritesSnackOpen}
-        onClose={this.handleFavoritesSnackClose}
-        onExited={this.handleSnackbarExit}
-        message={`Favorited ${filesModified} item(s).`}
-        onClick={this.handleUndoFavorite}
-      />
-    );
+  const trashSnack = (
+    <Snack
+      open={trashSnackOpen}
+      onClose={handleTrashSnackClose}
+      onExited={handleSnackbarExit}
+      message={`Trashed ${filesModified} item(s).`}
+      onClick={handleUndoTrash}
+    />
+  );
+  const favoritesSnack = (
+    <Snack
+      open={favoritesSnackOpen}
+      onClose={handleFavoritesSnackClose}
+      onExited={handleSnackbarExit}
+      message={`Favorited ${filesModified} item(s).`}
+      onClick={handleUndoFavorite}
+    />
+  );
 
-    const restoreSnack = (
-      <Snack
-        open={restoreSnackOpen}
-        onClose={this.handleRestoreSnackClose}
-        onExited={this.handleSnackbarExit}
-        message={`Restored ${filesModified} item(s).`}
-        onClick={this.handleUndoRestore}
-      />
-    );
+  const restoreSnack = (
+    <Snack
+      open={restoreSnackOpen}
+      onClose={handleRestoreSnackClose}
+      onExited={handleSnackbarExit}
+      message={`Restored ${filesModified} item(s).`}
+      onClick={handleUndoRestore}
+    />
+  );
 
-    const unfavoriteSnack = (
-      <Snack
-        open={undoFavoriteSnackOpen}
-        onClose={this.handleUnFavoriteSnackClose}
-        onExited={this.handleSnackbarExit}
-        message={`Unfavorited ${filesModified} item(s).`}
-        onClick={this.handleUndoUnfavorite}
-      />
-    );
+  const unfavoriteSnack = (
+    <Snack
+      open={unfavoriteSnackOpen}
+      onClose={handleUnFavoriteSnackClose}
+      onExited={handleSnackbarExit}
+      message={`Unfavorited ${filesModified} item(s).`}
+      onClick={handleUndoUnfavorite}
+    />
+  );
 
-    const actions = (
-      <Actions handleSetState={this.handleSetState} menu={this.props.menu} />
-    );
+  const actions = (
+    <Actions
+      setFiles={setFiles}
+      setFolders={setFolders}
+      setSelectedFiles={setSelectedFiles}
+      setSelectedFolders={setSelectedFolders}
+      menu={menu}
+    />
+  );
 
-    let fileType;
-    let style = {
-      backgroundColor: "transparent",
-      boxShadow: "none",
-    };
-    if (contentType.startsWith("image"))
-      fileType = (
-        <img
-          style={{
-            width: "100%",
-            height: "auto",
-            maxWidth: "100%",
-            objectFit: "cover",
-          }}
-          alt={selectedFiles[0].filename}
-          src={fileData}
-        ></img>
-      );
-    else if (contentType.startsWith("video"))
-      fileType = (
-        <video
-          autoplay
-          controls={true}
-          muted={false}
-          style={{
-            width: "100%",
-            height: "auto",
-            maxHeight: "90vh",
-            maxWidth: "100%",
-            objectFit: "cover",
-          }}
-        >
-          <source src={fileData} type={contentType} />
-          Your browser does not support the video tag.
-        </video>
-      );
-    else if (contentType.startsWith("audio"))
-      fileType = (
-        <audio controls>
-          <source src={fileData} type={contentType} />
-          Your browser does not support the audio element.
-        </audio>
-      );
-    else {
-      fileType = (
-        <div>
-          <Typography style={{ textAlign: "center" }}>
-            <Box fontWeight="fontWeightMedium">
-              {selectedFiles[0]?.filename}{" "}
-            </Box>
-          </Typography>
-          <div style={{ textAlign: "center" }}>
-            <Button
-              color="primary"
-              variant="contained"
-              onClick={() => this.handleSingleDownload(selectedFiles[0])}
-            >
-              Download
-            </Button>{" "}
-          </div>
-        </div>
-      );
-      style = {};
-    }
-    const fileModal = (
-      <Dialog
-        open={modalOpen}
-        onClose={this.handleFileClose}
-        PaperProps={(style = { style })}
-      >
-        <DialogContent>{fileType}</DialogContent>
-      </Dialog>
-    );
+  let [fileType, style] = getContentType(
+    fileData,
+    contentType,
+    selectedFiles,
+    handleSingleDownload
+  );
 
-    this.sortFolders(folders);
-    this.sortFiles(files);
-    return (
-      <Fragment>
-        <div className={classes.root}>
-          <CssBaseline />
-          <Header
-            homePage={"Home"}
-            handleDrawerToggle={this.handleDrawerToggle}
-            handleSetState={this.handleSetState}
-          />
-          <ActionsDrawer
-            actions={actions}
-            mobileOpen={mobileOpen}
-            handleDrawerToggle={this.handleDrawerToggle}
-          />
-          <main className={classes.content}>
-            {fileModal}
-            <div className={classes.toolbar} />
+  const fileModal = (
+    <Dialog
+      open={fileModalOpen}
+      onClose={handleFileClose}
+      PaperProps={(style = { style })}
+    >
+      <DialogContent>{fileType}</DialogContent>
+    </Dialog>
+  );
+  const classes = useStyles();
+  const filesList = sortFiles(files, sortColumn);
+  const foldersList = sortFolders(folders, sortColumn);
+  return (
+    <Fragment>
+      <div className={classes.root}>
+        <CssBaseline />
+        <Header
+          homePage={"Home"}
+          handleDrawerToggle={handleDrawerToggle}
+          setFileData={setFileData}
+          setFileModalOpen={setFileModalOpen}
+          setContentType={setContentType}
+        />
+        <ActionsDrawer
+          actions={actions}
+          mobileOpen={drawerMobileOpen}
+          handleDrawerToggle={handleDrawerToggle}
+        />
+        <main className={classes.content}>
+          {fileModal}
+          <div className={classes.toolbar} />
+          {
             <ActionHeader
               files={files}
               folders={folders}
               selectedFiles={selectedFiles}
               selectedFolders={selectedFolders}
-              handleTrash={this.handleTrash}
-              handleFileCopy={this.handleFileCopy}
-              handleDeleteForever={this.handleDeleteForever}
-              handleRestore={this.handleRestore}
-              handleFavorites={this.handleFavorites}
-              handleUnfavorited={this.handleUnfavorited}
-              handleFavoritesTrash={this.handleFavoritesTrash}
-              handleHomeUnfavorited={this.handleHomeUnfavorited}
-              currentMenu={this.props.menu}
+              handleTrash={handleTrash}
+              handleFileCopy={handleFileCopy}
+              handleDeleteForever={handleDeleteForever}
+              handleRestore={handleRestore}
+              handleFavorites={handleFavorites}
+              handleUnfavorited={handleUnfavorited}
+              handleFavoritesTrash={handleFavoritesTrash}
+              handleHomeUnfavorited={handleHomeUnfavorited}
+              currentMenu={menu}
               isFavorited={isFavorited}
-              handleSetState={this.handleSetState}
               currentFolder={currentFolder}
               isLoaded={isLoaded}
-              handleDeleteAll={this.handleDeleteAll}
-              handleRestoreAll={this.handleRestoreAll}
+              handleDeleteAll={handleDeleteAll}
+              handleRestoreAll={handleRestoreAll}
               restoreAllOpen={restoreAllOpen}
               deleteAllOpen={deleteAllOpen}
               trashMenuOpen={trashMenuOpen}
               trashAnchorEl={trashAnchorEl}
               moveMenuOpen={moveMenuOpen}
               moveAnchorEl={moveAnchorEl}
-              handleSingleDownload={this.handleSingleDownload}
+              setTrashAnchorEl={setTrashAnchorEl}
+              setMoveMenuOpen={setMoveMenuOpen}
+              setMoveAnchorEl={setMoveAnchorEl}
+              handleSingleDownload={handleSingleDownload}
             />
-            <MainTable
-              handleFolderClick={this.handleFolderClick}
-              handleFileClick={this.handleFileClick}
-              handleSort={this.handleSort}
-              folders={folders}
-              files={files}
-              selectedFolders={selectedFolders}
-              selectedFiles={selectedFiles}
-              currentMenu={this.props.menu}
-              isLoaded={isLoaded}
-              sortColumn={sortColumn}
-            />
-            {copySnack}
-            {trashSnack}
-            {favoritesSnack}
-            {restoreSnack}
-            {unfavoriteSnack}
-          </main>
-        </div>
-      </Fragment>
-    );
-  }
+          }
+          <MainTable
+            handleFolderClick={handleFolderClick}
+            handleFileClick={handleFileClick}
+            handleSort={handleSort}
+            folders={foldersList}
+            files={filesList}
+            selectedFolders={selectedFolders}
+            selectedFiles={selectedFiles}
+            currentMenu={menu}
+            isLoaded={isLoaded}
+            sortColumn={sortColumn}
+          />
+          {copySnack}
+          {trashSnack}
+          {favoritesSnack}
+          {restoreSnack}
+          {unfavoriteSnack}
+        </main>
+      </div>
+    </Fragment>
+  );
 }
-
-export default withRouter(withStyles(layout)(FileTable));

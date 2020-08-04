@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useHistory } from "react-router-dom";
-import postData from "../helpers/postData";
+import postData from "../../helpers/postData";
 import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
 import CssBaseline from "@material-ui/core/CssBaseline";
@@ -12,7 +12,7 @@ import Container from "@material-ui/core/Container";
 import makeStyles from "@material-ui/styles/makeStyles";
 import MuiAlert from "@material-ui/lab/Alert";
 import Snackbar from "@material-ui/core/Snackbar";
-import Header from "./Header";
+import Header from "../Header";
 
 function Alert(props) {
   return <MuiAlert elevation={6} variant="filled" {...props} />;

@@ -1,7 +1,7 @@
 import React, { Fragment, useState, useEffect } from "react";
 import makeStyles from "@material-ui/core/styles/makeStyles";
-import IconButton from "@material-ui/core";
-import Typography from "@material-ui/core";
+import IconButton from "@material-ui/core/IconButton";
+import Typography from "@material-ui/core/Typography";
 import { useHistory, useLocation } from "react-router-dom";
 import TextField from "@material-ui/core/TextField";
 import Autocomplete from "@material-ui/lab/Autocomplete";
@@ -51,7 +51,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function AutoComplete({ handleSetState }) {
+export default function AutoComplete({
+  setFileData,
+  setContentType,
+  setFileModalOpen,
+}) {
   const [itemID, setItemID] = useState("");
   const [buttonDisabled, setButtonDisabled] = useState(true);
   const [files, setFiles] = useState([]);
@@ -86,11 +90,9 @@ export default function AutoComplete({ handleSetState }) {
     else if (itemID.filename !== undefined) {
       Axios.get(`/api/files/${itemID._id}`).then((d) => {
         document.body.style.cursor = "default";
-        handleSetState({
-          fileData: `/api/files/${itemID._id}`,
-          modalOpen: true,
-          contentType: d.headers["content-type"],
-        });
+        setFileData(`/api/files/${itemID._id}`);
+        setContentType(d.headers["content-type"]);
+        setFileModalOpen(true);
       });
     }
   };

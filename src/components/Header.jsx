@@ -1,8 +1,9 @@
 import React, { Fragment, useState } from "react";
 import makeStyles from "@material-ui/core/styles/makeStyles";
-import AppBar from "@material-ui/core";
+import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import IconButton from "@material-ui/core/IconButton";
+import Typography from "@material-ui/core/Typography";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import Button from "@material-ui/core/Button";
@@ -55,7 +56,9 @@ const useStyles = makeStyles((theme) => ({
 export default function Header({
   homePage,
   handleDrawerToggle,
-  handleSetState,
+  setFileData,
+  setFileModalOpen,
+  setContentType,
 }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [profileAnchorEl, setProfileAnchorEl] = useState(undefined);
@@ -129,7 +132,11 @@ export default function Header({
           </Typography>
           {homePage === "Home" && (
             <Fragment>
-              <AutoComplete handleSetState={handleSetState} />
+              <AutoComplete
+                setFileData={setFileData}
+                setFileModalOpen={setFileModalOpen}
+                setContentType={setContentType}
+              />
               <IconButton
                 edge="end"
                 aria-label="account of current user"

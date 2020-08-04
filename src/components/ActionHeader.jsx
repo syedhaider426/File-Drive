@@ -22,11 +22,11 @@ import MenuItem from "@material-ui/core/MenuItem";
 import Box from "@material-ui/core/Box";
 import MoreIcon from "@material-ui/icons/MoreVert";
 import getData from "../helpers/getData";
-import RestoreAllDialog from "./RestoreAllDialog";
-import DeleteAllDialog from "./DeleteAllDialog";
-import TrashMenu from "./TrashMenu";
 import GetAppIcon from "@material-ui/icons/GetApp";
 import patchData from "../helpers/patchData";
+import TrashMenu from "./trash-menu-components/TrashMenu";
+import DeleteAllDialog from "./trash-menu-components/DeleteAllDialog";
+import RestoreAllDialog from "./trash-menu-components/RestoreAllDialog";
 
 const styles = (theme) => ({
   grow: {
@@ -574,7 +574,7 @@ class ActionHeader extends Component {
               separator={<NavigateNextIcon fontSize="small" />}
               aria-label="breadcrumb"
             >
-              {currentFolder.length === 0 ? (
+              {currentFolder?.length === 0 ? (
                 <Box color="text.primary" fontSize={20}>
                   Home
                 </Box>
