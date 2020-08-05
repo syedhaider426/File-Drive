@@ -33,6 +33,23 @@ const Main = () => {
           <Route path="/" exact>
             <Login />
           </Route>
+          <Route path="/register">
+            <Register />
+          </Route>
+          <Route path="/confirmRegistration">
+            <Confirmation
+              message={
+                "Thank you for registering your account. Please check your email to confirm your account."
+              }
+            />
+          </Route>
+          <Route path="/verification">
+            <Confirmation
+              message={
+                "Thank you for verifiying your email. You can now login to your account."
+              }
+            />
+          </Route>
           <Route path="/login">
             <SignInSide />
           </Route>
@@ -50,23 +67,6 @@ const Main = () => {
           </Route>
           <Route path="/drive/folders/:folder">
             <Files menu={"Folder"} isLoaded={false} />
-          </Route>
-          <Route path="/register">
-            <Register />
-          </Route>
-          <Route path="/confirmRegistration">
-            <Confirmation
-              message={
-                "Thank you for registering your account. Please check your email to confirm your account."
-              }
-            />
-          </Route>
-          <Route path="/verification">
-            <Confirmation
-              message={
-                "Thank you for verifiying your email. You can now login to your account."
-              }
-            />
           </Route>
           <Route path="/drive/profile">
             <Profile />

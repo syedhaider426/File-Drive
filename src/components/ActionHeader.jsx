@@ -1,5 +1,5 @@
-import { withStyles } from "@material-ui/core/styles";
-import React, { Component } from "react";
+import makeStyles from "@material-ui/core/styles/makeStyles";
+import React, { useState } from "react";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import IconButton from "@material-ui/core/IconButton";
@@ -15,7 +15,7 @@ import RenameFile from "./RenameFile";
 import MoveItem from "./MoveItem";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 import NavigateNextIcon from "@material-ui/icons/NavigateNext";
-import { Link, withRouter } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import Breadcrumbs from "@material-ui/core/Breadcrumbs";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -28,7 +28,7 @@ import TrashMenu from "./trash-menu-components/TrashMenu";
 import DeleteAllDialog from "./trash-menu-components/DeleteAllDialog";
 import RestoreAllDialog from "./trash-menu-components/RestoreAllDialog";
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   grow: {
     flexGrow: 1,
   },
@@ -62,112 +62,116 @@ const styles = (theme) => ({
     padding: 0,
   },
   icons: { color: "#5f6368" },
-});
+}));
 
-class ActionHeader extends Component {
-  state = {
-    renameFileDialogOpen: false,
-    renameFolderDialogOpen: false,
-    // Mobile related state
-    isMobileMenuOpen: false,
-    mobileMoreAnchorEl: undefined,
-    // Move file/folder related state
-    moveMenuOpen: false,
-    allFolders: [],
-    moveButtonDisabled: true,
-    homeFolderStatus: false,
-    selectedIndex: undefined,
-    moveFolder: "",
-    movedSnack: false,
-    tempSelectedFolders: [],
-    tempSelectedFiles: [],
+export default function ActionHeader(props) {
+  const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [renameFileDialogOpen, setRenameFileDialogOpen] = useState(false);
+  const [renameFolderDialogOpen, setRenameFolderDialogOpen] = useState(false);
+  const [allFolders, setAllFolders] = useState([]);
+  const [homeFolderStatus, setHomeFolderStatus] = useState([]);
+  const [moveMenuOpen, setMoveMenuOpen] = useState(false);
+  const [moveFolder, setMoveFolder] = useState("");
+  const [movedFolder, setMovedFolder] = useState({});
+  const [movedSnack, setMovedSnack] = useState(false);
+  const [mobileAnchorEl, setMobileAnchorEl] = useState(undefined);
+  const [tempSelectedFolders, setTempSelectedFolders] = useState([]);
+  const [selectedIndex, setSelectedIndex] = useState(undefined);
+  const [tempSelectedFiles, setTempSelectedFiles] = useState([]);
+  const [moveButtonDisabled, setMoveButtonDisabled] = useState(true);
+  const location = useLocation();
+
+  const {
+    setFiles,
+    setFolders,
+    setSelectedFiles,
+    setSelectedFolders,
+    selectedFolders,
+    selectedFiles,
+    files,
+    folders,
+    currentMenu,
+    isFavorited,
+    currentFolder,
+  } = {
+    ...props,
+  };
+  const {
+    deleteAllOpen,
+    trashMenuOpen,
+    setTrashMenuOpen,
+    setDeleteAllOpen,
+    setRestoreAllOpen,
+    restoreAllOpen,
+    handleRestoreAll,
+    setTrashAnchorEl,
+    trashAnchorEl,
+    handleDeleteAll,
+  } = { ...props };
+
+  const handleRenameFileOpen = () => {
+    setMobileMenuOpen(false);
+    setRenameFileDialogOpen(true);
   };
 
-  handleRenameFileOpen = () => {
-    this.setState({ isMobileMenuOpen: false, renameFileDialogOpen: true });
+  const handleRenameFolderOpen = () => {
+    setMobileMenuOpen(false);
+    setRenameFolderDialogOpen(true);
   };
 
-  handleRenameFolderOpen = () => {
-    this.setState({ renameFolderDialogOpen: true });
-  };
-
-  handleDialog = (value, item) => {
-    this.setState(value, this.props.handleSetState(item));
-  };
-
-  handleMove = (e) => {
-    const { selectedFolders, selectedFiles } = { ...this.props };
-    const urlMove = this.props.match.url === "/drive/home" ? "" : "?move=true";
-    getData(`/api${this.props.match.url}${urlMove}`).then((data) => {
+  const handleMove = (e) => {
+    const { selectedFolders, selectedFiles } = { ...props };
+    const urlMove = location.pathname === "/drive/home" ? "" : "?move=true";
+    getData(`/api${location.pathname}${urlMove}`).then((data) => {
       const { folders, moveTitleFolder } = { ...data };
       let homeFolderStatus;
-      if (this.props.match.url === "/drive/home") homeFolderStatus = true;
+      if (location.pathname === "/drive/home") homeFolderStatus = true;
       else homeFolderStatus = false;
       //user selects a file
       //file has a folder_id
-      this.setState({
-        allFolders: folders,
-        homeFolderStatus,
-        moveMenuOpen: true,
-        isMobileMenuOpen: false,
-        movedFolder: {
-          id: selectedFiles[0]?.folder_id || selectedFolders[0]?._id,
-          foldername: moveTitleFolder.foldername,
-          parent_id: moveTitleFolder.parent_id,
-        },
+      setAllFolders(folders);
+      setHomeFolderStatus(homeFolderStatus);
+      setMoveMenuOpen(true);
+      setMobileMenuOpen(false);
+      setMoveFolder({
+        id: selectedFiles[0]?.folder_id || selectedFolders[0]?._id,
+        foldername: moveTitleFolder.foldername,
+        parent_id: moveTitleFolder.parent_id,
       });
     });
   };
 
-  onMoveExit = () => {
-    this.setState({
-      allFolders: [],
-      homeFolderStatus: false,
-    });
+  const onMoveExit = () => {
+    setAllFolders([]);
+    setHomeFolderStatus(false);
   };
 
-  handleMoveSnackClose = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    this.setState({
-      movedSnack: false,
-    });
+  const handleMoveSnackClose = (event, reason) => {
+    if (reason !== "clickaway") setMovedSnack(false);
   };
 
-  handleMoveItem = (e) => {
+  const handleMoveItem = (e) => {
     e.preventDefault();
-    const { moveFolder } = { ...this.state };
-    const { selectedFolders, selectedFiles } = { ...this.props };
+    const { selectedFolders, selectedFiles } = { ...props };
     const data = { moveFolder: moveFolder.id, selectedFolders, selectedFiles };
     patchData("/api/files/move", data).then((data) => {
       const { files, folders } = { ...data };
-      this.setState(
-        {
-          moveMenuOpen: false,
-          movedFolder: {},
-          selectedIndex: undefined,
-          moveButtonDisabled: true,
-
-          movedSnack: true,
-          tempSelectedFolders: selectedFolders,
-          tempSelectedFiles: selectedFiles,
-        },
-        this.props.handleSetState({
-          files,
-          folders,
-          selectedFiles: [],
-          selectedFolders: [],
-        })
-      );
+      setMoveMenuOpen(false);
+      setMovedFolder({});
+      setSelectedIndex(undefined);
+      setMoveButtonDisabled(true);
+      setMovedSnack(true);
+      setTempSelectedFolders(selectedFolders);
+      setTempSelectedFiles(selectedFiles);
+      setFiles(files);
+      setFolders(folders);
+      setSelectedFiles([]);
+      setSelectedFolders([]);
     });
   };
 
-  handleUndoMoveItem = (e) => {
+  const handleUndoMoveItem = (e) => {
     e.preventDefault();
-    const { tempSelectedFolders, tempSelectedFiles } = {
-      ...this.state,
-    };
     let originalFolder =
       tempSelectedFolders[0]?.parent_id || tempSelectedFiles[0]?.folder_id;
     const data = {
@@ -177,66 +181,49 @@ class ActionHeader extends Component {
     };
     patchData("/api/files/move", data).then((data) => {
       const { files, folders } = { ...data };
-      this.setState({
-        movedSnack: false,
-      });
-      this.props.handleSetState({
-        files,
-        folders,
-        selectedFolders: tempSelectedFolders,
-        selectedFiles: tempSelectedFiles,
-      });
+      setMovedSnack(false);
+      setFiles(files);
+      setFolders(folders);
+      setSelectedFolders(tempSelectedFolders);
+      setSelectedFiles(tempSelectedFiles);
     });
   };
 
-  handleSnackbarExit = () => {
-    if (this.state.tempSelectedFolders || this.state.tempSelectedFiles) {
-      this.setState({
-        tempSelectedFolders: [],
-        tempSelectedFiles: [],
-        moveFolder: "",
-      });
+  const handleSnackbarExit = () => {
+    if (tempSelectedFolders || tempSelectedFiles) {
+      setTempSelectedFolders([]);
+      setTempSelectedFiles([]);
+      setMoveFolder("");
     }
     return;
   };
 
-  handleActionsSetState = (value) => {
-    this.setState(value);
+  const handleMobileMenuOpen = (e) => {
+    setMobileMenuOpen(true);
+    setMobileAnchorEl(e.currentTarget);
   };
 
-  handleMobileMenuOpen = (e) => {
-    this.setState({
-      isMobileMenuOpen: true,
-      mobileMoreAnchorEl: e.currentTarget,
-    });
+  const handleTrashMenuOpen = (e) => {
+    setTrashMenuOpen(true);
+    setTrashAnchorEl(e.currentTarget);
   };
 
-  handleTrashMenuOpen = (e) => {
-    this.props.handleSetState({
-      trashMenuOpen: true,
-      trashAnchorEl: e.currentTarget,
-    });
+  const handleTrashMenuClose = (e) => {
+    setTrashMenuOpen(false);
   };
 
-  handleTrashMenuClose = (e) => {
-    this.props.handleSetState({
-      trashMenuOpen: false,
-    });
-  };
-
-  handleMobileMenuClose = () => {
-    this.setState({ isMobileMenuOpen: false });
+  const handleMobileMenuClose = () => {
+    setMobileMenuOpen(false);
   };
 
   /**
    *
    *{https://stackoverflow.com/questions/54416499/how-select-part-of-text-in-a-textfield-on-onfocus-event-with-material-ui-in-reac} event
    */
-  handleFocus = (event) => {
+  const handleFocus = (event) => {
     event.preventDefault();
     const { target } = event;
     const extensionStarts = target.value.lastIndexOf(".");
-    console.log("extensionStarts", extensionStarts);
     if (extensionStarts < 0) target.focus();
     else {
       target.focus();
@@ -244,242 +231,191 @@ class ActionHeader extends Component {
     }
   };
 
-  handleDeleteAllDialog = (e) => {
-    this.props.handleSetState({
-      trashMenuOpen: false,
-      deleteAllOpen: true,
-      trashAnchorEl: e.target,
-    });
+  const handleDeleteAllDialog = (e) => {
+    setTrashMenuOpen(false);
+    setDeleteAllOpen(true);
+    setTrashAnchorEl(e.currentTarget);
   };
 
-  handleDeleteAllClose = (e) => {
-    this.props.handleSetState({ trashMenuOpen: false, deleteAllOpen: false });
+  const handleDeleteAllClose = (e) => {
+    setDeleteAllOpen(false);
   };
-  handleRestoreAllDialog = (e) => {
-    this.props.handleSetState({
-      trashMenuOpen: false,
-      restoreAllOpen: true,
-      trashAnchorEl: e.target,
-    });
+  const handleRestoreAllDialog = (e) => {
+    setTrashMenuOpen(false);
+    setRestoreAllOpen(true);
+    setTrashAnchorEl(e.currentTarget);
   };
 
-  handleRestoreAllClose = (e) => {
-    this.props.handleSetState({ trashMenuOpen: false, restoreAllOpen: false });
+  const handleRestoreAllClose = (e) => {
+    setRestoreAllOpen(false);
   };
 
-  handleRenameFileClose = () => {
-    this.setState({
-      fileButtonDisabled: true,
-      filename: "",
-      renameFileDialogOpen: false,
-    });
+  const handleOnClick = (folder, selectedIndex) => {
+    setSelectedIndex(selectedIndex);
+    setMoveButtonDisabled(false);
+    setMoveFolder({ id: folder._id, foldername: folder.foldername });
   };
 
-  render() {
-    const {
-      classes,
-      files,
-      folders,
-      selectedFiles,
-      selectedFolders,
-      handleTrash,
-      handleDeleteForever,
-      handleFileCopy,
-      handleFavorites,
-      handleRestore,
-      handleUnfavorited,
-      handleFavoritesTrash,
-      isFavorited,
-      handleHomeUnfavorited,
-      handleDeleteAll,
-      handleRestoreAll,
-      currentFolder,
-      currentMenu,
-      trashMenuOpen,
-      trashAnchorEl,
-      restoreAllOpen,
-      handleSetState,
-      deleteAllOpen,
-      handleSingleDownload,
-    } = this.props;
-    const {
-      isMobileMenuOpen,
-      moveMenuOpen,
-      allFolders,
-      homeFolderStatus,
-      movedFolder,
-      selectedIndex,
-      moveButtonDisabled,
-      moveFolder,
-      movedSnack,
-      renameFileDialogOpen,
-      renameFolderDialogOpen,
-    } = this.state;
-    const renameFile = (
-      <RenameFile
-        renameFileDialogOpen={renameFileDialogOpen}
-        handleDialog={this.handleDialog}
-        files={files}
-        selectedFiles={selectedFiles}
-        handleSetState={handleSetState}
-        handleFocus={this.handleFocus}
-      />
-    );
+  const handleNextFolder = (folder) => {
+    getData(`/api/users/folders/${folder._id}`)
+      .then((data) => {
+        setAllFolders(data.folders);
+        setHomeFolderStatus(false);
+        setMoveFolder("");
+        setSelectedIndex(undefined);
+        setMovedFolder({
+          id: folder._id,
+          foldername: folder.foldername,
+          parent_id: folder.parent_id,
+        });
+      })
+      .catch((err) => console.log("Err", err));
+  };
 
-    const renameFolder = (
-      <RenameFolder
-        renameFolderDialogOpen={renameFolderDialogOpen}
-        handleDialog={this.handleDialog}
-        folders={folders}
-        selectedFolders={selectedFolders}
-        handleSetState={handleSetState}
-        handleFocus={this.handleFocus}
-      />
-    );
-    const moveItem = (
-      <MoveItem
-        moveMenuOpen={moveMenuOpen}
-        handleSetState={this.handleActionsSetState}
-        allFolders={allFolders}
-        selectedFolders={selectedFolders}
-        selectedFiles={selectedFiles}
-        handleMoveItemClose={this.handleMoveItemClose}
-        onMoveExit={this.onMoveExit}
-        homeFolderStatus={homeFolderStatus}
-        movedFolder={movedFolder}
-        selectedIndex={selectedIndex}
-        moveButtonDisabled={moveButtonDisabled}
-        moveFolder={moveFolder}
-        handleMoveItem={this.handleMoveItem}
-        movedSnack={movedSnack}
-        handleUndoMoveItem={this.handleUndoMoveItem}
-        handleSnackbarExit={this.handleSnackbarExit}
-        handleMoveSnackClose={this.handleMoveSnackClose}
-      />
-    );
-    const trashMenu = (
-      <TrashMenu
-        trashAnchorEl={trashAnchorEl}
-        trashMenuOpen={trashMenuOpen}
-        handleTrashMenuClose={this.handleTrashMenuClose}
-        handleDeleteAllDialog={this.handleDeleteAllDialog}
-        handleRestoreAllDialog={this.handleRestoreAllDialog}
-        files={files}
-        folders={folders}
-      />
-    );
+  const handlePreviousFolder = (folder_id) => {
+    const urlParam =
+      folder_id === "" ? "drive/home" : `users/folders/${folder_id}?move=true`;
+    getData(`/api/${urlParam}`)
+      .then((data) => {
+        const { folders, moveTitleFolder } = { ...data };
+        setAllFolders(folders);
+        setHomeFolderStatus(folder_id === "");
+        setSelectedIndex(undefined);
+        setMovedFolder({
+          foldername: moveTitleFolder.foldername,
+          parent_id: moveTitleFolder.parent_id,
+        });
+      })
+      .catch((err) => console.log("Err", err));
+  };
 
-    const deleteAllDialog = (
-      <DeleteAllDialog
-        deleteAllOpen={deleteAllOpen}
-        handleDeleteAllClose={this.handleDeleteAllClose}
-        handleDeleteAll={handleDeleteAll}
-      />
-    );
-    const restoreAllDialog = (
-      <RestoreAllDialog
-        restoreAllOpen={restoreAllOpen}
-        handleRestoreAllClose={this.handleRestoreAllClose}
-        handleRestoreAll={handleRestoreAll}
-      />
-    );
+  const handleMoveItemClose = () => {
+    setMoveMenuOpen(false);
+    setMovedFolder({});
+    setSelectedIndex(undefined);
+    setMoveButtonDisabled(true);
+    setMoveFolder("");
+  };
 
-    const mobileMenuId = "mobile-menu";
-    const renderMobileMenu = (
-      <Menu
-        anchorEl={this.state.mobileMoreAnchorEl}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}
-        id={mobileMenuId}
-        keepMounted
-        transformOrigin={{ vertical: "top", horizontal: "right" }}
-        open={isMobileMenuOpen}
-        onClose={this.handleMobileMenuClose}
-      >
-        {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
-          currentMenu !== "Trash" && (
-            <MenuItem className={classes.menuItem} onClick={this.handleMove}>
-              <Tooltip title="Move To">
-                <IconButton style={{ color: "gray" }} aria-label="Move To">
-                  <MoveToInboxIcon />
-                </IconButton>
-              </Tooltip>
-              Move To
-            </MenuItem>
-          )}
-        {!isFavorited
-          ? (selectedFiles.length > 0 || selectedFolders.length > 0) &&
-            (currentMenu === "Home" || currentMenu === "Folder") && (
-              <MenuItem className={classes.menuItem} onClick={handleFavorites}>
-                <Tooltip title="Add to Favorites">
-                  <IconButton
-                    style={{ color: "gray" }}
-                    aria-label="Add to Favorites"
-                  >
-                    <StarOutlineOutlinedIcon />
-                  </IconButton>
-                </Tooltip>
-                Add to Favorites
-              </MenuItem>
-            )
-          : (selectedFiles.length > 0 || selectedFolders.length > 0) &&
-            (currentMenu === "Home" || currentMenu === "Folder") && (
-              <MenuItem
-                className={classes.menuItem}
-                onClick={handleHomeUnfavorited}
-              >
-                <Tooltip title="Remove from Favorites">
-                  <IconButton
-                    style={{ color: "gray" }}
-                    aria-label="Remove from Favorites"
-                  >
-                    <StarOutlineOutlinedIcon />
-                  </IconButton>
-                </Tooltip>
-                Remove from Favorites
-              </MenuItem>
-            )}
-        {selectedFiles.length === 1 && currentMenu !== "Trash" && (
-          <MenuItem
-            className={classes.menuItem}
-            onClick={this.handleRenameFileOpen}
-          >
-            <Tooltip title="Rename">
-              <IconButton style={{ color: "gray" }} aria-label="Rename">
-                <RenameIcon />
+  const renameFile = (
+    <RenameFile
+      renameFileDialogOpen={renameFileDialogOpen}
+      setFiles={setFiles}
+      setSelectedFiles={setSelectedFiles}
+      setRenameFileDialogOpen={setRenameFileDialogOpen}
+      files={files}
+      selectedFiles={selectedFiles}
+      handleFocus={handleFocus}
+    />
+  );
+
+  const renameFolder = (
+    <RenameFolder
+      renameFolderDialogOpen={renameFolderDialogOpen}
+      setFolders={setFolders}
+      setSelectedFolders={setSelectedFolders}
+      setRenameFolderDialogOpen={setRenameFolderDialogOpen}
+      folders={folders}
+      selectedFolders={selectedFolders}
+      handleFocus={handleFocus}
+    />
+  );
+  const moveItem = (
+    <MoveItem
+      moveMenuOpen={moveMenuOpen}
+      allFolders={allFolders}
+      selectedFolders={selectedFolders}
+      selectedFiles={selectedFiles}
+      onMoveExit={onMoveExit}
+      homeFolderStatus={homeFolderStatus}
+      movedFolder={movedFolder}
+      selectedIndex={selectedIndex}
+      moveButtonDisabled={moveButtonDisabled}
+      moveFolder={moveFolder}
+      handleMoveItem={handleMoveItem}
+      movedSnack={movedSnack}
+      handleUndoMoveItem={handleUndoMoveItem}
+      handleSnackbarExit={handleSnackbarExit}
+      handleMoveSnackClose={handleMoveSnackClose}
+      handleNextFolder={handleNextFolder}
+      handlePreviousFolder={handlePreviousFolder}
+      handleMoveItemClose={handleMoveItemClose}
+      handleOnClick={handleOnClick}
+    />
+  );
+  const trashMenu = (
+    <TrashMenu
+      trashAnchorEl={trashAnchorEl}
+      trashMenuOpen={trashMenuOpen}
+      handleTrashMenuClose={handleTrashMenuClose}
+      handleDeleteAllDialog={handleDeleteAllDialog}
+      handleRestoreAllDialog={handleRestoreAllDialog}
+      files={files}
+      folders={folders}
+    />
+  );
+
+  const deleteAllDialog = (
+    <DeleteAllDialog
+      deleteAllOpen={deleteAllOpen}
+      handleDeleteAllClose={handleDeleteAllClose}
+      handleDeleteAll={handleDeleteAll}
+    />
+  );
+  const restoreAllDialog = (
+    <RestoreAllDialog
+      restoreAllOpen={restoreAllOpen}
+      handleRestoreAllClose={handleRestoreAllClose}
+      handleRestoreAll={handleRestoreAll}
+    />
+  );
+  const classes = useStyles();
+  const mobileMenuId = "mobile-menu";
+  const renderMobileMenu = (
+    <Menu
+      anchorEl={mobileAnchorEl}
+      anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      id={mobileMenuId}
+      keepMounted
+      transformOrigin={{ vertical: "top", horizontal: "right" }}
+      open={isMobileMenuOpen}
+      onClose={handleMobileMenuClose}
+    >
+      {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
+        currentMenu !== "Trash" && (
+          <MenuItem className={classes.menuItem} onClick={handleMove}>
+            <Tooltip title="Move To">
+              <IconButton style={{ color: "gray" }} aria-label="Move To">
+                <MoveToInboxIcon />
               </IconButton>
             </Tooltip>
-            Rename File
+            Move To
           </MenuItem>
         )}
-
-        {selectedFolders.length === 1 && currentMenu !== "Trash" && (
-          <MenuItem
-            className={classes.menuItem}
-            onClick={this.handleRenameFolderOpen}
-          >
-            <Tooltip title="Rename">
-              <IconButton style={{ color: "gray" }} aria-label="Rename">
-                <RenameIcon />
-              </IconButton>
-            </Tooltip>
-            Rename Folder
-          </MenuItem>
-        )}
-        {selectedFiles.length >= 1 &&
-          selectedFolders.length === 0 &&
-          currentMenu !== "Trash" && (
-            <MenuItem className={classes.menuItem} onClick={handleFileCopy}>
-              <Tooltip title="Make a Copy">
-                <IconButton style={{ color: "gray" }} aria-label="Make a Copy">
-                  <FileCopyIcon />
+      {!props.isFavorited
+        ? (selectedFiles.length > 0 || selectedFolders.length > 0) &&
+          (currentMenu === "Home" || currentMenu === "Folder") && (
+            <MenuItem
+              className={classes.menuItem}
+              onClick={props.handleFavorites}
+            >
+              <Tooltip title="Add to Favorites">
+                <IconButton
+                  style={{ color: "gray" }}
+                  aria-label="Add to Favorites"
+                >
+                  <StarOutlineOutlinedIcon />
                 </IconButton>
               </Tooltip>
-              Make a Copy
+              Add to Favorites
             </MenuItem>
-          )}
-        {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
-          currentMenu === "Favorites" && (
-            <MenuItem className={classes.menuItem} onClick={handleUnfavorited}>
+          )
+        : (selectedFiles.length > 0 || selectedFolders.length > 0) &&
+          (currentMenu === "Home" || currentMenu === "Folder") && (
+            <MenuItem
+              className={classes.menuItem}
+              onClick={props.handleHomeUnfavorited}
+            >
               <Tooltip title="Remove from Favorites">
                 <IconButton
                   style={{ color: "gray" }}
@@ -491,313 +427,360 @@ class ActionHeader extends Component {
               Remove from Favorites
             </MenuItem>
           )}
+      {selectedFiles.length === 1 && currentMenu !== "Trash" && (
+        <MenuItem className={classes.menuItem} onClick={handleRenameFileOpen}>
+          <Tooltip title="Rename">
+            <IconButton style={{ color: "gray" }} aria-label="Rename">
+              <RenameIcon />
+            </IconButton>
+          </Tooltip>
+          Rename File
+        </MenuItem>
+      )}
 
-        {selectedFiles.length > 0 &&
-          selectedFolders.length <= 0 &&
-          currentMenu !== "Trash" && (
-            <MenuItem
-              className={classes.menuItem}
-              onClick={() => handleSingleDownload(selectedFiles[0])}
-            >
-              <Tooltip title="Download">
-                <IconButton style={{ color: "gray" }} aria-label="Download">
-                  <GetAppIcon />
-                </IconButton>
-              </Tooltip>
-              Download
-            </MenuItem>
-          )}
-        {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
-          (currentMenu === "Home" || currentMenu === "Folder") && (
-            <MenuItem className={classes.menuItem} onClick={handleTrash}>
-              <Tooltip title="Trash">
-                <IconButton style={{ color: "gray" }} aria-label="Trash">
-                  <DeleteIcon />
-                </IconButton>
-              </Tooltip>
-              Trash
-            </MenuItem>
-          )}
-        {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
-          currentMenu === "Favorites" && (
-            <MenuItem
-              className={classes.menuItem}
-              onClick={handleFavoritesTrash}
-            >
-              <Tooltip title="Trash">
-                <IconButton style={{ color: "gray" }} aria-label="Trash">
-                  <DeleteIcon />
-                </IconButton>
-              </Tooltip>
-              Trash
-            </MenuItem>
-          )}
-        {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
-          currentMenu === "Trash" && (
-            <div>
-              <MenuItem onClick={handleRestore}>
-                <Tooltip title="Restore from trash">
-                  <IconButton
-                    style={{ color: "gray" }}
-                    aria-label="Restore from trash"
-                  >
-                    <RestoreIcon />
-                  </IconButton>
-                </Tooltip>
-                Restore from trash
-              </MenuItem>
-              <MenuItem onClick={handleDeleteForever}>
-                <Tooltip title="Delete forever">
-                  <IconButton
-                    style={{ color: "gray" }}
-                    aria-label="Delete forever"
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Tooltip>
-                Delete forever
-              </MenuItem>
-            </div>
-          )}
-      </Menu>
-    );
-
-    let menu = "";
-    if (currentFolder !== undefined || currentMenu === "Folder") {
-      menu = "1";
-    }
-    return (
-      <AppBar position="static" color="transparent" elevation={3}>
-        <Toolbar variant="dense">
-          {menu !== "" ? (
-            <Breadcrumbs
-              separator={<NavigateNextIcon fontSize="small" />}
-              aria-label="breadcrumb"
-            >
-              {currentFolder?.length === 0 ? (
-                <Box color="text.primary" fontSize={20}>
-                  Home
-                </Box>
-              ) : (
-                <Box
-                  fontSize={20}
-                  className={classes.hover}
-                  component={Link}
-                  to={`/drive/home`}
-                  key={"Home"}
-                  style={{ textDecoration: "none", color: "black" }}
-                >
-                  Home
-                </Box>
-              )}
-              {currentFolder?.map((folder, index) => (
-                <Box
-                  fontSize={20}
-                  className={classes.hover}
-                  component={Link}
-                  to={`/drive/folders/${folder._id}`}
-                  key={index}
-                  style={{ textDecoration: "none", color: "black" }}
-                >
-                  {folder.foldername}
-                </Box>
-              ))}
-            </Breadcrumbs>
-          ) : currentMenu === "Trash" ? (
-            <Box
-              className={classes.hover}
-              style={{ fontSize: "20px" }}
-              aria-controls="simple-menu"
-              aria-haspopup="true"
-              onClick={this.handleTrashMenuOpen}
-            >
-              Trash
-              <IconButton className={classes.smallIcon}>
-                <ArrowDropDownIcon />
+      {selectedFolders.length === 1 && currentMenu !== "Trash" && (
+        <MenuItem className={classes.menuItem} onClick={handleRenameFolderOpen}>
+          <Tooltip title="Rename">
+            <IconButton style={{ color: "gray" }} aria-label="Rename">
+              <RenameIcon />
+            </IconButton>
+          </Tooltip>
+          Rename Folder
+        </MenuItem>
+      )}
+      {selectedFiles.length >= 1 &&
+        selectedFolders.length === 0 &&
+        currentMenu !== "Trash" && (
+          <MenuItem className={classes.menuItem} onClick={props.handleFileCopy}>
+            <Tooltip title="Make a Copy">
+              <IconButton style={{ color: "gray" }} aria-label="Make a Copy">
+                <FileCopyIcon />
               </IconButton>
-            </Box>
-          ) : (
-            <Box fontSize={20}>{currentMenu}</Box>
-          )}
-          {trashMenu}
+            </Tooltip>
+            Make a Copy
+          </MenuItem>
+        )}
+      {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
+        currentMenu === "Favorites" && (
+          <MenuItem
+            className={classes.menuItem}
+            onClick={props.handleUnfavorited}
+          >
+            <Tooltip title="Remove from Favorites">
+              <IconButton
+                style={{ color: "gray" }}
+                aria-label="Remove from Favorites"
+              >
+                <StarOutlineOutlinedIcon />
+              </IconButton>
+            </Tooltip>
+            Remove from Favorites
+          </MenuItem>
+        )}
 
-          <div className={classes.grow} />
-          {renameFile}
-          {renameFolder}
-          {moveItem}
-          {deleteAllDialog}
-          {restoreAllDialog}
-          <div className={classes.sectionDesktop}>
-            {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
-              currentMenu !== "Trash" && (
-                <Tooltip title="Move To">
-                  <IconButton
-                    style={{ color: "gray" }}
-                    aria-label="Move To"
-                    onClick={this.handleMove}
-                  >
-                    <MoveToInboxIcon />
-                  </IconButton>
-                </Tooltip>
-              )}
-
-            {!isFavorited
-              ? (selectedFiles.length > 0 || selectedFolders.length > 0) &&
-                (currentMenu === "Home" || currentMenu === "Folder") && (
-                  <Tooltip title="Add to Favorites">
-                    <IconButton
-                      style={{ color: "gray" }}
-                      aria-label="Add to Favorites"
-                      onClick={handleFavorites}
-                    >
-                      <StarOutlineOutlinedIcon />
-                    </IconButton>
-                  </Tooltip>
-                )
-              : (selectedFiles.length > 0 || selectedFolders.length > 0) &&
-                (currentMenu === "Home" || currentMenu === "Folder") && (
-                  <Tooltip title="Remove from Favorites">
-                    <IconButton
-                      style={{ color: "gray" }}
-                      aria-label="Remove from Favorites"
-                      onClick={handleHomeUnfavorited}
-                    >
-                      <StarOutlineOutlinedIcon />
-                    </IconButton>
-                  </Tooltip>
-                )}
-            {selectedFiles.length === 1 && currentMenu !== "Trash" && (
-              <Tooltip title="Rename">
+      {selectedFiles.length > 0 &&
+        selectedFolders.length <= 0 &&
+        currentMenu !== "Trash" && (
+          <MenuItem
+            className={classes.menuItem}
+            onClick={() => props.handleSingleDownload(selectedFiles[0])}
+          >
+            <Tooltip title="Download">
+              <IconButton style={{ color: "gray" }} aria-label="Download">
+                <GetAppIcon />
+              </IconButton>
+            </Tooltip>
+            Download
+          </MenuItem>
+        )}
+      {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
+        (currentMenu === "Home" || currentMenu === "Folder") && (
+          <MenuItem className={classes.menuItem} onClick={props.handleTrash}>
+            <Tooltip title="Trash">
+              <IconButton style={{ color: "gray" }} aria-label="Trash">
+                <DeleteIcon />
+              </IconButton>
+            </Tooltip>
+            Trash
+          </MenuItem>
+        )}
+      {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
+        currentMenu === "Favorites" && (
+          <MenuItem
+            className={classes.menuItem}
+            onClick={props.handleFavoritesTrash}
+          >
+            <Tooltip title="Trash">
+              <IconButton style={{ color: "gray" }} aria-label="Trash">
+                <DeleteIcon />
+              </IconButton>
+            </Tooltip>
+            Trash
+          </MenuItem>
+        )}
+      {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
+        currentMenu === "Trash" && (
+          <div>
+            <MenuItem onClick={props.handleRestore}>
+              <Tooltip title="Restore from trash">
                 <IconButton
                   style={{ color: "gray" }}
-                  aria-label="Rename"
-                  onClick={this.handleRenameFileOpen}
+                  aria-label="Restore from trash"
                 >
-                  <RenameIcon />
+                  <RestoreIcon />
+                </IconButton>
+              </Tooltip>
+              Restore from trash
+            </MenuItem>
+            <MenuItem onClick={props.handleDeleteForever}>
+              <Tooltip title="Delete forever">
+                <IconButton
+                  style={{ color: "gray" }}
+                  aria-label="Delete forever"
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </Tooltip>
+              Delete forever
+            </MenuItem>
+          </div>
+        )}
+    </Menu>
+  );
+
+  let menu = "";
+  if (currentFolder !== undefined || currentMenu === "Folder") {
+    menu = "1";
+  }
+  return (
+    <AppBar position="static" color="transparent" elevation={3}>
+      <Toolbar variant="dense">
+        {menu !== "" ? (
+          <Breadcrumbs
+            separator={<NavigateNextIcon fontSize="small" />}
+            aria-label="breadcrumb"
+          >
+            {currentFolder?.length === 0 ? (
+              <Box color="text.primary" fontSize={20}>
+                Home
+              </Box>
+            ) : (
+              <Box
+                fontSize={20}
+                className={classes.hover}
+                component={Link}
+                to={`/drive/home`}
+                key={"Home"}
+                style={{ textDecoration: "none", color: "black" }}
+              >
+                Home
+              </Box>
+            )}
+            {currentFolder?.map((folder, index) => (
+              <Box
+                fontSize={20}
+                className={classes.hover}
+                component={Link}
+                to={`/drive/folders/${folder._id}`}
+                key={index}
+                style={{ textDecoration: "none", color: "black" }}
+              >
+                {folder.foldername}
+              </Box>
+            ))}
+          </Breadcrumbs>
+        ) : currentMenu === "Trash" ? (
+          <Box
+            className={classes.hover}
+            style={{ fontSize: "20px" }}
+            aria-controls="simple-menu"
+            aria-haspopup="true"
+            onClick={handleTrashMenuOpen}
+          >
+            Trash
+            <IconButton className={classes.smallIcon}>
+              <ArrowDropDownIcon />
+            </IconButton>
+          </Box>
+        ) : (
+          <Box fontSize={20}>{currentMenu}</Box>
+        )}
+        {trashMenu}
+
+        <div className={classes.grow} />
+        {renameFile}
+        {renameFolder}
+        {moveItem}
+        {deleteAllDialog}
+        {restoreAllDialog}
+        <div className={classes.sectionDesktop}>
+          {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
+            currentMenu !== "Trash" && (
+              <Tooltip title="Move To">
+                <IconButton
+                  style={{ color: "gray" }}
+                  aria-label="Move To"
+                  onClick={handleMove}
+                >
+                  <MoveToInboxIcon />
                 </IconButton>
               </Tooltip>
             )}
 
-            {selectedFolders.length === 1 && currentMenu !== "Trash" && (
-              <Tooltip title="Rename">
-                <IconButton
-                  style={{ color: "gray" }}
-                  aria-label="Rename"
-                  onClick={this.handleRenameFolderOpen}
-                >
-                  <RenameIcon />
-                </IconButton>
-              </Tooltip>
-            )}
-            {renameFolder}
-            {selectedFiles.length >= 1 &&
-              selectedFolders.length === 0 &&
-              currentMenu !== "Trash" && (
-                <Tooltip title="Make a Copy">
+          {!isFavorited
+            ? (selectedFiles.length > 0 || selectedFolders.length > 0) &&
+              (currentMenu === "Home" || currentMenu === "Folder") && (
+                <Tooltip title="Add to Favorites">
                   <IconButton
                     style={{ color: "gray" }}
-                    aria-label="Make a Copy"
-                    onClick={handleFileCopy}
+                    aria-label="Add to Favorites"
+                    onClick={props.handleFavorites}
                   >
-                    <FileCopyIcon />
+                    <StarOutlineOutlinedIcon />
                   </IconButton>
                 </Tooltip>
-              )}
-
-            {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
-              currentMenu === "Favorites" && (
+              )
+            : (selectedFiles.length > 0 || selectedFolders.length > 0) &&
+              (currentMenu === "Home" || currentMenu === "Folder") && (
                 <Tooltip title="Remove from Favorites">
                   <IconButton
                     style={{ color: "gray" }}
                     aria-label="Remove from Favorites"
-                    onClick={handleUnfavorited}
+                    onClick={props.handleHomeUnfavorited}
                   >
                     <StarOutlineOutlinedIcon />
                   </IconButton>
                 </Tooltip>
               )}
+          {selectedFiles.length === 1 && currentMenu !== "Trash" && (
+            <Tooltip title="Rename">
+              <IconButton
+                style={{ color: "gray" }}
+                aria-label="Rename"
+                onClick={handleRenameFileOpen}
+              >
+                <RenameIcon />
+              </IconButton>
+            </Tooltip>
+          )}
 
-            {selectedFiles.length > 0 &&
-              selectedFolders.length <= 0 &&
-              currentMenu !== "Trash" && (
-                <Tooltip title="Download">
-                  <IconButton
-                    style={{ color: "gray" }}
-                    aria-label="Download"
-                    onClick={() => handleSingleDownload(selectedFiles[0])}
-                  >
-                    <GetAppIcon />
-                  </IconButton>
-                </Tooltip>
-              )}
-            {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
-              (currentMenu === "Home" || currentMenu === "Folder") && (
-                <Tooltip title="Trash">
-                  <IconButton
-                    style={{ color: "gray" }}
-                    aria-label="Trash"
-                    onClick={handleTrash}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Tooltip>
-              )}
-            {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
-              currentMenu === "Favorites" && (
-                <Tooltip title="Trash">
-                  <IconButton
-                    style={{ color: "gray" }}
-                    aria-label="Trash"
-                    onClick={handleFavoritesTrash}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Tooltip>
-              )}
-            {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
-              currentMenu === "Trash" && (
-                <div>
-                  <Tooltip title="Restore from trash">
-                    <IconButton
-                      style={{ color: "gray" }}
-                      aria-label="Restore from trash"
-                      onClick={handleRestore}
-                    >
-                      <RestoreIcon />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Delete forever">
-                    <IconButton
-                      style={{ color: "gray" }}
-                      aria-label="Delete forever"
-                      onClick={handleDeleteForever}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </Tooltip>
-                </div>
-              )}
-          </div>
-          <div className={classes.sectionMobile}>
-            {(selectedFiles.length > 0 || selectedFolders.length > 0) && (
-              <Tooltip title="More Options">
+          {selectedFolders.length === 1 && currentMenu !== "Trash" && (
+            <Tooltip title="Rename">
+              <IconButton
+                style={{ color: "gray" }}
+                aria-label="Rename"
+                onClick={handleRenameFolderOpen}
+              >
+                <RenameIcon />
+              </IconButton>
+            </Tooltip>
+          )}
+          {renameFolder}
+          {selectedFiles.length >= 1 &&
+            selectedFolders.length === 0 &&
+            currentMenu !== "Trash" && (
+              <Tooltip title="Make a Copy">
                 <IconButton
                   style={{ color: "gray" }}
-                  aria-label="show more"
-                  aria-controls={mobileMenuId}
-                  aria-haspopup="true"
-                  onClick={this.handleMobileMenuOpen}
+                  aria-label="Make a Copy"
+                  onClick={props.handleFileCopy}
                 >
-                  <MoreIcon />
+                  <FileCopyIcon />
                 </IconButton>
               </Tooltip>
             )}
-            {renderMobileMenu}
-          </div>
-        </Toolbar>
-      </AppBar>
-    );
-  }
-}
 
-export default withRouter(withStyles(styles)(ActionHeader));
+          {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
+            currentMenu === "Favorites" && (
+              <Tooltip title="Remove from Favorites">
+                <IconButton
+                  style={{ color: "gray" }}
+                  aria-label="Remove from Favorites"
+                  onClick={props.handleUnfavorited}
+                >
+                  <StarOutlineOutlinedIcon />
+                </IconButton>
+              </Tooltip>
+            )}
+
+          {selectedFiles.length > 0 &&
+            selectedFolders.length <= 0 &&
+            currentMenu !== "Trash" && (
+              <Tooltip title="Download">
+                <IconButton
+                  style={{ color: "gray" }}
+                  aria-label="Download"
+                  onClick={() => props.handleSingleDownload(selectedFiles[0])}
+                >
+                  <GetAppIcon />
+                </IconButton>
+              </Tooltip>
+            )}
+          {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
+            (currentMenu === "Home" || currentMenu === "Folder") && (
+              <Tooltip title="Trash">
+                <IconButton
+                  style={{ color: "gray" }}
+                  aria-label="Trash"
+                  onClick={props.handleTrash}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </Tooltip>
+            )}
+          {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
+            currentMenu === "Favorites" && (
+              <Tooltip title="Trash">
+                <IconButton
+                  style={{ color: "gray" }}
+                  aria-label="Trash"
+                  onClick={props.handleFavoritesTrash}
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </Tooltip>
+            )}
+          {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
+            currentMenu === "Trash" && (
+              <div>
+                <Tooltip title="Restore from trash">
+                  <IconButton
+                    style={{ color: "gray" }}
+                    aria-label="Restore from trash"
+                    onClick={props.handleRestore}
+                  >
+                    <RestoreIcon />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Delete forever">
+                  <IconButton
+                    style={{ color: "gray" }}
+                    aria-label="Delete forever"
+                    onClick={props.handleDeleteForever}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </Tooltip>
+              </div>
+            )}
+        </div>
+        <div className={classes.sectionMobile}>
+          {(selectedFiles.length > 0 || selectedFolders.length > 0) && (
+            <Tooltip title="More Options">
+              <IconButton
+                style={{ color: "gray" }}
+                aria-label="show more"
+                aria-controls={mobileMenuId}
+                aria-haspopup="true"
+                onClick={handleMobileMenuOpen}
+              >
+                <MoreIcon />
+              </IconButton>
+            </Tooltip>
+          )}
+          {renderMobileMenu}
+        </div>
+      </Toolbar>
+    </AppBar>
+  );
+}

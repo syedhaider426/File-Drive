@@ -9,7 +9,7 @@ import Box from "@material-ui/core/Box";
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import Typography from "@material-ui/core/Typography";
 import Container from "@material-ui/core/Container";
-import makeStyles from "@material-ui/styles/makeStyles";
+import makeStyles from "@material-ui/core/styles/makeStyles";
 import MuiAlert from "@material-ui/lab/Alert";
 import Snackbar from "@material-ui/core/Snackbar";
 import Header from "../Header";
@@ -39,6 +39,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function Register() {
+  const classes = useStyles();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -114,8 +115,6 @@ export default function Register() {
     }
   };
 
-  const classes = useStyles();
-
   const failRegister = (
     <Snackbar
       anchorOrigin={{ vertical: "top", horizontal: "center" }}
@@ -128,6 +127,7 @@ export default function Register() {
       </Alert>
     </Snackbar>
   );
+
   return (
     <Container component="main" maxWidth="xs">
       <CssBaseline />

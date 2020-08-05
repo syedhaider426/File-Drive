@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useState, useRef } from "react";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import { useHistory, useLocation, useParams } from "react-router-dom";
 import ActionHeader from "./ActionHeader";
@@ -18,8 +18,8 @@ import { useEffect } from "react";
 import sortFiles from "../helpers/sortFiles";
 import sortFolders from "../helpers/sortFolders";
 import getContentType from "../helpers/getContentType";
-import { useRef } from "react";
 import patchData from "../helpers/patchData";
+
 const useStyles = makeStyles((theme) => ({
   root: {
     display: "flex",
@@ -67,6 +67,7 @@ export default function Files({ menu }) {
   });
   const handleSnackbarExit = () => {
     if (tempFiles || tempFolders) {
+      console.log("CALLED");
       setTempFiles([]);
       setTempFolders([]);
     }
@@ -356,6 +357,8 @@ export default function Files({ menu }) {
         const filesModified = tempFiles.length + tempFolders.length;
         setFiles(files);
         setFolders(folders);
+        console.log("TEMPFILES", tempFiles);
+        console.log("TEMPFOLDERS", tempFolders);
         setSelectedFolders([]);
         setSelectedFiles([]);
         setTempFiles(tempFiles);
@@ -367,9 +370,11 @@ export default function Files({ menu }) {
   };
 
   const handleUndoTrash = () => {
+    console.log(tempFolders);
+    console.log(tempFiles);
     const data = { selectedFolders: tempFolders, selectedFiles: tempFiles };
     const folder = params.folder ? `/${params.folder}` : "";
-    postData(`/api/files/undoTrash${folder}`, data)
+    patchData(`/api/files/undo-trash${folder}`, data)
       .then((data) => {
         const { files, folders } = { ...data };
         setFiles(files);
@@ -690,6 +695,7 @@ export default function Files({ menu }) {
     />
   );
 
+  // Handles the view/download for a file
   let [fileType, style] = getContentType(
     fileData,
     contentType,
@@ -754,6 +760,13 @@ export default function Files({ menu }) {
               trashAnchorEl={trashAnchorEl}
               moveMenuOpen={moveMenuOpen}
               moveAnchorEl={moveAnchorEl}
+              setFiles={setFiles}
+              setFolders={setFolders}
+              setSelectedFiles={setSelectedFiles}
+              setSelectedFolders={setSelectedFolders}
+              setDeleteAllOpen={setDeleteAllOpen}
+              setRestoreAllOpen={setRestoreAllOpen}
+              setTrashMenuOpen={setTrashMenuOpen}
               setTrashAnchorEl={setTrashAnchorEl}
               setMoveMenuOpen={setMoveMenuOpen}
               setMoveAnchorEl={setMoveAnchorEl}

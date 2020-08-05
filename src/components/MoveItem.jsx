@@ -42,7 +42,6 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function MoveItem({
-  handleSetState,
   allFolders,
   homeFolderStatus,
   handleMoveItem,
@@ -56,62 +55,11 @@ export default function MoveItem({
   handleMoveSnackClose,
   handleSnackbarExit,
   handleUndoMoveItem,
+  handleOnClick,
+  handleNextFolder,
+  handlePreviousFolder,
+  handleMoveItemClose,
 }) {
-  const handleOnClick = (folder, selectedIndex) => {
-    handleSetState({
-      selectedIndex: selectedIndex,
-      moveButtonDisabled: false,
-      moveFolder: { id: folder._id, foldername: folder.foldername },
-    });
-  };
-
-  const handleNextFolder = (folder) => {
-    getData(`/api/users/folders/${folder._id}`)
-      .then((data) => {
-        handleSetState({
-          allFolders: data.folders,
-          homeFolderStatus: false,
-          moveFolder: "",
-          selectedIndex: undefined,
-          movedFolder: {
-            id: folder._id,
-            foldername: folder.foldername,
-            parent_id: folder.parent_id,
-          },
-        });
-      })
-      .catch((err) => console.log("Err", err));
-  };
-
-  const handlePreviousFolder = (folder_id) => {
-    const urlParam =
-      folder_id === "" ? "drive/home" : `users/folders/${folder_id}?move=true`;
-    getData(`/api/${urlParam}`)
-      .then((data) => {
-        const { folders, moveTitleFolder } = { ...data };
-        handleSetState({
-          allFolders: folders,
-          homeFolderStatus: folder_id === "",
-          selectedIndex: undefined,
-          movedFolder: {
-            foldername: moveTitleFolder.foldername,
-            parent_id: moveTitleFolder.parent_id,
-          },
-        });
-      })
-      .catch((err) => console.log("Err", err));
-  };
-
-  const handleMoveItemClose = () => {
-    handleSetState({
-      moveMenuOpen: false,
-      movedFolder: {},
-      selectedIndex: undefined,
-      moveButtonDisabled: true,
-      moveFolder: "",
-    });
-  };
-
   const moveSnack = (
     <Snack
       open={movedSnack}

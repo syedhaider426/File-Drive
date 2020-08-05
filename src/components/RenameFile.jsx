@@ -21,12 +21,13 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function RenameFile({
-  handleSetState,
-  handleDialog,
   handleFocus,
   renameFileDialogOpen,
   files,
   selectedFiles,
+  setFiles,
+  setSelectedFiles,
+  setRenameFileDialogOpen,
 }) {
   const [renamedSnack, setRenamedSnack] = useState(false);
   const [renamedFile, setRenamedFile] = useState({});
@@ -41,7 +42,7 @@ export default function RenameFile({
 
   const handleRenameFileClose = () => {
     setFileName("");
-    handleDialog({ renameFileDialogOpen: false });
+    setRenameFileDialogOpen(false);
   };
 
   const handleFileOnChange = (e) => {
@@ -65,7 +66,9 @@ export default function RenameFile({
         });
         setRenamedFile(selectedFiles[0]);
         setRenamedSnack(true);
-        handleDialog({ renameFileDialogOpen: false }, { files, selectedFiles });
+        setRenameFileDialogOpen(false);
+        setFiles(files);
+        setSelectedFiles(selectedFiles);
       })
       .catch((err) => console.log("Err", err));
   };
@@ -89,7 +92,8 @@ export default function RenameFile({
         setRenamedSnack(false);
         setRenamedFile({});
         setFileName("");
-        handleSetState({ files, selectedFiles: selectFiles });
+        setFiles(files);
+        setSelectedFiles(selectFiles);
       })
       .catch((err) => console.log("Err", err));
   };

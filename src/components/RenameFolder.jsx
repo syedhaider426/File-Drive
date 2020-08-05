@@ -21,12 +21,13 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function RenameFolder({
-  handleSetState,
-  handleDialog,
   handleFocus,
   renameFolderDialogOpen,
   folders,
   selectedFolders,
+  setFolders,
+  setSelectedFolders,
+  setRenameFolderDialogOpen,
 }) {
   const [renamedFolder, setRenamedFolder] = useState({});
   const [renamedSnack, setRenamedSnack] = useState(false);
@@ -41,7 +42,7 @@ export default function RenameFolder({
 
   const handleRenameFolderClose = () => {
     setFolderName("");
-    handleDialog({ renameFolderDialogOpen: false });
+    setRenameFolderDialogOpen(false);
   };
 
   const handleFolderOnChange = (e) => {
@@ -65,10 +66,9 @@ export default function RenameFolder({
         });
         setRenamedFolder(selectedFolders[0]);
         setRenamedSnack(true);
-        handleDialog(
-          { renameFolderDialogOpen: false },
-          { folders, selectedFolders }
-        );
+        setRenameFolderDialogOpen(false);
+        setFolders(folders);
+        setSelectedFolders(selectedFolders);
       })
       .catch((err) => console.log("Err", err));
   };
@@ -92,7 +92,8 @@ export default function RenameFolder({
         setRenamedFolder({});
         setRenamedSnack(false);
         setFolderName("");
-        handleSetState({ folders, selectedFolders: selectFolders });
+        setFolders(folders);
+        setSelectedFolders(selectFolders);
       })
       .catch((err) => console.log("Err", err));
   };
