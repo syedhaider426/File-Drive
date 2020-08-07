@@ -34,10 +34,7 @@ export default function RenameFile({
   const [fileName, setFileName] = useState("");
 
   const handleRenameSnackClose = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    setRenamedSnack(false);
+    if (reason !== "clickaway") setRenamedSnack(false);
   };
 
   const handleRenameFileClose = () => {

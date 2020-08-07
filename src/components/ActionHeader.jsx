@@ -27,6 +27,7 @@ import patchData from "../helpers/patchData";
 import TrashMenu from "./trash-menu-components/TrashMenu";
 import DeleteAllDialog from "./trash-menu-components/DeleteAllDialog";
 import RestoreAllDialog from "./trash-menu-components/RestoreAllDialog";
+import deleteData from "../helpers/deleteData";
 
 const useStyles = makeStyles((theme) => ({
   grow: {
@@ -80,7 +81,14 @@ export default function ActionHeader(props) {
   const [tempSelectedFiles, setTempSelectedFiles] = useState([]);
   const [moveButtonDisabled, setMoveButtonDisabled] = useState(true);
   const location = useLocation();
-
+  const [trashMenuOpen, setTrashMenuOpen] = useState(false);
+  const [deleteAllOpen, setDeleteAllOpen] = useState(false);
+  const [restoreAllOpen, setRestoreAllOpen] = useState(false);
+  const [trashAnchorEl, setTrashAnchorEl] = useState(undefined);
+  const [trashOpen, setTrashOpen] = useState({
+    delete: false,
+    restore: false,
+  });
   const {
     setFiles,
     setFolders,
@@ -93,21 +101,10 @@ export default function ActionHeader(props) {
     currentMenu,
     isFavorited,
     currentFolder,
+    setItems,
   } = {
     ...props,
   };
-  const {
-    deleteAllOpen,
-    trashMenuOpen,
-    setTrashMenuOpen,
-    setDeleteAllOpen,
-    setRestoreAllOpen,
-    restoreAllOpen,
-    handleRestoreAll,
-    setTrashAnchorEl,
-    trashAnchorEl,
-    handleDeleteAll,
-  } = { ...props };
 
   const handleRenameFileOpen = () => {
     setMobileMenuOpen(false);
@@ -202,18 +199,17 @@ export default function ActionHeader(props) {
     setMobileMenuOpen(true);
     setMobileAnchorEl(e.currentTarget);
   };
+  const handleMobileMenuClose = () => {
+    setMobileMenuOpen(false);
+  };
 
   const handleTrashMenuOpen = (e) => {
     setTrashMenuOpen(true);
     setTrashAnchorEl(e.currentTarget);
   };
 
-  const handleTrashMenuClose = (e) => {
+  const handleTrashMenuClose = () => {
     setTrashMenuOpen(false);
-  };
-
-  const handleMobileMenuClose = () => {
-    setMobileMenuOpen(false);
   };
 
   /**
@@ -359,14 +355,17 @@ export default function ActionHeader(props) {
     <DeleteAllDialog
       deleteAllOpen={deleteAllOpen}
       handleDeleteAllClose={handleDeleteAllClose}
-      handleDeleteAll={handleDeleteAll}
+      setItems={setItems}
+      setDeleteAllOpen={setDeleteAllOpen}
     />
   );
+
   const restoreAllDialog = (
     <RestoreAllDialog
       restoreAllOpen={restoreAllOpen}
       handleRestoreAllClose={handleRestoreAllClose}
-      handleRestoreAll={handleRestoreAll}
+      setItems={setItems}
+      setRestoreAllOpen={setRestoreAllOpen}
     />
   );
   const classes = useStyles();

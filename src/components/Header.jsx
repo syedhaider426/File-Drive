@@ -8,7 +8,7 @@ import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import Button from "@material-ui/core/Button";
 import MenuIcon from "@material-ui/icons/Menu";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useHistory, useLocation } from "react-router-dom";
 import postData from "../helpers/postData";
 import AutoComplete from "./AutoComplete";
 import AccountCircle from "@material-ui/icons/AccountCircle";
@@ -53,8 +53,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Header({
-  homePage,
+function Header({
   handleDrawerToggle,
   setFileData,
   setFileModalOpen,
@@ -63,6 +62,7 @@ export default function Header({
   const [profileOpen, setProfileOpen] = useState(false);
   const [profileAnchorEl, setProfileAnchorEl] = useState(undefined);
   const history = useHistory();
+  const location = useLocation();
 
   const handleProfileMenuOpen = (e) => {
     setProfileOpen(true);
@@ -81,6 +81,11 @@ export default function Header({
       .catch((err) => console.log(err));
   };
 
+  const handleProfileClick = () => {
+    setProfileOpen(false);
+    history.push("/user/profile");
+  };
+
   const classes = useStyles();
 
   const profileMenu = (
@@ -93,21 +98,18 @@ export default function Header({
       open={profileOpen}
       onClose={handleProfileMenuClose}
     >
-      <MenuItem component={Link} to="/drive/profile">
-        Profile
-      </MenuItem>
+      <MenuItem onClick={handleProfileClick}>Profile</MenuItem>
       <MenuItem onClick={handleLogOut}>Sign Out</MenuItem>
     </Menu>
   );
 
+  const loc = location.pathname.startsWith("/drive/");
+
   return (
     <Fragment>
-      <AppBar
-        position="fixed"
-        className={homePage === "Home" ? classes.appBar : ""}
-      >
+      <AppBar position="fixed" className={loc ? classes.appBar : ""}>
         <Toolbar>
-          {homePage === "Home" && (
+          {loc && (
             <IconButton
               color="inherit"
               aria-label="open drawer"
@@ -119,7 +121,7 @@ export default function Header({
             </IconButton>
           )}
           <Typography variant="h6" className={classes.content}>
-            {homePage !== "Home" ? (
+            {loc ? (
               <Link
                 to="/drive/home"
                 style={{ textDecoration: "none", color: "white" }}
@@ -130,7 +132,7 @@ export default function Header({
               "G-Drive"
             )}
           </Typography>
-          {homePage === "Home" && (
+          {loc && (
             <Fragment>
               <AutoComplete
                 setFileData={setFileData}
@@ -149,7 +151,7 @@ export default function Header({
               </IconButton>
             </Fragment>
           )}
-          {homePage !== "Home" && (
+          {!loc && (
             <Button color="inherit" onClick={history.goBack}>
               Back
             </Button>
@@ -160,3 +162,5 @@ export default function Header({
     </Fragment>
   );
 }
+
+export default React.memo(Header);

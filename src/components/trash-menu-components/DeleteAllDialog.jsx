@@ -5,12 +5,27 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import Button from "@material-ui/core/Button";
 import DialogActions from "@material-ui/core/DialogActions";
 import DialogContentText from "@material-ui/core/DialogContentText";
+import deleteData from "../../helpers/deleteData";
 
 const DeleteAllDialog = ({
   deleteAllOpen,
   handleDeleteAllClose,
-  handleDeleteAll,
+  setItems,
+  setDeleteAllOpen,
 }) => {
+  const handleDeleteAll = (e) => {
+    e.preventDefault();
+    document.body.style.cursor = "wait";
+    deleteData("/api/files/all")
+      .then((data) => {
+        document.body.style.cursor = "default";
+        const { files, folders } = { ...data };
+        setItems({ files, folders });
+        setDeleteAllOpen(false);
+      })
+      .catch((err) => console.log("Err", err));
+  };
+
   return (
     <Dialog
       open={deleteAllOpen}

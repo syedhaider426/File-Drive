@@ -5,12 +5,27 @@ import DialogContent from "@material-ui/core/DialogContent";
 import DialogActions from "@material-ui/core/DialogActions";
 import Button from "@material-ui/core/Button";
 import DialogContentText from "@material-ui/core/DialogContentText";
+import patchData from "../../helpers/patchData";
 
 const RestoreAllDialog = ({
   restoreAllOpen,
-  handleRestoreAll,
   handleRestoreAllClose,
+  setItems,
+  setRestoreAllOpen,
 }) => {
+  const handleRestoreAll = (e) => {
+    e.preventDefault();
+    document.body.style.cursor = "wait";
+    patchData("/api/files/all/restore")
+      .then((data) => {
+        document.body.style.cursor = "default";
+        const { files, folders } = { ...data };
+        setItems({ files, folders });
+        setRestoreAllOpen(false);
+      })
+      .catch((err) => console.log("Err", err));
+  };
+
   return (
     <Dialog
       open={restoreAllOpen}

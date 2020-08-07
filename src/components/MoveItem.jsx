@@ -11,7 +11,6 @@ import makeStyles from "@material-ui/core/styles/makeStyles";
 import FolderIcon from "@material-ui/icons/Folder";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import ArrowForwardIcon from "@material-ui/icons/ArrowForward";
-import getData from "../helpers/getData";
 
 const useStyles = makeStyles((theme) => ({
   dialogPaper: {

@@ -22,7 +22,7 @@ export default function getContentType(
           maxWidth: "100%",
           objectFit: "cover",
         }}
-        alt={selectedFiles[0].filename}
+        alt={selectedFiles[0]?.filename}
         src={fileData}
       ></img>
     );

@@ -51,11 +51,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function AutoComplete({
-  setFileData,
-  setContentType,
-  setFileModalOpen,
-}) {
+function AutoComplete({ setFileData, setContentType, setFileModalOpen }) {
   const [itemID, setItemID] = useState("");
   const [buttonDisabled, setButtonDisabled] = useState(true);
   const [files, setFiles] = useState([]);
@@ -171,3 +167,5 @@ export default function AutoComplete({
     </Fragment>
   );
 }
+
+export default React.memo(AutoComplete);

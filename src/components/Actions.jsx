@@ -24,7 +24,7 @@ import FileIcon from "@material-ui/icons/InsertDriveFile";
 import CustomizedAccordions from "../components/Accordion";
 import Axios from "axios";
 
-export default function Actions({
+function Actions({
   setFiles,
   setFolders,
   setSelectedFiles,
@@ -242,3 +242,5 @@ export default function Actions({
     </Fragment>
   );
 }
+
+export default React.memo(Actions);

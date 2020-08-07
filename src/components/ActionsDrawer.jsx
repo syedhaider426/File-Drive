@@ -26,11 +26,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function ActionsDrawer({
-  actions,
-  mobileOpen,
-  handleDrawerToggle,
-}) {
+function ActionsDrawer({ actions, mobileOpen, handleDrawerToggle }) {
   const classes = useStyles();
 
   return (
@@ -70,3 +66,5 @@ export default function ActionsDrawer({
     </Fragment>
   );
 }
+
+export default React.memo(ActionsDrawer);

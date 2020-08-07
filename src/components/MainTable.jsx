@@ -15,6 +15,7 @@ import StarIcon from "@material-ui/icons/Star";
 import selectedIndex from "../helpers/selectedIndex";
 import ArrowUpwardIcon from "@material-ui/icons/ArrowUpward";
 import ArrowDownwardIcon from "@material-ui/icons/ArrowDownward";
+import { useLocation } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   tableRow: {
@@ -56,20 +57,18 @@ const renderSortIcon = (sortColumn, column) => {
     return <ArrowDownwardIcon fontSize="small" />;
 };
 
-export default function MainTable({
+function MainTable({
   handleFolderClick,
   handleFileClick,
-  folders,
-  files,
-  selectedFolders,
-  selectedFiles,
-  currentMenu,
+  selectedItems,
   isLoaded,
   handleSort,
   sortColumn,
+  items,
 }) {
   const classes = useStyles();
   const headerList = ["Name", "Uploaded On", "File Size"];
+  const location = useLocation();
   return (
     <Fragment>
       {isLoaded ? (
@@ -92,20 +91,22 @@ export default function MainTable({
               </TableRow>
             </TableHead>
             <TableBody style={{ width: "100%" }}>
-              {folders?.map((folder) => (
+              {items.folders?.map((folder) => (
                 <TableRow
                   key={folder._id}
                   className={classes.tableRow}
                   onClick={(e) => handleFolderClick(e, folder)}
-                  selected={selectedIndex(selectedFolders, folder._id)}
+                  selected={selectedIndex(
+                    selectedItems.selectedFolders,
+                    folder._id
+                  )}
                 >
                   <TableCell>
                     <div className={classes.textContainer}>
                       <FolderIcon style={{ fill: "#5f6368" }} />
                       <span className="data">{folder.foldername}</span>
-                      {currentMenu === "Home" && folder.isFavorited && (
-                        <StarIcon className="data" />
-                      )}
+                      {location.pathname === "/drive/home" &&
+                        folder.isFavorited && <StarIcon className="data" />}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -118,21 +119,25 @@ export default function MainTable({
                   </TableCell>
                 </TableRow>
               ))}
-              {files?.map((file) => (
+              {items.files?.map((file) => (
                 <TableRow
                   key={file._id}
                   className={classes.tableRow}
                   onClick={(e) => handleFileClick(e, file)}
-                  selected={selectedIndex(selectedFiles, file._id)}
+                  selected={selectedIndex(
+                    selectedItems.selectedFiles,
+                    file._id
+                  )}
                 >
                   <TableCell>
                     <div className={classes.textContainer}>
                       <FileIcon style={{ fill: "#5f6368" }} />
 
                       <span className="data">{file.filename}</span>
-                      {currentMenu === "Home" && file.metadata.isFavorited && (
-                        <StarIcon className="data" />
-                      )}
+                      {location.pathname === "/drive/home" &&
+                        file.metadata.isFavorited && (
+                          <StarIcon className="data" />
+                        )}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -158,3 +163,5 @@ export default function MainTable({
     </Fragment>
   );
 }
+
+export default React.memo(MainTable);
