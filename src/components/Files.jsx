@@ -615,6 +615,7 @@ export default function Files({ menu }) {
     <Actions
       setItems={setItems}
       setSelectedItems={setSelectedItems}
+      items={items}
       menu={menu}
     />
   );

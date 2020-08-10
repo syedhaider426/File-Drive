@@ -1,5 +1,5 @@
 import React, { useState, Fragment } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useLocation, useHistory } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
 import DialogTitle from "@material-ui/core/DialogTitle";
@@ -24,13 +24,7 @@ import FileIcon from "@material-ui/icons/InsertDriveFile";
 import CustomizedAccordions from "../components/Accordion";
 import Axios from "axios";
 
-function Actions({
-  setFiles,
-  setFolders,
-  setSelectedFiles,
-  setSelectedFolders,
-  menu,
-}) {
+function Actions({ setItems, setSelectedItems, items, menu }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [newFolderOpen, setNewFolderOpen] = useState(false);
   const [folder, setFolder] = useState("");
@@ -41,6 +35,8 @@ function Actions({
   const [accordionMsg, setAccordionMsg] = useState("");
   const [filesStatus, setFilesStatus] = useState(false);
   const params = useParams();
+  const location = useLocation();
+  const history = useHistory();
   const handleClickOpen = (e) => {
     setMenuOpen(true);
     setAnchorEl(e.currentTarget);
@@ -79,10 +75,11 @@ function Actions({
     postData(`/api/folders${folderId}`, data)
       .then((data) => {
         const { folders, newFolder } = { ...data };
+
         setNewFolderOpen(false);
-        setFolders(folders);
-        setSelectedFolders(newFolder);
-        setSelectedFiles([]);
+        setItems({ ...items, folders });
+        setSelectedItems({ selectedFiles: [], selectedFolders: newFolder });
+        if (location.pathname !== "/drive/home") history.push("/drive/home");
       })
       .catch((err) => console.log("Err", err));
   };
@@ -110,14 +107,18 @@ function Actions({
       .then((d) => {
         const { data } = { ...d };
         const { files, uploadedFiles } = { ...data };
+        uploadedFiles.forEach((file) => {
+          file.id = file._id;
+          delete file._id;
+        });
         setMenuOpen(false);
         setFilesStatus(true);
         setAccordionMsg(
           `Uploaded ${uploadedFiles.length} file${files.length > 1 ? "s" : ""}`
         );
-        setFiles(files);
-        setSelectedFolders([]);
-        setSelectedFiles(uploadedFiles);
+        setItems({ ...items, files });
+        setSelectedItems({ selectedFiles: uploadedFiles, selectedFolders: [] });
+        if (location.pathname !== "/drive/home") history.push("/drive/home");
       })
       .catch((err) => console.log("Error", err));
   };
