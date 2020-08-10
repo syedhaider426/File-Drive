@@ -1,5 +1,5 @@
 import Login from "../components/user-related-components/Login";
-import React, { Fragment } from "react";
+import React from "react";
 import {
   BrowserRouter as Router,
   Switch,
@@ -13,7 +13,6 @@ import Register from "../components/user-related-components/Register";
 import Confirmation from "../components/user-related-components/Confirmation";
 import Profile from "../components/user-related-components/Profile";
 import NotFound from "../components/NotFound";
-import Header from "../components/Header";
 
 /***
  * If the same component is used as the child of multiple <Route>s at the

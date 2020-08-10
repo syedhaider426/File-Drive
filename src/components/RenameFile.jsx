@@ -25,8 +25,7 @@ export default function RenameFile({
   renameFileDialogOpen,
   files,
   selectedFiles,
-  setFiles,
-  setSelectedFiles,
+  setSelectedItems,
   setRenameFileDialogOpen,
 }) {
   const [renamedSnack, setRenamedSnack] = useState(false);
@@ -64,8 +63,7 @@ export default function RenameFile({
         setRenamedFile(selectedFiles[0]);
         setRenamedSnack(true);
         setRenameFileDialogOpen(false);
-        setFiles(files);
-        setSelectedFiles(selectedFiles);
+        setSelectedItems({ selectedFolders: [], selectedFiles });
       })
       .catch((err) => console.log("Err", err));
   };
@@ -89,8 +87,7 @@ export default function RenameFile({
         setRenamedSnack(false);
         setRenamedFile({});
         setFileName("");
-        setFiles(files);
-        setSelectedFiles(selectFiles);
+        setSelectedItems({ selectedFolders: [], selectedFiles: selectFiles });
       })
       .catch((err) => console.log("Err", err));
   };

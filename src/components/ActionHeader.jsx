@@ -21,13 +21,12 @@ import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import Box from "@material-ui/core/Box";
 import MoreIcon from "@material-ui/icons/MoreVert";
-import getData from "../helpers/getData";
 import GetAppIcon from "@material-ui/icons/GetApp";
-import patchData from "../helpers/patchData";
+
 import TrashMenu from "./trash-menu-components/TrashMenu";
 import DeleteAllDialog from "./trash-menu-components/DeleteAllDialog";
 import RestoreAllDialog from "./trash-menu-components/RestoreAllDialog";
-import deleteData from "../helpers/deleteData";
+import getData from "../helpers/getData";
 
 const useStyles = makeStyles((theme) => ({
   grow: {
@@ -66,34 +65,25 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function ActionHeader(props) {
+  const [moveMenuOpen, setMoveMenuOpen] = useState(false);
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [renameFileDialogOpen, setRenameFileDialogOpen] = useState(false);
   const [renameFolderDialogOpen, setRenameFolderDialogOpen] = useState(false);
-  const [allFolders, setAllFolders] = useState([]);
-  const [homeFolderStatus, setHomeFolderStatus] = useState([]);
-  const [moveMenuOpen, setMoveMenuOpen] = useState(false);
-  const [moveFolder, setMoveFolder] = useState("");
-  const [movedFolder, setMovedFolder] = useState({});
-  const [movedSnack, setMovedSnack] = useState(false);
   const [mobileAnchorEl, setMobileAnchorEl] = useState(undefined);
-  const [tempSelectedFolders, setTempSelectedFolders] = useState([]);
-  const [selectedIndex, setSelectedIndex] = useState(undefined);
-  const [tempSelectedFiles, setTempSelectedFiles] = useState([]);
-  const [moveButtonDisabled, setMoveButtonDisabled] = useState(true);
-  const location = useLocation();
+
   const [trashMenuOpen, setTrashMenuOpen] = useState(false);
   const [deleteAllOpen, setDeleteAllOpen] = useState(false);
   const [restoreAllOpen, setRestoreAllOpen] = useState(false);
   const [trashAnchorEl, setTrashAnchorEl] = useState(undefined);
-  const [trashOpen, setTrashOpen] = useState({
-    delete: false,
-    restore: false,
-  });
+
+  const [allFolders, setAllFolders] = useState([]);
+  const [homeFolderStatus, setHomeFolderStatus] = useState([]);
+  const [folderLocation, setFolderLocation] = useState("");
+  const [movedFolder, setMovedFolder] = useState({});
+
+  const location = useLocation();
+
   const {
-    setFiles,
-    setFolders,
-    setSelectedFiles,
-    setSelectedFolders,
     selectedFolders,
     selectedFiles,
     files,
@@ -102,6 +92,7 @@ export default function ActionHeader(props) {
     isFavorited,
     currentFolder,
     setItems,
+    setSelectedItems,
   } = {
     ...props,
   };
@@ -117,7 +108,6 @@ export default function ActionHeader(props) {
   };
 
   const handleMove = (e) => {
-    const { selectedFolders, selectedFiles } = { ...props };
     const urlMove = location.pathname === "/drive/home" ? "" : "?move=true";
     getData(`/api${location.pathname}${urlMove}`).then((data) => {
       const { folders, moveTitleFolder } = { ...data };
@@ -126,81 +116,16 @@ export default function ActionHeader(props) {
       else homeFolderStatus = false;
       //user selects a file
       //file has a folder_id
-      setAllFolders(folders);
-      setHomeFolderStatus(homeFolderStatus);
       setMoveMenuOpen(true);
       setMobileMenuOpen(false);
-      setMoveFolder({
+      setAllFolders(folders);
+      setHomeFolderStatus(homeFolderStatus);
+      setMovedFolder({
         id: selectedFiles[0]?.folder_id || selectedFolders[0]?._id,
         foldername: moveTitleFolder.foldername,
         parent_id: moveTitleFolder.parent_id,
       });
     });
-  };
-
-  const onMoveExit = () => {
-    setAllFolders([]);
-    setHomeFolderStatus(false);
-  };
-
-  const handleMoveSnackClose = (event, reason) => {
-    if (reason !== "clickaway") setMovedSnack(false);
-  };
-
-  const handleMoveItem = (e) => {
-    e.preventDefault();
-    const { selectedFolders, selectedFiles } = { ...props };
-    const data = { moveFolder: moveFolder.id, selectedFolders, selectedFiles };
-    patchData("/api/files/move", data).then((data) => {
-      const { files, folders } = { ...data };
-      setMoveMenuOpen(false);
-      setMovedFolder({});
-      setSelectedIndex(undefined);
-      setMoveButtonDisabled(true);
-      setMovedSnack(true);
-      setTempSelectedFolders(selectedFolders);
-      setTempSelectedFiles(selectedFiles);
-      setFiles(files);
-      setFolders(folders);
-      setSelectedFiles([]);
-      setSelectedFolders([]);
-    });
-  };
-
-  const handleUndoMoveItem = (e) => {
-    e.preventDefault();
-    let originalFolder =
-      tempSelectedFolders[0]?.parent_id || tempSelectedFiles[0]?.folder_id;
-    const data = {
-      movedFolder: originalFolder,
-      selectedFolders: tempSelectedFolders,
-      selectedFiles: tempSelectedFiles,
-    };
-    patchData("/api/files/move", data).then((data) => {
-      const { files, folders } = { ...data };
-      setMovedSnack(false);
-      setFiles(files);
-      setFolders(folders);
-      setSelectedFolders(tempSelectedFolders);
-      setSelectedFiles(tempSelectedFiles);
-    });
-  };
-
-  const handleSnackbarExit = () => {
-    if (tempSelectedFolders || tempSelectedFiles) {
-      setTempSelectedFolders([]);
-      setTempSelectedFiles([]);
-      setMoveFolder("");
-    }
-    return;
-  };
-
-  const handleMobileMenuOpen = (e) => {
-    setMobileMenuOpen(true);
-    setMobileAnchorEl(e.currentTarget);
-  };
-  const handleMobileMenuClose = () => {
-    setMobileMenuOpen(false);
   };
 
   const handleTrashMenuOpen = (e) => {
@@ -212,10 +137,6 @@ export default function ActionHeader(props) {
     setTrashMenuOpen(false);
   };
 
-  /**
-   *
-   *{https://stackoverflow.com/questions/54416499/how-select-part-of-text-in-a-textfield-on-onfocus-event-with-material-ui-in-reac} event
-   */
   const handleFocus = (event) => {
     event.preventDefault();
     const { target } = event;
@@ -246,60 +167,43 @@ export default function ActionHeader(props) {
     setRestoreAllOpen(false);
   };
 
-  const handleOnClick = (folder, selectedIndex) => {
-    setSelectedIndex(selectedIndex);
-    setMoveButtonDisabled(false);
-    setMoveFolder({ id: folder._id, foldername: folder.foldername });
+  const handleMobileMenuOpen = (e) => {
+    setMobileMenuOpen(true);
+    setMobileAnchorEl(e.currentTarget);
   };
 
-  const handleNextFolder = (folder) => {
-    getData(`/api/users/folders/${folder._id}`)
-      .then((data) => {
-        setAllFolders(data.folders);
-        setHomeFolderStatus(false);
-        setMoveFolder("");
-        setSelectedIndex(undefined);
-        setMovedFolder({
-          id: folder._id,
-          foldername: folder.foldername,
-          parent_id: folder.parent_id,
-        });
-      })
-      .catch((err) => console.log("Err", err));
+  const handleMobileMenuClose = () => {
+    setMoveMenuOpen(true);
+    setMobileMenuOpen(false);
   };
 
-  const handlePreviousFolder = (folder_id) => {
-    const urlParam =
-      folder_id === "" ? "drive/home" : `users/folders/${folder_id}?move=true`;
-    getData(`/api/${urlParam}`)
-      .then((data) => {
-        const { folders, moveTitleFolder } = { ...data };
-        setAllFolders(folders);
-        setHomeFolderStatus(folder_id === "");
-        setSelectedIndex(undefined);
-        setMovedFolder({
-          foldername: moveTitleFolder.foldername,
-          parent_id: moveTitleFolder.parent_id,
-        });
-      })
-      .catch((err) => console.log("Err", err));
-  };
-
-  const handleMoveItemClose = () => {
-    setMoveMenuOpen(false);
-    setMovedFolder({});
-    setSelectedIndex(undefined);
-    setMoveButtonDisabled(true);
-    setMoveFolder("");
-  };
+  const moveItem = (
+    <MoveItem
+      setItems={setItems}
+      setSelectedItems={setSelectedItems}
+      selectedFolders={selectedFolders}
+      selectedFiles={selectedFiles}
+      moveMenuOpen={moveMenuOpen}
+      setMoveMenuOpen={setMoveMenuOpen}
+      setAllFolders={setAllFolders}
+      setHomeFolderStatus={setHomeFolderStatus}
+      setFolderLocation={setFolderLocation}
+      allFolders={allFolders}
+      homeFolderStatus={homeFolderStatus}
+      folderLocation={folderLocation}
+      movedFolder={movedFolder}
+      setMovedFolder={setMovedFolder}
+    />
+  );
 
   const renameFile = (
     <RenameFile
       renameFileDialogOpen={renameFileDialogOpen}
-      setFiles={setFiles}
-      setSelectedFiles={setSelectedFiles}
+      setItems={setItems}
+      setSelectedItems={setSelectedItems}
       setRenameFileDialogOpen={setRenameFileDialogOpen}
       files={files}
+      folders={folders}
       selectedFiles={selectedFiles}
       handleFocus={handleFocus}
     />
@@ -308,37 +212,16 @@ export default function ActionHeader(props) {
   const renameFolder = (
     <RenameFolder
       renameFolderDialogOpen={renameFolderDialogOpen}
-      setFolders={setFolders}
-      setSelectedFolders={setSelectedFolders}
+      setItems={setItems}
+      setSelectedItems={setSelectedItems}
       setRenameFolderDialogOpen={setRenameFolderDialogOpen}
+      files={files}
       folders={folders}
       selectedFolders={selectedFolders}
       handleFocus={handleFocus}
     />
   );
-  const moveItem = (
-    <MoveItem
-      moveMenuOpen={moveMenuOpen}
-      allFolders={allFolders}
-      selectedFolders={selectedFolders}
-      selectedFiles={selectedFiles}
-      onMoveExit={onMoveExit}
-      homeFolderStatus={homeFolderStatus}
-      movedFolder={movedFolder}
-      selectedIndex={selectedIndex}
-      moveButtonDisabled={moveButtonDisabled}
-      moveFolder={moveFolder}
-      handleMoveItem={handleMoveItem}
-      movedSnack={movedSnack}
-      handleUndoMoveItem={handleUndoMoveItem}
-      handleSnackbarExit={handleSnackbarExit}
-      handleMoveSnackClose={handleMoveSnackClose}
-      handleNextFolder={handleNextFolder}
-      handlePreviousFolder={handlePreviousFolder}
-      handleMoveItemClose={handleMoveItemClose}
-      handleOnClick={handleOnClick}
-    />
-  );
+
   const trashMenu = (
     <TrashMenu
       trashAnchorEl={trashAnchorEl}

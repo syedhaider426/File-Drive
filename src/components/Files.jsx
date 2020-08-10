@@ -1,23 +1,23 @@
-import React, { Fragment, useState, useRef, useEffect } from "react";
+import React, { Fragment, useState, useEffect } from "react";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import { useHistory, useLocation, useParams } from "react-router-dom";
+import axios from "axios";
 import ActionHeader from "./ActionHeader";
 import postData from "../helpers/postData";
 import deleteData from "../helpers/deleteData";
-import Actions from "./Actions";
-import Snack from "./Snack";
-import MainTable from "./MainTable";
 import getData from "../helpers/getData";
-import CssBaseline from "@material-ui/core/CssBaseline";
-import ActionsDrawer from "./ActionsDrawer";
-import Header from "./Header";
-import axios from "axios";
-import Dialog from "@material-ui/core/Dialog";
-import DialogContent from "@material-ui/core/DialogContent";
-import sortFiles from "../helpers/sortFiles";
 import sortFolders from "../helpers/sortFolders";
 import getContentType from "../helpers/getContentType";
 import patchData from "../helpers/patchData";
+import sortFiles from "../helpers/sortFiles";
+import Actions from "./Actions";
+import Snack from "./Snack";
+import Header from "./Header";
+import ActionsDrawer from "./ActionsDrawer";
+import MainTable from "./MainTable";
+import CssBaseline from "@material-ui/core/CssBaseline";
+import Dialog from "@material-ui/core/Dialog";
+import DialogContent from "@material-ui/core/DialogContent";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -48,9 +48,11 @@ export default function Files({ menu }) {
   const [currentFolder, setCurrentFolder] = useState([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [drawerMobileOpen, setDrawerMobileOpen] = useState(false);
+  // FileData, FileModalOpen, and ContentType refer to viewing files in the browser
   const [fileData, setFileData] = useState(undefined);
   const [fileModalOpen, setFileModalOpen] = useState(false);
   const [contentType, setContentType] = useState("");
+  // Refers to all the different snackbars used by specific actions
   const [snackOpen, setSnackOpen] = useState({
     copy: false,
     trash: false,
@@ -59,8 +61,6 @@ export default function Files({ menu }) {
     unfavorite: false,
   });
 
-  const [moveMenuOpen, setMoveMenuOpen] = useState(false);
-  const [moveAnchorEl, setMoveAnchorEl] = useState(false);
   const [sortColumn, setSortColumn] = useState({
     name: "Name",
     order: "asc",
@@ -456,15 +456,12 @@ export default function Files({ menu }) {
 
   //When you unfavorite an item in 'Favorites'
   const handleUnfavorited = () => {
-    const data = {
-      selectedFolders: selectedFolders,
-      selectedFiles: selectedFiles,
-    };
+    const data = { selectedFolders, selectedFiles };
+    const tempFiles = selectedFiles.slice();
+    const tempFolders = selectedFolders.slice();
     patchData("/api/files/unfavorite", data)
       .then((data) => {
         const { files, folders } = { ...data };
-        const tempFiles = selectedFiles.slice();
-        const tempFolders = selectedFolders.slice();
         setItems({ files, folders });
         setTempItems({ tempFiles, tempFolders });
         setSnackOpen({ ...snackOpen, unfavorite: true });
@@ -495,10 +492,7 @@ export default function Files({ menu }) {
   };
 
   const handleHomeUnfavorited = () => {
-    const data = {
-      selectedFolders: selectedFolders,
-      selectedFiles: selectedFiles,
-    };
+    const data = { selectedFolders, selectedFiles };
     patchData("/api/files/home-undo-favorite", data)
       .then((data) => {
         const { files, folders } = { ...data };
@@ -509,10 +503,7 @@ export default function Files({ menu }) {
       .catch((err) => console.log("Err", err));
   };
   const handleDeleteForever = () => {
-    const data = {
-      selectedFolders: selectedFolders,
-      selectedFiles: selectedFiles,
-    };
+    const data = { selectedFolders, selectedFiles };
     deleteData("/api/files/selected", data)
       .then((data) => {
         const { files, folders } = { ...data };
@@ -673,8 +664,9 @@ export default function Files({ menu }) {
               folders={items.folders}
               selectedFiles={selectedFiles}
               selectedFolders={selectedFolders}
-              setItems={setItems}
               isFavorited={selectedItems.isFavorited}
+              setItems={setItems}
+              setSelectedItems={setSelectedItems}
               handleTrash={handleTrash}
               handleFileCopy={handleFileCopy}
               handleDeleteForever={handleDeleteForever}
@@ -683,14 +675,10 @@ export default function Files({ menu }) {
               handleUnfavorited={handleUnfavorited}
               handleFavoritesTrash={handleFavoritesTrash}
               handleHomeUnfavorited={handleHomeUnfavorited}
+              handleSingleDownload={handleSingleDownload}
               currentMenu={menu}
               currentFolder={currentFolder}
               isLoaded={isLoaded}
-              moveMenuOpen={moveMenuOpen}
-              moveAnchorEl={moveAnchorEl}
-              setMoveMenuOpen={setMoveMenuOpen}
-              setMoveAnchorEl={setMoveAnchorEl}
-              handleSingleDownload={handleSingleDownload}
             />
           }
           <MainTable
@@ -699,7 +687,6 @@ export default function Files({ menu }) {
             handleSort={handleSort}
             items={items}
             selectedItems={selectedItems}
-            currentMenu={menu}
             isLoaded={isLoaded}
             sortColumn={sortColumn}
           />

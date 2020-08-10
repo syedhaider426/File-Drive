@@ -11,6 +11,7 @@ const TrashMenu = ({
   folders,
   handleRestoreAllDialog,
 }) => {
+  const disabled = files?.length === 0 && folders?.length === 0;
   return (
     <Menu
       anchorEl={trashAnchorEl}
@@ -19,16 +20,10 @@ const TrashMenu = ({
       open={trashMenuOpen}
       onClose={handleTrashMenuClose}
     >
-      <MenuItem
-        onClick={handleDeleteAllDialog}
-        disabled={files?.length === 0 && folders?.length === 0}
-      >
+      <MenuItem onClick={handleDeleteAllDialog} disabled={disabled}>
         Delete All Trash
       </MenuItem>
-      <MenuItem
-        onClick={handleRestoreAllDialog}
-        disabled={files?.length === 0 && folders?.length === 0}
-      >
+      <MenuItem onClick={handleRestoreAllDialog} disabled={disabled}>
         Restore All Items
       </MenuItem>
     </Menu>
