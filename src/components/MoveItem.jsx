@@ -6,7 +6,7 @@ import DialogActions from "@material-ui/core/DialogActions";
 import Button from "@material-ui/core/Button";
 import IconButton from "@material-ui/core/IconButton";
 import MenuItem from "@material-ui/core/MenuItem";
-import Snack from "./Snack";
+import Snack from "./reusable-components/Snack";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import FolderIcon from "@material-ui/icons/Folder";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
@@ -42,7 +42,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function MoveItem({
+function MoveItem({
   selectedFolders,
   selectedFiles,
   setItems,
@@ -184,7 +184,6 @@ export default function MoveItem({
     setMoveMenuOpen(false);
     setMovedFolder({});
   };
-
   const moveSnack = (
     <Snack
       open={movedSnack}
@@ -195,7 +194,7 @@ export default function MoveItem({
     />
   );
   const classes = useStyles();
-
+  console.log("move render");
   const moveFileDialog = (
     <Dialog
       open={moveMenuOpen ? true : false}
@@ -268,3 +267,5 @@ export default function MoveItem({
     </Fragment>
   );
 }
+
+export default React.memo(MoveItem);

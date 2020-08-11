@@ -21,7 +21,7 @@ import MenuItem from "@material-ui/core/MenuItem";
 import Typography from "@material-ui/core/Typography";
 import CreateNewFolderOutlinedIcon from "@material-ui/icons/CreateNewFolderOutlined";
 import FileIcon from "@material-ui/icons/InsertDriveFile";
-import CustomizedAccordions from "../components/Accordion";
+import CustomizedAccordions from "./reusable-components/Accordion";
 import Axios from "axios";
 
 function Actions({ setItems, setSelectedItems, items, menu }) {

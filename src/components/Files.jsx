@@ -11,7 +11,7 @@ import getContentType from "../helpers/getContentType";
 import patchData from "../helpers/patchData";
 import sortFiles from "../helpers/sortFiles";
 import Actions from "./Actions";
-import Snack from "./Snack";
+import Snack from "./reusable-components/Snack";
 import Header from "./Header";
 import ActionsDrawer from "./ActionsDrawer";
 import MainTable from "./MainTable";
@@ -90,6 +90,12 @@ export default function Files({ menu }) {
     (async () => await getFilesFolders())();
   }, [location.pathname]);
 
+  // useEffect(() => {
+  //   let filesList = sortFiles(items?.files, sortColumn);
+  //   let foldersList = sortFolders(items?.folders, sortColumn);
+  //   setItems({ files: filesList, folders: foldersList });
+  // }, [items?.files, items?.folders]);
+
   const handleSnackbarExit = () => {
     if (tempFiles || tempFolders) {
       setTempItems({ tempFiles: [], tempFolders: [] });
@@ -110,7 +116,7 @@ export default function Files({ menu }) {
     sort.order = sort.name === column && sort.order === "asc" ? "desc" : "asc";
     sort.name = column;
     let filesList = sortFiles(items.files, sort);
-    let foldersList = sortFolders(items.filesfolders, sort);
+    let foldersList = sortFolders(items.folders, sort);
     setItems({ files: filesList, folders: foldersList });
     setSortColumn(sort);
   };
@@ -641,6 +647,7 @@ export default function Files({ menu }) {
     </Dialog>
   );
   const classes = useStyles();
+
   return (
     <Fragment>
       <div className={classes.root}>
