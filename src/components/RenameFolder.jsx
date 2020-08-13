@@ -51,13 +51,13 @@ function RenameFolder({
   const handleRenameFolder = (e) => {
     e.preventDefault();
     const data = {
-      id: selectedFolders[0].id,
+      id: selectedFolders[0]._id,
       newName: folderName,
     };
     patchData("/api/folders/name", data)
       .then((data) => {
         folders.find((o, i, arr) => {
-          if (o._id === selectedFolders[0].id) {
+          if (o._id === selectedFolders[0]._id) {
             arr[i].foldername = folderName;
             return true;
           }
@@ -79,7 +79,7 @@ function RenameFolder({
     patchData("/api/folders/name", data)
       .then((data) => {
         folders.find((o, i, arr) => {
-          if (o._id === selectedFolders[0].id) {
+          if (o._id === selectedFolders[0]._id) {
             arr[i].foldername = selectedFolders[0].foldername;
             return true;
           }

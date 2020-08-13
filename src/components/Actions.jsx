@@ -107,10 +107,6 @@ function Actions({ setItems, setSelectedItems, items, menu }) {
       .then((d) => {
         const { data } = { ...d };
         const { files, uploadedFiles } = { ...data };
-        uploadedFiles.forEach((file) => {
-          file.id = file._id;
-          delete file._id;
-        });
         setMenuOpen(false);
         setFilesStatus(true);
         setAccordionMsg(

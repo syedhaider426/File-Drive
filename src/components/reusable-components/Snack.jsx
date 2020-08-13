@@ -35,4 +35,4 @@ const Snack = ({ open, onClose, onExited, message, onClick }) => {
   );
 };
 
-export default Snack;
+export default React.memo(Snack);

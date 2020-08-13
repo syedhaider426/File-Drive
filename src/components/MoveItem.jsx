@@ -230,7 +230,7 @@ function MoveItem({
             selected={index === selectedIndex}
             disabled={
               (selectedFolders.length > 0 &&
-                selectedFolders[0].id === folder._id) ||
+                selectedFolders[0]._id === folder._id) ||
               (selectedFiles.length > 0 &&
                 selectedFiles[0].folder_id === folder._id)
             }

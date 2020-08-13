@@ -48,13 +48,13 @@ function RenameFile({
   const handleRenameFile = (e) => {
     e.preventDefault();
     const data = {
-      id: selectedFiles[0].id,
+      id: selectedFiles[0]._id,
       newName: fileName,
     };
     patchData("/api/files/name", data)
       .then((data) => {
         files.find((o, i, arr) => {
-          if (o._id === selectedFiles[0].id) {
+          if (o._id === selectedFiles[0]._id) {
             arr[i].filename = fileName;
             return true;
           }
@@ -76,7 +76,7 @@ function RenameFile({
     patchData("/api/files/name", data)
       .then((data) => {
         files.find((o, i, arr) => {
-          if (o._id === selectedFiles[0].id) {
+          if (o._id === selectedFiles[0]._id) {
             arr[i].filename = selectedFiles[0].filename;
             return true;
           }

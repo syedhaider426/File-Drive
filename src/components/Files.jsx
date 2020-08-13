@@ -85,7 +85,10 @@ export default function Files({ menu }) {
   const getFilesFolders = async () => {
     try {
       const data = await getData(`/api${location.pathname}`);
-      setItems({ files: data.files, folders: data.folders });
+      let { files, folders } = { ...data };
+      files = sortFiles(files, sortColumn);
+      folders = sortFolders(folders, sortColumn);
+      setItems({ files, folders });
       setSelectedItems({
         ...selectedItems,
         selectedFiles: [],
@@ -102,11 +105,61 @@ export default function Files({ menu }) {
     (async () => await getFilesFolders())();
   }, [location.pathname]);
 
-  // useEffect(() => {
-  //   let filesList = sortFiles(items?.files, sortColumn);
-  //   let foldersList = sortFolders(items?.folders, sortColumn);
-  //   setItems({ files: filesList, folders: foldersList });
-  // }, [items?.files, items?.folders]);
+  useEffect(() => {
+    let filesList = sortFiles(items?.files, sortColumn);
+    let foldersList = sortFolders(items?.folders, sortColumn);
+    setItems({ files: filesList, folders: foldersList });
+  }, [items?.files, items?.folders]);
+
+  const filterItems = () => {
+    let folders = items.folders.slice();
+    let files = items.files.slice();
+    if (selectedFolders.length > 0) {
+      let folderidList = [];
+      selectedFolders.forEach((folder) => folderidList.push(folder._id));
+      folders = items.folders.filter(
+        (folder) => !folderidList.includes(folder._id)
+      );
+    }
+    if (selectedFiles.length > 0) {
+      let fileidList = [];
+      selectedFiles.forEach((file) => fileidList.push(file._id));
+      files = items.files.filter((file) => !fileidList.includes(file._id));
+    }
+    return { files, folders };
+  };
+
+  const addItems = () => {
+    let { files, folders } = { ...items };
+    if (tempFiles.length > 0) tempFiles.forEach((file) => files.push(file));
+    if (tempFolders.length > 0)
+      tempFolders.forEach((folder) => folders.push(folder));
+    files = sortFiles(files, sortColumn);
+    folders = sortFolders(folders, sortColumn);
+    return { files, folders };
+  };
+
+  //Favorites or unfavorites items
+  const favoriteItems = (favoriteFlag) => {
+    let { folders, files } = { ...items };
+    if (selectedFolders.length > 0) {
+      let folderidList = [];
+      selectedFolders.forEach((folder) => folderidList.push(folder._id));
+      folders.forEach((folder, index, arr) => {
+        if (folderidList.includes(folder._id))
+          arr[index].isFavorited = favoriteFlag;
+      });
+    }
+    if (selectedFiles.length > 0) {
+      let fileidList = [];
+      selectedFiles.forEach((file) => fileidList.push(file._id));
+      files.forEach((file, index, arr) => {
+        if (fileidList.includes(file._id))
+          arr[index].metadata.isFavorited = favoriteFlag;
+      });
+    }
+    return { files, folders };
+  };
 
   const handleSnackbarExit = () => {
     if (tempFiles || tempFolders) {
@@ -117,7 +170,7 @@ export default function Files({ menu }) {
   const checkIsFavorited = (items) => {
     let isFavorited = 0;
     for (let i = 0; i < items.length; ++i) {
-      if (items[i].isFavorited) isFavorited++;
+      if (items[i].isFavorited || items[i].metadata?.isFavorited) isFavorited++;
     }
     if (isFavorited > 0 && isFavorited === items.length) return true;
     return false;
@@ -133,21 +186,12 @@ export default function Files({ menu }) {
     setSortColumn(sort);
   };
 
-  const selectFolder = (folder) => {
-    selectedFolders.push({
-      id: folder._id,
-      foldername: folder.foldername,
-      parent_id: folder.parent_id,
-      isFavorited: folder.isFavorited,
-    });
-  };
-
   const handleFolderClick = (e, folder) => {
     const folderLength = selectedFolders.length;
     // No folders selected
     if (folderLength === 0 && !e.ctrlKey) {
       // Add selected folder to array
-      selectFolder(folder);
+      selectedFolders.push(folder);
       //Check if any of the folders are favorited
       const isFavorited = checkIsFavorited(selectedFolders);
       //Set state
@@ -166,7 +210,7 @@ export default function Files({ menu }) {
       folderLength === 1 &&
       !e.ctrlKey
     ) {
-      if (selectedFolders[0].id === folder._id) {
+      if (selectedFolders[0]._id === folder._id) {
         setSelectedItems({
           selectedFiles: [],
           selectedFolders: [],
@@ -175,12 +219,7 @@ export default function Files({ menu }) {
         history.push(`/drive/folders/${folder._id}`);
       } else {
         let folders = [];
-        folders[0] = {
-          id: folder._id,
-          foldername: folder.foldername,
-          parent_id: folder.parent_id,
-          isFavorited: folder.isFavorited,
-        };
+        folders[0] = folder;
         const isFavorited = checkIsFavorited(folders);
         setSelectedItems({
           selectedFiles: [],
@@ -196,10 +235,10 @@ export default function Files({ menu }) {
       folderLength === 1 &&
       e.ctrlKey
     ) {
-      if (selectedFolders[0].id === folder._id)
+      if (selectedFolders[0]._id === folder._id)
         setSelectedItems({ ...selectedItems, selectedFolders: [] });
       else {
-        selectFolder(folder);
+        selectedFolders.push(folder);
         const isFavorited = checkIsFavorited(selectedFolders);
         setSelectedItems({
           ...selectedItems,
@@ -211,18 +250,12 @@ export default function Files({ menu }) {
       let folders = [];
       let count = 0;
       for (let i = 0; i < folderLength; ++i) {
-        if (selectedFolders[i].id !== folder._id) {
+        if (selectedFolders[i]._id !== folder._id) {
           folders.push(selectedFolders[i]);
           count++;
         }
       }
-      if (count === folderLength)
-        folders.push({
-          id: folder._id,
-          foldername: folder.foldername,
-          parent_id: folder.parent_id,
-          isFavorited: folder.isFavorited,
-        });
+      if (count === folderLength) folders.push(folder);
       const isFavorited = checkIsFavorited(folders);
       setSelectedItems({
         ...selectedItems,
@@ -231,12 +264,7 @@ export default function Files({ menu }) {
       });
     } else {
       let folders = [];
-      folders[0] = {
-        id: folder._id,
-        foldername: folder.foldername,
-        parent_id: folder.parent_id,
-        isFavorited: folder.isFavorited,
-      };
+      folders[0] = folder;
       const isFavorited = checkIsFavorited(folders);
       setSelectedItems({
         selectedFiles: [],
@@ -248,12 +276,7 @@ export default function Files({ menu }) {
 
   const handleFileClick = (e, file) => {
     if (selectedFiles.length === 0 && !e.ctrlKey) {
-      selectedFiles.push({
-        id: file._id,
-        filename: file.filename,
-        isFavorited: file.metadata.isFavorited,
-        folder_id: file.folder_id,
-      });
+      selectedFiles.push(file);
       const isFavorited = checkIsFavorited(selectedFiles);
       setSelectedItems({
         selectedFiles,
@@ -262,7 +285,7 @@ export default function Files({ menu }) {
       });
     } else if (
       selectedFiles.length === 1 &&
-      selectedFiles[0].id === file._id &&
+      selectedFiles[0]._id === file._id &&
       !e.ctrlKey
     ) {
       axios.get(`/api/files/${file._id}`).then((d) => {
@@ -272,7 +295,7 @@ export default function Files({ menu }) {
       });
     } else if (
       selectedFiles.length === 1 &&
-      selectedFiles[0].id === file._id &&
+      selectedFiles[0]._id === file._id &&
       e.ctrlKey
     ) {
       setSelectedItems({ ...selectedItems, selectedFiles: [] });
@@ -280,28 +303,17 @@ export default function Files({ menu }) {
       let files = [];
       let count = 0;
       for (let i = 0; i < selectedFiles.length; ++i) {
-        if (selectedFiles[i].id !== file._id) {
+        if (selectedFiles[i]._id !== file._id) {
           files.push(selectedFiles[i]);
           count++;
         }
       }
-      if (count === selectedFiles.length)
-        files.push({
-          id: file._id,
-          filename: file.filename,
-          isFavorited: file.metadata.isFavorited,
-          folder_id: file.folder_id,
-        });
+      if (count === selectedFiles.length) files.push(file);
       const isFavorited = checkIsFavorited(files);
       setSelectedItems({ ...selectedItems, selectedFiles: files, isFavorited });
     } else {
       let files = [];
-      files[0] = {
-        id: file._id,
-        filename: file.filename,
-        isFavorited: file.metadata.isFavorited,
-        folder_id: file.folder_id,
-      };
+      files[0] = file;
       const isFavorited = checkIsFavorited(files);
       setSelectedItems({
         selectedFiles: files,
@@ -315,16 +327,20 @@ export default function Files({ menu }) {
     let urlParam = "";
     if (location.pathname !== "/drive/home") urlParam = `/${params.folder}`;
     const data = { selectedFiles };
+    document.body.style.cursor = "wait";
     postData(`/api/files/copy${urlParam}`, data)
       .then((data) => {
+        const { files } = { ...items };
         for (let file of data.files) {
-          items.files.push(file);
+          files.push(file);
         }
         const tempFiles = data.newFiles.id.slice();
-        setItems({ ...items, files: items.files }); //updated files
-        setSelectedItems({ ...selectedItems, selectedFiles: data.files[0] });
-        setTempItems({ tempFiles }); //Reference to selected files (if user chooses to undo, reference the tempfiles)
+        let sortedFiles = sortFiles(files, sortColumn);
+        setItems({ ...items, files: sortedFiles }); //updated files
+        setSelectedItems({ ...selectedItems, selectedFiles: data.files });
+        setTempItems({ ...tempItems, tempFiles }); //Reference to selected files (if user chooses to undo, reference the tempfiles)
         setSnackOpen({ ...snackOpen, copy: true });
+        document.body.style.cursor = "default";
       })
       .catch((err) => console.log("Err", err));
   };
@@ -336,7 +352,12 @@ export default function Files({ menu }) {
     deleteData(`/api/files/copy${urlParam}`, data)
       .then((data) => {
         const { files } = { ...data };
-        setItems({ ...items, files });
+        let tempFilesIdList = [];
+        tempFiles.forEach((file) => tempFilesIdList.push(file._id));
+        let modifiedFiles = files.filter(
+          (file) => !tempFilesIdList.includes(file._id)
+        );
+        setItems({ ...items, files: modifiedFiles });
         setTempItems({ tempFiles: [] });
         setSnackOpen({ ...snackOpen, copy: false });
       })
@@ -352,7 +373,7 @@ export default function Files({ menu }) {
     const folder = params.folder ? `/${params.folder}` : "";
     patchData(`/api/files/trash${folder}`, data)
       .then((data) => {
-        const { files, folders } = { ...data };
+        const { files, folders } = filterItems();
         //Slice will clone the array and return reference to new array
         const tempFiles = selectedFiles.slice();
         const tempFolders = selectedFolders.slice();
@@ -373,9 +394,9 @@ export default function Files({ menu }) {
     const folder = params.folder ? `/${params.folder}` : "";
     patchData(`/api/files/undo-trash${folder}`, data)
       .then((data) => {
-        const { files, folders } = { ...data };
-        setItems({ files, folders });
+        const { files, folders } = addItems();
         setSnackOpen({ ...snackOpen, trash: false });
+        setItems({ files, folders });
         setTempItems({ tempFiles: [], tempFolders: [] });
       })
       .catch((err) => console.log("Err", err));
@@ -389,7 +410,7 @@ export default function Files({ menu }) {
     };
     patchData("/api/files/trash", data)
       .then((data) => {
-        const { files, folders } = { ...data };
+        const { files, folders } = filterItems();
         const tempFiles = selectedFiles.slice();
         const tempFolders = selectedFolders.slice();
         setItems({ files, folders });
@@ -411,17 +432,7 @@ export default function Files({ menu }) {
     };
     patchData("/api/files/selected/restore", data)
       .then((data) => {
-        const { files, folders } = { ...items };
-        tempFolders.forEach((folder) => {
-          folder._id = folder.id;
-          delete folder.id;
-          folders.push(folder);
-        });
-        tempFiles.forEach((file) => {
-          file._id = file.id;
-          delete file.id;
-          files.push(file);
-        });
+        const { files, folders } = addItems();
         setSnackOpen({ ...snackOpen, favoritesTrash: false });
         setItems({ files, folders });
         setTempItems({ tempFiles: [], tempFolders: [] });
@@ -436,7 +447,7 @@ export default function Files({ menu }) {
     };
     patchData("/api/files/selected/restore", data)
       .then((data) => {
-        const { files, folders } = { ...data };
+        const { files, folders } = filterItems();
         //Slice will clone the array and return reference to new array
         const tempFiles = selectedFiles.slice();
         const tempFolders = selectedFolders.slice();
@@ -461,7 +472,7 @@ export default function Files({ menu }) {
     };
     patchData(`/api/files/trash`, data)
       .then((data) => {
-        const { files, folders } = { ...data };
+        const { files, folders } = addItems();
         setSnackOpen({ ...snackOpen, restore: false });
         setItems({ files, folders });
         setTempItems({ tempFiles: [], tempFolders: [] });
@@ -477,14 +488,14 @@ export default function Files({ menu }) {
     };
     patchData("/api/files/favorites", data)
       .then((data) => {
-        const { files, folders } = { ...data };
+        const { files, folders } = favoriteItems(true);
         //Slice will clone the array and return reference to new array
         const tempFiles = selectedFiles.slice();
         const tempFolders = selectedFolders.slice();
         setItems({ files, folders });
         setSelectedItems({ ...selectedItems, isFavorited: true });
         setTempItems({ tempFiles, tempFolders });
-        setSnackOpen({ ...snackOpen, favorite: true, unfavorite: false });
+        setSnackOpen({ ...snackOpen, favorite: true, homeUnfavorite: false });
       })
       .catch((err) => console.log("Err", err));
   };
@@ -494,7 +505,7 @@ export default function Files({ menu }) {
     const data = { selectedFolders: tempFolders, selectedFiles: tempFiles };
     patchData("/api/files/undo-favorites", data)
       .then((data) => {
-        const { files, folders } = { ...data };
+        const { files, folders } = favoriteItems(false);
         setItems({ files, folders });
         setTempItems({ tempFiles: [], tempFolders: [] });
         setSnackOpen({ ...snackOpen, favorite: false });
@@ -502,14 +513,54 @@ export default function Files({ menu }) {
       .catch((err) => console.log("Err", err));
   };
 
+  const handleHomeUnfavorited = () => {
+    const data = { selectedFolders, selectedFiles };
+    patchData("/api/files/home-undo-favorite", data)
+      .then((data) => {
+        const { files, folders } = favoriteItems(false);
+        const tempFiles = selectedFiles.slice();
+        const tempFolders = selectedFolders.slice();
+        setItems({ files, folders });
+        setSelectedItems({ ...selectedItems, isFavorited: false });
+        setTempItems({ tempFiles, tempFolders });
+        setSnackOpen({ ...snackOpen, homeUnfavorite: true, favorite: false });
+      })
+      .catch((err) => console.log("Err", err));
+  };
+
+  const handleHomeUndoUnfavorite = () => {
+    const data = { selectedFolders: tempFolders, selectedFiles: tempFiles };
+    patchData("/api/files/favorites", data)
+      .then((data) => {
+        const { files, folders } = favoriteItems(true);
+        setItems({ files, folders });
+        setTempItems({ tempFiles: [], tempFolders: [] });
+        setSnackOpen({ ...snackOpen, homeUnfavorite: false });
+      })
+      .catch((err) => console.log("Err", err));
+  };
+
   //When you unfavorite an item in 'Favorites'
   const handleUnfavorited = () => {
     const data = { selectedFolders, selectedFiles };
-    const tempFiles = selectedFiles.slice();
-    const tempFolders = selectedFolders.slice();
     patchData("/api/files/unfavorite", data)
       .then((data) => {
-        const { files, folders } = { ...data };
+        let { files, folders } = favoriteItems(false);
+        if (selectedFolders.length > 0) {
+          let folderidList = [];
+          selectedFolders.forEach((folder) => folderidList.push(folder._id));
+          folders = items.folders.filter(
+            (folder) => !folderidList.includes(folder._id)
+          );
+        }
+        if (selectedFiles.length > 0) {
+          let fileidList = [];
+          selectedFiles.forEach((file) => fileidList.push(file._id));
+          files = items.files.filter((file) => !fileidList.includes(file._id));
+        }
+
+        const tempFiles = selectedFiles.slice();
+        const tempFolders = selectedFolders.slice();
         setItems({ files, folders });
         setTempItems({ tempFiles, tempFolders });
         setSnackOpen({ ...snackOpen, unfavorite: true, favorite: false });
@@ -526,7 +577,13 @@ export default function Files({ menu }) {
     };
     patchData("/api/files/favorites", data)
       .then((data) => {
-        const { files, folders } = { ...data };
+        let { files, folders } = favoriteItems(true);
+        if (tempFiles.length > 0) tempFiles.forEach((file) => files.push(file));
+        if (tempFolders.length > 0)
+          tempFolders.forEach((folder) => folders.push(folder));
+        files = sortFiles(files, sortColumn);
+        folders = sortFolders(folders, sortColumn);
+        setSnackOpen({ ...snackOpen, unfavorite: false });
         setItems({ files, folders });
         setSelectedItems({
           ...selectedItems,
@@ -534,34 +591,6 @@ export default function Files({ menu }) {
           selectedFolders: [],
         });
         setTempItems({ tempFiles: [], tempFolders: [] });
-        setSnackOpen({ ...snackOpen, unfavorite: true });
-      })
-      .catch((err) => console.log("Err", err));
-  };
-
-  const handleHomeUnfavorited = () => {
-    const data = { selectedFolders, selectedFiles };
-    patchData("/api/files/home-undo-favorite", data)
-      .then((data) => {
-        const { files, folders } = { ...data };
-        const tempFiles = selectedFiles.slice();
-        const tempFolders = selectedFolders.slice();
-        setItems({ files, folders });
-        setSelectedItems({ ...selectedItems, isFavorited: false });
-        setTempItems({ tempFiles, tempFolders });
-        setSnackOpen({ ...snackOpen, homeUnfavorite: true, favorite: false });
-      })
-      .catch((err) => console.log("Err", err));
-  };
-
-  const handleHomeUndoUnfavorite = () => {
-    const data = { selectedFolders: tempFolders, selectedFiles: tempFiles };
-    patchData("/api/files/favorites", data)
-      .then((data) => {
-        const { files, folders } = { ...data };
-        setItems({ files, folders });
-        setTempItems({ tempFiles: [], tempFolders: [] });
-        setSnackOpen({ ...snackOpen, homeUnfavorite: false });
       })
       .catch((err) => console.log("Err", err));
   };
@@ -591,8 +620,7 @@ export default function Files({ menu }) {
   };
 
   const handleSingleDownload = (file) => {
-    let id = file.id || file._id;
-    fetch(`/api/files/${id}`)
+    fetch(`/api/files/${file._id}`)
       .then((response) => response.blob())
       .then((blob) => {
         const url = URL.createObjectURL(new Blob([blob]));
@@ -759,6 +787,7 @@ export default function Files({ menu }) {
           <div className={classes.toolbar} />
           {
             <ActionHeader
+              items={items}
               files={items.files}
               folders={items.folders}
               selectedFiles={selectedFiles}

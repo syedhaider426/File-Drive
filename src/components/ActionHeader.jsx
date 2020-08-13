@@ -83,6 +83,7 @@ export default function ActionHeader(props) {
   const location = useLocation();
 
   const {
+    items,
     selectedFolders,
     selectedFiles,
     files,
@@ -178,6 +179,7 @@ export default function ActionHeader(props) {
 
   const moveItem = (
     <MoveItem
+      items={items}
       setItems={setItems}
       setSelectedItems={setSelectedItems}
       selectedFolders={selectedFolders}
