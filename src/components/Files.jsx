@@ -60,6 +60,7 @@ export default function Files({ menu }) {
     favorite: false,
     unfavorite: false,
     homeUnfavorite: false,
+    favoritesTrash: false,
   });
 
   const [sortColumn, setSortColumn] = useState({
@@ -69,7 +70,15 @@ export default function Files({ menu }) {
 
   const { selectedFiles, selectedFolders } = { ...selectedItems };
   const { tempFiles, tempFolders } = { ...tempItems };
-  const { copy, trash, restore, favorite, unfavorite, homeUnfavorite } = {
+  const {
+    copy,
+    trash,
+    restore,
+    favorite,
+    unfavorite,
+    homeUnfavorite,
+    favoritesTrash,
+  } = {
     ...snackOpen,
   };
 
@@ -381,13 +390,41 @@ export default function Files({ menu }) {
     patchData("/api/files/trash", data)
       .then((data) => {
         const { files, folders } = { ...data };
+        const tempFiles = selectedFiles.slice();
+        const tempFolders = selectedFolders.slice();
         setItems({ files, folders });
         setSelectedItems({
           ...selectedItems,
           selectedFiles: [],
           selectedFolders: [],
         });
-        setSnackOpen({ ...snackOpen, trash: true });
+        setTempItems({ tempFiles, tempFolders });
+        setSnackOpen({ ...snackOpen, favoritesTrash: true });
+      })
+      .catch((err) => console.log("Err", err));
+  };
+
+  const handleUndoFavoritesTrash = () => {
+    const data = {
+      selectedFolders: tempFolders,
+      selectedFiles: tempFiles,
+    };
+    patchData("/api/files/selected/restore", data)
+      .then((data) => {
+        const { files, folders } = { ...items };
+        tempFolders.forEach((folder) => {
+          folder._id = folder.id;
+          delete folder.id;
+          folders.push(folder);
+        });
+        tempFiles.forEach((file) => {
+          file._id = file.id;
+          delete file.id;
+          files.push(file);
+        });
+        setSnackOpen({ ...snackOpen, favoritesTrash: false });
+        setItems({ files, folders });
+        setTempItems({ tempFiles: [], tempFolders: [] });
       })
       .catch((err) => console.log("Err", err));
   };
@@ -592,6 +629,10 @@ export default function Files({ menu }) {
     setSnackOpen({ ...snackOpen, homeUnfavorite: false });
   };
 
+  const handleFavoritesTrashSnackClose = () => {
+    setSnackOpen({ ...snackOpen, favoritesTrash: false });
+  };
+
   let filesModified = selectedFiles?.length + selectedFolders?.length;
 
   if (filesModified === 0) {
@@ -616,6 +657,17 @@ export default function Files({ menu }) {
       onClick={handleUndoTrash}
     />
   );
+
+  const favoritesTrashSnack = (
+    <Snack
+      open={favoritesTrash}
+      onClose={handleFavoritesTrashSnackClose}
+      onExited={handleSnackbarExit}
+      message={`Trashed ${filesModified} item(s).`}
+      onClick={handleUndoFavoritesTrash}
+    />
+  );
+
   const favoritesSnack = (
     <Snack
       open={favorite}
@@ -743,6 +795,7 @@ export default function Files({ menu }) {
           {restoreSnack}
           {unfavoriteSnack}
           {homeUnfavoriteSnack}
+          {favoritesTrashSnack}
         </main>
       </div>
     </Fragment>
