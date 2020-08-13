@@ -24,11 +24,10 @@ function RenameFile({
   handleFocus,
   renameFileDialogOpen,
   files,
+  folders,
   selectedFiles,
-  setSelectedItems,
   setRenameFileDialogOpen,
   setItems,
-  items,
 }) {
   const [renamedSnack, setRenamedSnack] = useState(false);
   const [renamedFile, setRenamedFile] = useState("");
@@ -66,7 +65,7 @@ function RenameFile({
         setRenamedFile(oldName);
         setRenamedSnack(true);
         setRenameFileDialogOpen(false);
-        setItems({ ...items, files });
+        setItems({ folders, files });
       })
       .catch((err) => console.log("Err", err));
   };
@@ -85,12 +84,12 @@ function RenameFile({
           }
           return false;
         });
-        const selectFiles = selectedFiles;
-        selectFiles[0].filename = renamedFile;
+
+        selectedFiles[0].filename = renamedFile;
         setRenamedSnack(false);
         setRenamedFile("");
         setFileName("");
-        setSelectedItems({ selectedFolders: [], selectedFiles: selectFiles });
+        setItems({ folders, files });
       })
       .catch((err) => console.log("Err", err));
   };

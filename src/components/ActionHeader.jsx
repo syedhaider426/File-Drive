@@ -201,12 +201,10 @@ export default function ActionHeader(props) {
     <RenameFile
       renameFileDialogOpen={renameFileDialogOpen}
       setItems={setItems}
-      items={items}
-      setSelectedItems={setSelectedItems}
-      setRenameFileDialogOpen={setRenameFileDialogOpen}
       files={files}
       folders={folders}
       selectedFiles={selectedFiles}
+      setRenameFileDialogOpen={setRenameFileDialogOpen}
       handleFocus={handleFocus}
     />
   );
@@ -215,12 +213,10 @@ export default function ActionHeader(props) {
     <RenameFolder
       renameFolderDialogOpen={renameFolderDialogOpen}
       setItems={setItems}
-      items={items}
-      setSelectedItems={setSelectedItems}
-      setRenameFolderDialogOpen={setRenameFolderDialogOpen}
       files={files}
       folders={folders}
       selectedFolders={selectedFolders}
+      setRenameFolderDialogOpen={setRenameFolderDialogOpen}
       handleFocus={handleFocus}
     />
   );
