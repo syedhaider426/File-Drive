@@ -27,9 +27,11 @@ function RenameFile({
   selectedFiles,
   setSelectedItems,
   setRenameFileDialogOpen,
+  setItems,
+  items,
 }) {
   const [renamedSnack, setRenamedSnack] = useState(false);
-  const [renamedFile, setRenamedFile] = useState({});
+  const [renamedFile, setRenamedFile] = useState("");
   const [fileName, setFileName] = useState("");
 
   const handleRenameSnackClose = (event, reason) => {
@@ -47,6 +49,7 @@ function RenameFile({
 
   const handleRenameFile = (e) => {
     e.preventDefault();
+    const oldName = selectedFiles[0].filename;
     const data = {
       id: selectedFiles[0]._id,
       newName: fileName,
@@ -60,18 +63,18 @@ function RenameFile({
           }
           return false;
         });
-        setRenamedFile(selectedFiles[0]);
+        setRenamedFile(oldName);
         setRenamedSnack(true);
         setRenameFileDialogOpen(false);
-        setSelectedItems({ selectedFolders: [], selectedFiles });
+        setItems({ ...items, files });
       })
       .catch((err) => console.log("Err", err));
   };
 
   const handleUndoRenameFile = () => {
     const data = {
-      id: renamedFile.id,
-      newName: renamedFile.filename,
+      id: selectedFiles[0]._id,
+      newName: renamedFile,
     };
     patchData("/api/files/name", data)
       .then((data) => {
@@ -83,9 +86,9 @@ function RenameFile({
           return false;
         });
         const selectFiles = selectedFiles;
-        selectFiles[0].filename = renamedFile.filename;
+        selectFiles[0].filename = renamedFile;
         setRenamedSnack(false);
-        setRenamedFile({});
+        setRenamedFile("");
         setFileName("");
         setSelectedItems({ selectedFolders: [], selectedFiles: selectFiles });
       })
@@ -102,7 +105,7 @@ function RenameFile({
       open={renamedSnack}
       onClose={handleRenameSnackClose}
       onExited={handleSnackbarExit}
-      message={`Renamed "${renamedFile.filename}" to "${fileName}"`}
+      message={`Renamed "${renamedFile}" to "${fileName}"`}
       onClick={handleUndoRenameFile}
     />
   );

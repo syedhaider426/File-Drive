@@ -27,8 +27,10 @@ function RenameFolder({
   selectedFolders,
   setSelectedItems,
   setRenameFolderDialogOpen,
+  setItems,
+  items,
 }) {
-  const [renamedFolder, setRenamedFolder] = useState({});
+  const [renamedFolder, setRenamedFolder] = useState();
   const [renamedSnack, setRenamedSnack] = useState(false);
   const [folderName, setFolderName] = useState("");
 
@@ -48,48 +50,46 @@ function RenameFolder({
     setFolderName(e.target.value);
   };
 
-  const handleRenameFolder = (e) => {
+  const handleRenameFolderr = (e) => {
     e.preventDefault();
+    const oldName = selectedFolders[0].foldername;
     const data = {
       id: selectedFolders[0]._id,
       newName: folderName,
     };
     patchData("/api/folders/name", data)
       .then((data) => {
-        folders.find((o, i, arr) => {
+        folders.forEach((o, i, arr) => {
           if (o._id === selectedFolders[0]._id) {
             arr[i].foldername = folderName;
-            return true;
           }
-          return false;
         });
-        setRenamedFolder(selectedFolders[0]);
         setRenamedSnack(true);
+        setRenamedFolder(oldName);
         setRenameFolderDialogOpen(false);
-        setSelectedItems({ selectedFiles: [], selectedFolders });
+        setItems({ ...items, folders });
       })
       .catch((err) => console.log("Err", err));
   };
 
   const handleUndoRenameFolder = () => {
     const data = {
-      id: renamedFolder.id,
-      newName: renamedFolder.foldername,
+      id: selectedFolders[0]._id,
+      newName: renamedFolder,
     };
     patchData("/api/folders/name", data)
       .then((data) => {
-        folders.find((o, i, arr) => {
+        folders.forEach((o, i, arr) => {
           if (o._id === selectedFolders[0]._id) {
-            arr[i].foldername = selectedFolders[0].foldername;
-            return true;
+            arr[i].foldername = renamedFolder;
           }
-          return false;
         });
         const selectFolders = selectedFolders;
-        selectFolders[0].foldername = renamedFolder.folderName;
-        setRenamedFolder({});
+        selectFolders[0].foldername = renamedFolder;
         setRenamedSnack(false);
+        setRenamedFolder("");
         setFolderName("");
+        setItems({ ...items, folders });
         setSelectedItems({ selectedFiles: [], selectedFolders: selectFolders });
       })
       .catch((err) => console.log("Err", err));
@@ -106,7 +106,7 @@ function RenameFolder({
       open={renamedSnack}
       onClose={handleRenameSnackClose}
       onExited={handleSnackbarExit}
-      message={`Renamed "${renamedFolder.foldername}" to "${folderName}"`}
+      message={`Renamed "${renamedFolder}" to "${folderName}"`}
       onClick={handleUndoRenameFolder}
     />
   );
@@ -126,24 +126,27 @@ function RenameFolder({
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <form onSubmit={handleRenameFolder} method="POST">
-        <DialogContent>
-          <TextField
-            id="folder"
-            defaultValue={defaultValue}
-            onChange={handleFolderOnChange}
-            onFocus={handleFocus}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleRenameFolderClose} color="primary">
-            Cancel
-          </Button>
-          <Button disabled={folderName === ""} color="primary" type="submit">
-            Confirm
-          </Button>
-        </DialogActions>
-      </form>
+      <DialogContent>
+        <TextField
+          id="folder"
+          defaultValue={defaultValue}
+          onChange={handleFolderOnChange}
+          onFocus={handleFocus}
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleRenameFolderClose} color="primary">
+          Cancel
+        </Button>
+        <Button
+          disabled={folderName === ""}
+          color="primary"
+          onClick={handleRenameFolderr}
+          type="submit"
+        >
+          Confirm
+        </Button>
+      </DialogActions>
     </Dialog>
   );
 
