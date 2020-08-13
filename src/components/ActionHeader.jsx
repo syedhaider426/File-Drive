@@ -281,6 +281,7 @@ export default function ActionHeader(props) {
   if (currentFolder !== undefined || currentMenu === "Folder") {
     menu = "1";
   }
+
   return (
     <AppBar position="static" color="transparent" elevation={3}>
       <Toolbar variant="dense">
@@ -335,7 +336,6 @@ export default function ActionHeader(props) {
           <Box fontSize={20}>{currentMenu}</Box>
         )}
         {trashMenu}
-
         <div className={classes.grow} />
         {renameFile}
         {renameFolder}
@@ -355,7 +355,6 @@ export default function ActionHeader(props) {
                 </IconButton>
               </Tooltip>
             )}
-
           {!isFavorited
             ? (selectedFiles.length > 0 || selectedFolders.length > 0) &&
               (currentMenu === "Home" || currentMenu === "Folder") && (

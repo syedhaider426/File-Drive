@@ -59,6 +59,7 @@ export default function Files({ menu }) {
     restore: false,
     favorite: false,
     unfavorite: false,
+    homeUnfavorite: false,
   });
 
   const [sortColumn, setSortColumn] = useState({
@@ -68,7 +69,9 @@ export default function Files({ menu }) {
 
   const { selectedFiles, selectedFolders } = { ...selectedItems };
   const { tempFiles, tempFolders } = { ...tempItems };
-  const { copy, trash, restore, favorite, unfavorite } = { ...snackOpen };
+  const { copy, trash, restore, favorite, unfavorite, homeUnfavorite } = {
+    ...snackOpen,
+  };
 
   const getFilesFolders = async () => {
     try {
@@ -351,6 +354,7 @@ export default function Files({ menu }) {
           selectedFiles: [],
         });
         setTempItems({ tempFiles, tempFolders });
+        setSnackOpen({ ...snackOpen, trash: true });
       })
       .catch((err) => console.log("Err", err));
   };
@@ -362,8 +366,8 @@ export default function Files({ menu }) {
       .then((data) => {
         const { files, folders } = { ...data };
         setItems({ files, folders });
+        setSnackOpen({ ...snackOpen, trash: false });
         setTempItems({ tempFiles: [], tempFolders: [] });
-        setSnackOpen({ ...snackOpen, trash: true });
       })
       .catch((err) => console.log("Err", err));
   };
@@ -399,6 +403,7 @@ export default function Files({ menu }) {
         //Slice will clone the array and return reference to new array
         const tempFiles = selectedFiles.slice();
         const tempFolders = selectedFolders.slice();
+        setSnackOpen({ ...snackOpen, restore: true });
         setItems({ files, folders });
         setSelectedItems({
           ...selectedItems,
@@ -406,7 +411,6 @@ export default function Files({ menu }) {
           selectedFiles: [],
         });
         setTempItems({ tempFiles, tempFolders });
-        setSnackOpen({ ...snackOpen, restore: true });
       })
       .catch((err) => console.log("Err", err));
   };
@@ -421,9 +425,9 @@ export default function Files({ menu }) {
     patchData(`/api/files/trash`, data)
       .then((data) => {
         const { files, folders } = { ...data };
+        setSnackOpen({ ...snackOpen, restore: false });
         setItems({ files, folders });
         setTempItems({ tempFiles: [], tempFolders: [] });
-        setSnackOpen({ ...snackOpen, restore: false });
       })
       .catch((err) => console.log("Err", err));
   };
@@ -441,8 +445,9 @@ export default function Files({ menu }) {
         const tempFiles = selectedFiles.slice();
         const tempFolders = selectedFolders.slice();
         setItems({ files, folders });
+        setSelectedItems({ ...selectedItems, isFavorited: true });
         setTempItems({ tempFiles, tempFolders });
-        setSnackOpen({ ...snackOpen, favorite: true });
+        setSnackOpen({ ...snackOpen, favorite: true, unfavorite: false });
       })
       .catch((err) => console.log("Err", err));
   };
@@ -470,7 +475,7 @@ export default function Files({ menu }) {
         const { files, folders } = { ...data };
         setItems({ files, folders });
         setTempItems({ tempFiles, tempFolders });
-        setSnackOpen({ ...snackOpen, unfavorite: true });
+        setSnackOpen({ ...snackOpen, unfavorite: true, favorite: false });
       })
       .catch((err) => console.log("Err", err));
   };
@@ -502,12 +507,28 @@ export default function Files({ menu }) {
     patchData("/api/files/home-undo-favorite", data)
       .then((data) => {
         const { files, folders } = { ...data };
+        const tempFiles = selectedFiles.slice();
+        const tempFolders = selectedFolders.slice();
         setItems({ files, folders });
         setSelectedItems({ ...selectedItems, isFavorited: false });
-        setSnackOpen({ ...snackOpen, unfavorite: true });
+        setTempItems({ tempFiles, tempFolders });
+        setSnackOpen({ ...snackOpen, homeUnfavorite: true, favorite: false });
       })
       .catch((err) => console.log("Err", err));
   };
+
+  const handleHomeUndoUnfavorite = () => {
+    const data = { selectedFolders: tempFolders, selectedFiles: tempFiles };
+    patchData("/api/files/favorites", data)
+      .then((data) => {
+        const { files, folders } = { ...data };
+        setItems({ files, folders });
+        setTempItems({ tempFiles: [], tempFolders: [] });
+        setSnackOpen({ ...snackOpen, homeUnfavorite: false });
+      })
+      .catch((err) => console.log("Err", err));
+  };
+
   const handleDeleteForever = () => {
     const data = { selectedFolders, selectedFiles };
     deleteData("/api/files/selected", data)
@@ -566,8 +587,16 @@ export default function Files({ menu }) {
   const handleUnFavoriteSnackClose = () => {
     setSnackOpen({ ...snackOpen, unfavorite: false });
   };
-  const filesModified = selectedFiles?.length + selectedFolders?.length;
 
+  const handleHomeUnFavoriteSnackClose = () => {
+    setSnackOpen({ ...snackOpen, homeUnfavorite: false });
+  };
+
+  let filesModified = selectedFiles?.length + selectedFolders?.length;
+
+  if (filesModified === 0) {
+    filesModified = tempFiles?.length + tempFolders?.length;
+  }
   const copySnack = (
     <Snack
       open={copy}
@@ -614,6 +643,16 @@ export default function Files({ menu }) {
       onExited={handleSnackbarExit}
       message={`Unfavorited ${filesModified} item(s).`}
       onClick={handleUndoUnfavorite}
+    />
+  );
+
+  const homeUnfavoriteSnack = (
+    <Snack
+      open={homeUnfavorite}
+      onClose={handleHomeUnFavoriteSnackClose}
+      onExited={handleSnackbarExit}
+      message={`Unfavorited ${filesModified} item(s).`}
+      onClick={handleHomeUndoUnfavorite}
     />
   );
 
@@ -703,6 +742,7 @@ export default function Files({ menu }) {
           {favoritesSnack}
           {restoreSnack}
           {unfavoriteSnack}
+          {homeUnfavoriteSnack}
         </main>
       </div>
     </Fragment>

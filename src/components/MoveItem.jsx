@@ -194,7 +194,6 @@ function MoveItem({
     />
   );
   const classes = useStyles();
-  console.log("move render");
   const moveFileDialog = (
     <Dialog
       open={moveMenuOpen ? true : false}
