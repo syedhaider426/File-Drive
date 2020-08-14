@@ -157,4 +157,4 @@ function RenameFile({
   );
 }
 
-export default React.memo(RenameFile);
+export default RenameFile;

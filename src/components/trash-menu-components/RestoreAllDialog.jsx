@@ -19,8 +19,7 @@ const RestoreAllDialog = ({
     patchData("/api/files/all/restore")
       .then((data) => {
         document.body.style.cursor = "default";
-        const { files, folders } = { ...data };
-        setItems({ files, folders });
+        setItems({ files: [], folders: [] });
         setRestoreAllOpen(false);
       })
       .catch((err) => console.log("Err", err));

@@ -267,4 +267,4 @@ function MoveItem({
   );
 }
 
-export default React.memo(MoveItem);
+export default MoveItem;

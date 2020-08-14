@@ -19,8 +19,7 @@ const DeleteAllDialog = ({
     deleteData("/api/files/all")
       .then((data) => {
         document.body.style.cursor = "default";
-        const { files, folders } = { ...data };
-        setItems({ files, folders });
+        setItems({ files: [], folders: [] });
         setDeleteAllOpen(false);
       })
       .catch((err) => console.log("Err", err));

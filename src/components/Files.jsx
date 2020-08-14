@@ -124,7 +124,7 @@ export default function Files({ menu }) {
     if (selectedFiles.length > 0) {
       let fileidList = [];
       selectedFiles.forEach((file) => fileidList.push(file._id));
-      files = items.files.filter((file) => !fileidList.includes(file._id));
+      files = files.filter((file) => !fileidList.includes(file._id));
     }
     return { files, folders };
   };
@@ -385,6 +385,7 @@ export default function Files({ menu }) {
         });
         setTempItems({ tempFiles, tempFolders });
         setSnackOpen({ ...snackOpen, trash: true });
+        document.body.style.cursor = "default";
       })
       .catch((err) => console.log("Err", err));
   };
@@ -421,6 +422,7 @@ export default function Files({ menu }) {
         });
         setTempItems({ tempFiles, tempFolders });
         setSnackOpen({ ...snackOpen, favoritesTrash: true });
+        document.body.style.cursor = "default";
       })
       .catch((err) => console.log("Err", err));
   };
@@ -459,6 +461,7 @@ export default function Files({ menu }) {
           selectedFiles: [],
         });
         setTempItems({ tempFiles, tempFolders });
+        document.body.style.cursor = "default";
       })
       .catch((err) => console.log("Err", err));
   };
@@ -476,6 +479,7 @@ export default function Files({ menu }) {
         setSnackOpen({ ...snackOpen, restore: false });
         setItems({ files, folders });
         setTempItems({ tempFiles: [], tempFolders: [] });
+        document.body.style.cursor = "default";
       })
       .catch((err) => console.log("Err", err));
   };
@@ -496,6 +500,7 @@ export default function Files({ menu }) {
         setSelectedItems({ ...selectedItems, isFavorited: true });
         setTempItems({ tempFiles, tempFolders });
         setSnackOpen({ ...snackOpen, favorite: true, homeUnfavorite: false });
+        document.body.style.cursor = "default";
       })
       .catch((err) => console.log("Err", err));
   };

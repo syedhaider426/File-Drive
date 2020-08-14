@@ -156,4 +156,4 @@ function RenameFolder({
   );
 }
 
-export default React.memo(RenameFolder);
+export default RenameFolder;
