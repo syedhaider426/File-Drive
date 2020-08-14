@@ -327,7 +327,7 @@ export default function Files({ menu }) {
     let urlParam = "";
     if (location.pathname !== "/drive/home") urlParam = `/${params.folder}`;
     const data = { selectedFiles };
-    document.body.style.cursor = "wait";
+
     postData(`/api/files/copy${urlParam}`, data)
       .then((data) => {
         const { files } = { ...items };
@@ -340,7 +340,6 @@ export default function Files({ menu }) {
         setSelectedItems({ ...selectedItems, selectedFiles: data.files });
         setTempItems({ ...tempItems, tempFiles }); //Reference to selected files (if user chooses to undo, reference the tempfiles)
         setSnackOpen({ ...snackOpen, copy: true });
-        document.body.style.cursor = "default";
       })
       .catch((err) => console.log("Err", err));
   };
@@ -385,7 +384,6 @@ export default function Files({ menu }) {
         });
         setTempItems({ tempFiles, tempFolders });
         setSnackOpen({ ...snackOpen, trash: true });
-        document.body.style.cursor = "default";
       })
       .catch((err) => console.log("Err", err));
   };
@@ -422,7 +420,6 @@ export default function Files({ menu }) {
         });
         setTempItems({ tempFiles, tempFolders });
         setSnackOpen({ ...snackOpen, favoritesTrash: true });
-        document.body.style.cursor = "default";
       })
       .catch((err) => console.log("Err", err));
   };
@@ -461,7 +458,6 @@ export default function Files({ menu }) {
           selectedFiles: [],
         });
         setTempItems({ tempFiles, tempFolders });
-        document.body.style.cursor = "default";
       })
       .catch((err) => console.log("Err", err));
   };
@@ -479,7 +475,6 @@ export default function Files({ menu }) {
         setSnackOpen({ ...snackOpen, restore: false });
         setItems({ files, folders });
         setTempItems({ tempFiles: [], tempFolders: [] });
-        document.body.style.cursor = "default";
       })
       .catch((err) => console.log("Err", err));
   };
@@ -500,7 +495,6 @@ export default function Files({ menu }) {
         setSelectedItems({ ...selectedItems, isFavorited: true });
         setTempItems({ tempFiles, tempFolders });
         setSnackOpen({ ...snackOpen, favorite: true, homeUnfavorite: false });
-        document.body.style.cursor = "default";
       })
       .catch((err) => console.log("Err", err));
   };
