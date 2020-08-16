@@ -74,8 +74,9 @@ function Actions({ setItems, setSelectedItems, items, menu }) {
     const folderId = params.folder ? `/${params.folder}` : "";
     postData(`/api/folders${folderId}`, data)
       .then((data) => {
-        const { folders, newFolder } = { ...data };
-
+        const { newFolder } = { ...data };
+        const { folders } = { ...items };
+        folders.push(newFolder);
         setNewFolderOpen(false);
         setItems({ ...items, folders });
         setSelectedItems({ selectedFiles: [], selectedFolders: newFolder });
