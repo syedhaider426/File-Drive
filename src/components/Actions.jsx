@@ -76,7 +76,7 @@ function Actions({ setItems, setSelectedItems, items, menu }) {
       .then((data) => {
         const { newFolder } = { ...data };
         const { folders } = { ...items };
-        folders.push(newFolder);
+        folders.push(newFolder[0]);
         setNewFolderOpen(false);
         setItems({ ...items, folders });
         setSelectedItems({ selectedFiles: [], selectedFolders: newFolder });
