@@ -9,6 +9,8 @@ import SearchIcon from "@material-ui/icons/Search";
 import FileIcon from "@material-ui/icons/InsertDriveFile";
 import FolderIcon from "@material-ui/icons/Folder";
 import Axios from "axios";
+import Button from "@material-ui/core/Button";
+import { FormHelperText } from "@material-ui/core";
 
 const drawerWidth = 150;
 
@@ -32,6 +34,17 @@ const useStyles = makeStyles((theme) => ({
     marginRight: theme.spacing(2),
     [theme.breakpoints.up("sm")]: {
       display: "none",
+    },
+  },
+  search: {
+    backgroundColor: "white",
+  },
+  inputRoot: {
+    "& .MuiOutlinedInput-notchedOutline": {
+      borderColor: "white",
+    },
+    "&:hover .MuiOutlinedInput-notchedOutline": {
+      borderColor: "white",
     },
   },
   // necessary for content to be below app bar
@@ -108,12 +121,20 @@ function AutoComplete({
   return (
     <Fragment>
       <Autocomplete
-        id="combo-box-demo"
+        id="autcomplete"
         options={options}
         getOptionLabel={(option) => option.item}
         style={{ width: 300 }}
         renderInput={(params) => (
-          <TextField {...params} label="Search..." variant="outlined" />
+          <Fragment>
+            <TextField
+              {...params}
+              className={classes.search}
+              size="small"
+              placeholder="Search..."
+              variant="outlined"
+            />
+          </Fragment>
         )}
         renderOption={(option) => {
           return (
@@ -134,7 +155,14 @@ function AutoComplete({
         }}
         onChange={(e, v) => handleAutoComplete(e, v)}
       />
-      <IconButton disabled={buttonDisabled} onClick={handleSubmit}>
+
+      <IconButton
+        style={{ color: "white", backgroundColor: "blue" }}
+        size="medium"
+        edge="start"
+        disabled={buttonDisabled}
+        onClick={handleSubmit}
+      >
         <SearchIcon />
       </IconButton>
     </Fragment>

@@ -46,6 +46,11 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
     padding: theme.spacing(1),
   },
+  title: {
+    [theme.breakpoints.down("xs")]: {
+      display: "none",
+    },
+  },
   centeredContent: {
     display: "flex",
     alignItems: "center",
@@ -127,6 +132,7 @@ function Header({
               <Link
                 to="/drive/home"
                 style={{ textDecoration: "none", color: "white" }}
+                className={classes.title}
               >
                 G-Drive
               </Link>
