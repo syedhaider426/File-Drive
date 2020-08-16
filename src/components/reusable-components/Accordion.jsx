@@ -8,6 +8,7 @@ import Snackbar from "@material-ui/core/Snackbar";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import CheckCircleOutlineIcon from "@material-ui/icons/CheckCircleOutline";
 import CloseIcon from "@material-ui/icons/Close";
+import { IconButton } from "@material-ui/core";
 
 const Accordion = withStyles({
   root: {
@@ -53,6 +54,7 @@ const AccordionDetails = withStyles((theme) => ({
 
 export default function CustomizedAccordions({
   accordionOpen,
+  handleCloseAccordion,
   uploadFiles,
   accordionMsg,
   filesStatus,
@@ -91,6 +93,9 @@ export default function CustomizedAccordions({
               {accordionMsg}
               {!filesStatus ? <CircularProgress /> : <CheckCircleOutlineIcon />}
             </Typography>
+            <IconButton onClick={handleCloseAccordion}>
+              <CloseIcon style={{ color: "white" }} />
+            </IconButton>
           </AccordionSummary>
           {uploadFiles?.map((file) => (
             <AccordionDetails key={file}>

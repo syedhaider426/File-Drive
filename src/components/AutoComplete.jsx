@@ -9,8 +9,9 @@ import SearchIcon from "@material-ui/icons/Search";
 import FileIcon from "@material-ui/icons/InsertDriveFile";
 import FolderIcon from "@material-ui/icons/Folder";
 import Axios from "axios";
-import Button from "@material-ui/core/Button";
-import { FormHelperText } from "@material-ui/core";
+import sortFiles from "../helpers/sortFiles";
+import sortFolders from "../helpers/sortFolders";
+import getData from "../helpers/getData";
 
 const drawerWidth = 150;
 
@@ -63,37 +64,47 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function AutoComplete({
-  setFileData,
-  setContentType,
-  setFileModalOpen,
-  files,
-  folders,
-}) {
+function AutoComplete({ setFileData, setContentType, setFileModalOpen }) {
   const [itemID, setItemID] = useState("");
   const [buttonDisabled, setButtonDisabled] = useState(true);
   const [options, setOptions] = useState([]);
+
   const history = useHistory();
 
-  useEffect(() => {
-    let options = [];
-    folders.forEach((folder) => {
-      options.push({
-        _id: folder._id,
-        item: folder.foldername,
-        foldername: folder.foldername,
+  const fetchData = () => {
+    getData(`/api/drive/all`).then((data) => {
+      let { files, folders } = { ...data };
+      files = sortFiles(files, {
+        name: "Name",
+        order: "asc",
       });
-    });
+      folders = sortFolders(folders, {
+        name: "Name",
+        order: "asc",
+      });
+      let options = [];
+      folders.forEach((folder) => {
+        options.push({
+          _id: folder._id,
+          item: folder.foldername,
+          foldername: folder.foldername,
+        });
+      });
 
-    files.forEach((file) => {
-      options.push({
-        _id: file._id,
-        item: file.filename,
-        filename: file.filename,
+      files.forEach((file) => {
+        options.push({
+          _id: file._id,
+          item: file.filename,
+          filename: file.filename,
+        });
       });
+      setOptions(options);
     });
-    setOptions(options);
-  }, [files, folders]);
+  };
+
+  useEffect(() => {
+    (async () => await fetchData())();
+  }, [options]);
 
   const handleAutoComplete = (e, value) => {
     if (value === null) {

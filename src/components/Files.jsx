@@ -109,7 +109,7 @@ export default function Files({ menu }) {
     let filesList = sortFiles(items?.files, sortColumn);
     let foldersList = sortFolders(items?.folders, sortColumn);
     setItems({ files: filesList, folders: foldersList });
-  }, [items?.files, items?.folders]);
+  }, [items?.folders]);
 
   const filterItems = () => {
     let folders = items.folders.slice();

@@ -70,6 +70,10 @@ function Actions({
     }
   };
 
+  const handleCloseAccordion = () => {
+    setAccordionOpen(false);
+  };
+
   const handleFileUploadOpen = () => {
     setMenuOpen(false);
     document.getElementById("upload-file").click();
@@ -245,6 +249,7 @@ function Actions({
         uploadFiles={uploadFiles}
         accordionMsg={accordionMsg}
         filesStatus={filesStatus}
+        handleCloseAccordion={handleCloseAccordion}
       />
     </Fragment>
   );
