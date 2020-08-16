@@ -173,7 +173,6 @@ export default function ActionHeader(props) {
   };
 
   const handleMobileMenuClose = () => {
-    setMoveMenuOpen(true);
     setMobileMenuOpen(false);
   };
 
