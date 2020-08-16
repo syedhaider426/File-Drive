@@ -97,17 +97,22 @@ export default function ActionHeader(props) {
     ...props,
   };
 
+  const closeMobileMenu = () => {
+    if (isMobileMenuOpen) setMobileMenuOpen(false);
+  };
+
   const handleRenameFileOpen = () => {
-    setMobileMenuOpen(false);
+    closeMobileMenu();
     setRenameFileDialogOpen(true);
   };
 
   const handleRenameFolderOpen = () => {
-    setMobileMenuOpen(false);
+    closeMobileMenu();
     setRenameFolderDialogOpen(true);
   };
 
   const handleMove = (e) => {
+    closeMobileMenu();
     const urlMove = location.pathname === "/drive/home" ? "" : "?move=true";
     getData(`/api${location.pathname}${urlMove}`).then((data) => {
       const { folders, moveTitleFolder } = { ...data };
@@ -252,6 +257,7 @@ export default function ActionHeader(props) {
   const classes = useStyles();
   const renderMobileMenu = (
     <MobileMenu
+      closeMobileMenu={closeMobileMenu}
       selectedFiles={selectedFiles}
       selectedFolders={selectedFolders}
       mobileAnchorEl={mobileAnchorEl}

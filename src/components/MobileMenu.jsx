@@ -33,6 +33,7 @@ export default function MobileMenu({
   handleFavoritesTrash,
   handleRestore,
   handleDeleteForever,
+  closeMobileMenu,
 }) {
   const renderMobileMenu = (
     <Menu
@@ -46,7 +47,13 @@ export default function MobileMenu({
     >
       {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
         currentMenu !== "Trash" && (
-          <MenuItem className={classes.menuItem} onClick={handleMove}>
+          <MenuItem
+            className={classes.menuItem}
+            onClick={() => {
+              closeMobileMenu();
+              handleMove();
+            }}
+          >
             <Tooltip title="Move To">
               <IconButton style={{ color: "gray" }} aria-label="Move To">
                 <MoveToInboxIcon />
@@ -58,7 +65,13 @@ export default function MobileMenu({
       {!isFavorited
         ? (selectedFiles.length > 0 || selectedFolders.length > 0) &&
           (currentMenu === "Home" || currentMenu === "Folder") && (
-            <MenuItem className={classes.menuItem} onClick={handleFavorites}>
+            <MenuItem
+              className={classes.menuItem}
+              onClick={() => {
+                closeMobileMenu();
+                handleFavorites();
+              }}
+            >
               <Tooltip title="Add to Favorites">
                 <IconButton
                   style={{ color: "gray" }}
@@ -74,7 +87,10 @@ export default function MobileMenu({
           (currentMenu === "Home" || currentMenu === "Folder") && (
             <MenuItem
               className={classes.menuItem}
-              onClick={handleHomeUnfavorited}
+              onClick={() => {
+                closeMobileMenu();
+                handleHomeUnfavorited();
+              }}
             >
               <Tooltip title="Remove from Favorites">
                 <IconButton
@@ -111,7 +127,13 @@ export default function MobileMenu({
       {selectedFiles.length >= 1 &&
         selectedFolders.length === 0 &&
         currentMenu !== "Trash" && (
-          <MenuItem className={classes.menuItem} onClick={handleFileCopy}>
+          <MenuItem
+            className={classes.menuItem}
+            onClick={() => {
+              closeMobileMenu();
+              handleFileCopy();
+            }}
+          >
             <Tooltip title="Make a Copy">
               <IconButton style={{ color: "gray" }} aria-label="Make a Copy">
                 <FileCopyIcon />
@@ -122,7 +144,13 @@ export default function MobileMenu({
         )}
       {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
         currentMenu === "Favorites" && (
-          <MenuItem className={classes.menuItem} onClick={handleUnfavorited}>
+          <MenuItem
+            className={classes.menuItem}
+            onClick={() => {
+              closeMobileMenu();
+              handleUnfavorited();
+            }}
+          >
             <Tooltip title="Remove from Favorites">
               <IconButton
                 style={{ color: "gray" }}
@@ -152,7 +180,13 @@ export default function MobileMenu({
         )}
       {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
         (currentMenu === "Home" || currentMenu === "Folder") && (
-          <MenuItem className={classes.menuItem} onClick={handleTrash}>
+          <MenuItem
+            className={classes.menuItem}
+            onClick={() => {
+              closeMobileMenu();
+              handleTrash();
+            }}
+          >
             <Tooltip title="Trash">
               <IconButton style={{ color: "gray" }} aria-label="Trash">
                 <DeleteIcon />
@@ -163,7 +197,13 @@ export default function MobileMenu({
         )}
       {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
         currentMenu === "Favorites" && (
-          <MenuItem className={classes.menuItem} onClick={handleFavoritesTrash}>
+          <MenuItem
+            className={classes.menuItem}
+            onClick={() => {
+              closeMobileMenu();
+              handleFavoritesTrash();
+            }}
+          >
             <Tooltip title="Trash">
               <IconButton style={{ color: "gray" }} aria-label="Trash">
                 <DeleteIcon />
@@ -175,7 +215,12 @@ export default function MobileMenu({
       {(selectedFiles.length > 0 || selectedFolders.length > 0) &&
         currentMenu === "Trash" && (
           <div>
-            <MenuItem onClick={handleRestore}>
+            <MenuItem
+              onClick={() => {
+                closeMobileMenu();
+                handleRestore();
+              }}
+            >
               <Tooltip title="Restore from trash">
                 <IconButton
                   style={{ color: "gray" }}
@@ -186,7 +231,12 @@ export default function MobileMenu({
               </Tooltip>
               Restore from trash
             </MenuItem>
-            <MenuItem onClick={handleDeleteForever}>
+            <MenuItem
+              onClick={() => {
+                closeMobileMenu();
+                handleDeleteForever();
+              }}
+            >
               <Tooltip title="Delete forever">
                 <IconButton
                   style={{ color: "gray" }}
