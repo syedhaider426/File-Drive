@@ -58,6 +58,8 @@ function Header({
   setFileData,
   setFileModalOpen,
   setContentType,
+  files,
+  folders,
 }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [profileAnchorEl, setProfileAnchorEl] = useState(undefined);
@@ -135,6 +137,8 @@ function Header({
           {loc && (
             <Fragment>
               <AutoComplete
+                files={files}
+                folders={folders}
                 setFileData={setFileData}
                 setFileModalOpen={setFileModalOpen}
                 setContentType={setContentType}

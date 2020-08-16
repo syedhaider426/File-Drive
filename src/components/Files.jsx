@@ -771,6 +771,8 @@ export default function Files({ menu }) {
       <div className={classes.root}>
         <CssBaseline />
         <Header
+          files={items.files}
+          folders={items.folders}
           setFileData={setFileData}
           setFileModalOpen={setFileModalOpen}
           setContentType={setContentType}

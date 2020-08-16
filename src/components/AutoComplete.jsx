@@ -2,13 +2,12 @@ import React, { Fragment, useState, useEffect } from "react";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
-import { useHistory, useLocation } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import TextField from "@material-ui/core/TextField";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import SearchIcon from "@material-ui/icons/Search";
 import FileIcon from "@material-ui/icons/InsertDriveFile";
 import FolderIcon from "@material-ui/icons/Folder";
-import getData from "../helpers/getData";
 import Axios from "axios";
 
 const drawerWidth = 150;
@@ -51,23 +50,37 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function AutoComplete({ setFileData, setContentType, setFileModalOpen }) {
+function AutoComplete({
+  setFileData,
+  setContentType,
+  setFileModalOpen,
+  files,
+  folders,
+}) {
   const [itemID, setItemID] = useState("");
   const [buttonDisabled, setButtonDisabled] = useState(true);
-  const [files, setFiles] = useState([]);
-  const [folders, setFolders] = useState([]);
+  const [options, setOptions] = useState([]);
   const history = useHistory();
-  const location = useLocation();
 
-  const fetchFilesFolders = () => {
-    getData(`/api${location.pathname}`)
-      .then((data) => {
-        sortAlphabetically(data.files, data.folders);
-      })
-      .catch((err) => console.log("Err", err));
-  };
+  useEffect(() => {
+    let options = [];
+    folders.forEach((folder) => {
+      options.push({
+        _id: folder._id,
+        item: folder.foldername,
+        foldername: folder.foldername,
+      });
+    });
 
-  useEffect(fetchFilesFolders, []);
+    files.forEach((file) => {
+      options.push({
+        _id: file._id,
+        item: file.filename,
+        filename: file.filename,
+      });
+    });
+    setOptions(options);
+  }, [files, folders]);
 
   const handleAutoComplete = (e, value) => {
     if (value === null) {
@@ -80,12 +93,10 @@ function AutoComplete({ setFileData, setContentType, setFileModalOpen }) {
   };
 
   const handleSubmit = () => {
-    document.body.style.cursor = "wait";
     if (itemID.foldername !== undefined)
       history.push(`/drive/folders/${itemID._id}`);
     else if (itemID.filename !== undefined) {
       Axios.get(`/api/files/${itemID._id}`).then((d) => {
-        document.body.style.cursor = "default";
         setFileData(`/api/files/${itemID._id}`);
         setContentType(d.headers["content-type"]);
         setFileModalOpen(true);
@@ -93,45 +104,7 @@ function AutoComplete({ setFileData, setContentType, setFileModalOpen }) {
     }
   };
 
-  const sortAlphabetically = (files, folders) => {
-    files.sort((a, b) => {
-      /* Storing case insensitive comparison */
-      var comparison = a.filename
-        .toString()
-        .toLowerCase()
-        .localeCompare(b.filename.toString().toLowerCase());
-      return comparison;
-    });
-    folders.sort((a, b) => {
-      /* Storing case insensitive comparison */
-      var comparison = a.foldername
-        .toString()
-        .toLowerCase()
-        .localeCompare(b.foldername.toString().toLowerCase());
-      return comparison;
-    });
-    setFiles(files);
-    setFolders(folders);
-  };
-
-  let options = [];
-  folders.forEach((folder) => {
-    options.push({
-      _id: folder._id,
-      item: folder.foldername,
-      foldername: folder.foldername,
-    });
-  });
-  files.forEach((file) => {
-    options.push({
-      _id: file._id,
-      item: file.filename,
-      filename: file.filename,
-    });
-  });
-
   const classes = useStyles();
-
   return (
     <Fragment>
       <Autocomplete
