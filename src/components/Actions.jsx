@@ -24,7 +24,14 @@ import FileIcon from "@material-ui/icons/InsertDriveFile";
 import CustomizedAccordions from "./reusable-components/Accordion";
 import Axios from "axios";
 
-function Actions({ setItems, setSelectedItems, items, menu }) {
+function Actions({
+  setItems,
+  setSelectedItems,
+  items,
+  menu,
+  drawerMobileOpen,
+  setDrawerMobileOpen,
+}) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [newFolderOpen, setNewFolderOpen] = useState(false);
   const [folder, setFolder] = useState("");
@@ -77,6 +84,7 @@ function Actions({ setItems, setSelectedItems, items, menu }) {
         const { newFolder } = { ...data };
         const { folders } = { ...items };
         folders.push(newFolder[0]);
+        if (drawerMobileOpen) setDrawerMobileOpen(false);
         setNewFolderOpen(false);
         setItems({ ...items, folders });
         setSelectedItems({ selectedFiles: [], selectedFolders: newFolder });
@@ -108,6 +116,7 @@ function Actions({ setItems, setSelectedItems, items, menu }) {
       .then((d) => {
         const { data } = { ...d };
         const { files, uploadedFiles } = { ...data };
+        if (drawerMobileOpen) setDrawerMobileOpen(false);
         setMenuOpen(false);
         setFilesStatus(true);
         setAccordionMsg(

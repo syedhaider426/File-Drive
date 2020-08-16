@@ -741,6 +741,8 @@ export default function Files({ menu }) {
       setSelectedItems={setSelectedItems}
       items={items}
       menu={menu}
+      drawerMobileOpen={drawerMobileOpen}
+      setDrawerMobileOpen={setDrawerMobileOpen}
     />
   );
 
