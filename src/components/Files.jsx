@@ -107,13 +107,6 @@ export default function Files({ menu }) {
     (async () => await getFilesFolders())();
   }, [location.pathname]);
 
-  useEffect(() => {
-    const { files, folders } = { ...items };
-    let filesList = sortFiles(files, sortColumn);
-    let foldersList = sortFolders(folders, sortColumn);
-    setItems({ files: filesList, folders: foldersList });
-  }, [items?.files, items?.folders]);
-
   const filterItems = () => {
     let folders = items.folders.slice();
     let files = items.files.slice();
@@ -747,6 +740,7 @@ export default function Files({ menu }) {
       menu={menu}
       drawerMobileOpen={drawerMobileOpen}
       setDrawerMobileOpen={setDrawerMobileOpen}
+      sortColumn={sortColumn}
     />
   );
 
@@ -779,6 +773,7 @@ export default function Files({ menu }) {
         <Header
           files={items.files}
           folders={items.folders}
+          items={items}
           setFileData={setFileData}
           setFileModalOpen={setFileModalOpen}
           setContentType={setContentType}

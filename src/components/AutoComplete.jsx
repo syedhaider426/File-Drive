@@ -64,7 +64,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function AutoComplete({ setFileData, setContentType, setFileModalOpen }) {
+function AutoComplete({
+  setFileData,
+  setContentType,
+  setFileModalOpen,
+  items,
+}) {
   const [itemID, setItemID] = useState("");
   const [buttonDisabled, setButtonDisabled] = useState(true);
   const [options, setOptions] = useState([]);
@@ -90,7 +95,6 @@ function AutoComplete({ setFileData, setContentType, setFileModalOpen }) {
           foldername: folder.foldername,
         });
       });
-
       files.forEach((file) => {
         options.push({
           _id: file._id,
@@ -102,9 +106,9 @@ function AutoComplete({ setFileData, setContentType, setFileModalOpen }) {
     });
   };
 
-  // useEffect(() => {
-  //   (async () => await fetchData())();
-  // }, [options]);
+  useEffect(() => {
+    (async () => await fetchData())();
+  }, [items]);
 
   const handleAutoComplete = (e, value) => {
     if (value === null) {

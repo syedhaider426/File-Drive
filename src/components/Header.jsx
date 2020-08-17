@@ -65,6 +65,7 @@ function Header({
   setContentType,
   files,
   folders,
+  items,
 }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [profileAnchorEl, setProfileAnchorEl] = useState(undefined);
@@ -148,6 +149,7 @@ function Header({
                 setFileData={setFileData}
                 setFileModalOpen={setFileModalOpen}
                 setContentType={setContentType}
+                items={items}
               />
               <IconButton
                 edge="end"

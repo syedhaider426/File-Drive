@@ -23,6 +23,8 @@ import CreateNewFolderOutlinedIcon from "@material-ui/icons/CreateNewFolderOutli
 import FileIcon from "@material-ui/icons/InsertDriveFile";
 import CustomizedAccordions from "./reusable-components/Accordion";
 import Axios from "axios";
+import sortFolders from "../helpers/sortFolders";
+import sortFiles from "../helpers/sortFiles";
 
 function Actions({
   setItems,
@@ -31,6 +33,7 @@ function Actions({
   menu,
   drawerMobileOpen,
   setDrawerMobileOpen,
+  sortColumn,
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [newFolderOpen, setNewFolderOpen] = useState(false);
@@ -90,9 +93,14 @@ function Actions({
         folders.push(newFolder[0]);
         if (drawerMobileOpen) setDrawerMobileOpen(false);
         setNewFolderOpen(false);
-        setItems({ ...items, folders });
+        let sortedFolders = sortFolders(folders, sortColumn);
+        setItems({ ...items, folders: sortedFolders });
         setSelectedItems({ selectedFiles: [], selectedFolders: newFolder });
-        if (location.pathname !== "/drive/home") history.push("/drive/home");
+        if (
+          location.pathname !== "/drive/home" &&
+          !location.pathname.startsWith("/drive/folders")
+        )
+          history.push("/drive/home");
       })
       .catch((err) => console.log("Err", err));
   };
@@ -126,7 +134,8 @@ function Actions({
         setAccordionMsg(
           `Uploaded ${uploadedFiles.length} file${files.length > 1 ? "s" : ""}`
         );
-        setItems({ ...items, files });
+        let sortedFiles = sortFiles(files, sortColumn);
+        setItems({ ...items, files: sortedFiles });
         setSelectedItems({ selectedFiles: uploadedFiles, selectedFolders: [] });
         if (location.pathname !== "/drive/home") history.push("/drive/home");
       })
