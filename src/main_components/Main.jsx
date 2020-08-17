@@ -35,17 +35,17 @@ const Main = () => {
         <Route path="/register">
           <Register />
         </Route>
+        <Route path="/registration-confirmation">
+          <Confirmation
+            message={
+              "Thank you for verifiying your email. You can now login to your account."
+            }
+          />
+        </Route>
         <Route path="/confirmRegistration">
           <Confirmation
             message={
               "Thank you for registering your account. Please check your email to confirm your account."
-            }
-          />
-        </Route>
-        <Route path="/confirmed-registration">
-          <Confirmation
-            message={
-              "Thank you for verifiying your email. You can now login to your account."
             }
           />
         </Route>

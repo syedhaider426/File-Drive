@@ -48,6 +48,7 @@ export default function Register() {
     confirmPassword: "",
   });
   const [registerError, setRegisterError] = useState("");
+  const [disabledButton, setDisabledButton] = useState(false);
   let history = useHistory();
 
   const handleEmailChange = ({ target }) => {
@@ -92,12 +93,14 @@ export default function Register() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setDisabledButton(true);
     let err = {};
     if (email === "") err.email = "Email is required.";
     if (password === "") err.password = "Password is required.";
     if (confirmPassword === "") err.confirmPassword = "Please confirm password";
     if (Object.keys(err).length !== 0) {
       setErrors(err);
+      setDisabledButton(false);
     } else {
       const data = { email, password, confirmPassword };
       document.body.style.cursor = "wait";
@@ -194,6 +197,7 @@ export default function Register() {
             variant="contained"
             color="primary"
             className={classes.submit}
+            disabled={disabledButton}
           >
             Submit
           </Button>
