@@ -440,8 +440,8 @@ export default function ActionHeader(props) {
               </Tooltip>
             )}
 
-          {selectedFiles.length > 0 &&
-            selectedFolders.length <= 0 &&
+          {selectedFiles.length === 1 &&
+            selectedFolders.length === 0 &&
             currentMenu !== "Trash" && (
               <Tooltip title="Download">
                 <IconButton
