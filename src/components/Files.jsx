@@ -22,6 +22,7 @@ import DialogContent from "@material-ui/core/DialogContent";
 const useStyles = makeStyles((theme) => ({
   root: {
     display: "flex",
+    maxHeight: "100vh",
   },
   // necessary for content to be below app bar
   toolbar: theme.mixins.toolbar,

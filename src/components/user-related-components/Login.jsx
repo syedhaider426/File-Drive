@@ -194,16 +194,6 @@ export default function Login() {
                 </Link>
               </Grid>
             </Grid>
-            <Box mt={5}>
-              <Typography variant="body2" color="textSecondary" align="center">
-                {"Copyright © "}
-                <Link color="inherit" to="https://g-drive-clone.com/">
-                  G-Drive Clone
-                </Link>{" "}
-                {new Date().getFullYear()}
-                {"."}
-              </Typography>
-            </Box>
           </form>
         </div>
       </Grid>

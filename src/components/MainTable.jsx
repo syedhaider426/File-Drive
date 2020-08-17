@@ -27,7 +27,7 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   table: {
-    maxHeight: "85vh",
+    maxHeight: "80vh",
   },
   root: {
     width: "100%",
