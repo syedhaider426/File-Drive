@@ -26,6 +26,7 @@ import DeleteAllDialog from "./trash-menu-components/DeleteAllDialog";
 import RestoreAllDialog from "./trash-menu-components/RestoreAllDialog";
 import getData from "../helpers/getData";
 import MobileMenu from "./MobileMenu";
+import sortFolders from "../helpers/sortFolders";
 
 const useStyles = makeStyles((theme) => ({
   grow: {
@@ -93,6 +94,7 @@ export default function ActionHeader(props) {
     currentFolder,
     setItems,
     setSelectedItems,
+    sortColumn,
   } = {
     ...props,
   };
@@ -121,9 +123,10 @@ export default function ActionHeader(props) {
       else homeFolderStatus = false;
       //user selects a file
       //file has a folder_id
+      let sortedFolders = sortFolders(folders, sortColumn);
       setMoveMenuOpen(true);
       setMobileMenuOpen(false);
-      setAllFolders(folders);
+      setAllFolders(sortedFolders);
       setHomeFolderStatus(homeFolderStatus);
       setMovedFolder({
         id: selectedFiles[0]?.folder_id || selectedFolders[0]?._id,
@@ -186,6 +189,7 @@ export default function ActionHeader(props) {
       items={items}
       setItems={setItems}
       setSelectedItems={setSelectedItems}
+      filterItems={props.filterItems}
       selectedFolders={selectedFolders}
       selectedFiles={selectedFiles}
       moveMenuOpen={moveMenuOpen}

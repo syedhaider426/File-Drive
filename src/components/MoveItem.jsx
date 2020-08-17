@@ -57,6 +57,8 @@ function MoveItem({
   setFolderLocation,
   movedFolder,
   setMovedFolder,
+  items,
+  filterItems,
 }) {
   const [selectedIndex, setSelectedIndex] = useState(undefined);
   const [movedSnack, setMovedSnack] = useState(false);
@@ -78,15 +80,14 @@ function MoveItem({
   const handleMoveItem = (e) => {
     e.preventDefault();
     const data = {
-      moveFolder: folderLocation.id,
+      moveFolder: folderLocation.id || movedFolder.id,
       selectedFolders,
       selectedFiles,
     };
     patchData("/api/files/move", data).then((data) => {
-      const { files, folders } = { ...data };
+      const { files, folders } = filterItems();
       setMovedSnack(true);
       setMoveMenuOpen(false);
-      setMovedFolder({});
       setItems({
         files,
         folders,
@@ -189,7 +190,9 @@ function MoveItem({
       open={movedSnack}
       onClose={handleMoveSnackClose}
       onExited={handleSnackbarExit}
-      message={`Moved to "${folderLocation.foldername}"`}
+      message={`Moved to "${
+        folderLocation.foldername || movedFolder.foldername
+      }"`}
       onClick={handleUndoMoveItem}
     />
   );

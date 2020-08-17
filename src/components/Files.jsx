@@ -795,6 +795,8 @@ export default function Files({ menu }) {
               selectedFiles={selectedFiles}
               selectedFolders={selectedFolders}
               isFavorited={selectedItems.isFavorited}
+              sortColumn={sortColumn}
+              filterItems={filterItems}
               setItems={setItems}
               setSelectedItems={setSelectedItems}
               handleTrash={handleTrash}

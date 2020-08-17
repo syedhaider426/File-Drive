@@ -137,7 +137,11 @@ function Actions({
         let sortedFiles = sortFiles(files, sortColumn);
         setItems({ ...items, files: sortedFiles });
         setSelectedItems({ selectedFiles: uploadedFiles, selectedFolders: [] });
-        if (location.pathname !== "/drive/home") history.push("/drive/home");
+        if (
+          location.pathname !== "/drive/home" &&
+          !location.pathname.startsWith("/drive/folders")
+        )
+          history.push("/drive/home");
       })
       .catch((err) => console.log("Error", err));
   };
