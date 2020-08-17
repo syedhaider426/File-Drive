@@ -102,9 +102,9 @@ function AutoComplete({ setFileData, setContentType, setFileModalOpen }) {
     });
   };
 
-  useEffect(() => {
-    (async () => await fetchData())();
-  }, [options]);
+  // useEffect(() => {
+  //   (async () => await fetchData())();
+  // }, [options]);
 
   const handleAutoComplete = (e, value) => {
     if (value === null) {
