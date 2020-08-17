@@ -100,14 +100,19 @@ export default function Register() {
       setErrors(err);
     } else {
       const data = { email, password, confirmPassword };
+      document.body.style.cursor = "wait";
       postData("/api/users/registration", data)
         .then((data) => {
           const { success } = data;
-          if (success) history.push("/confirmRegistration");
-          else {
+          if (success) {
+            document.body.style.cursor = "default";
+            history.push("/confirmRegistration");
+            return;
+          } else {
             let register =
               "User already exists. Please login or try to register again.";
             setRegisterError(register);
+            document.body.style.cursor = "default";
           }
         })
         .catch((err) => console.log("Error", err));

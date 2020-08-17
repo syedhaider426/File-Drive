@@ -42,7 +42,7 @@ const Main = () => {
             }
           />
         </Route>
-        <Route path="/verification">
+        <Route path="/confirmed-registration">
           <Confirmation
             message={
               "Thank you for verifiying your email. You can now login to your account."
