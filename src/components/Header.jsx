@@ -135,10 +135,10 @@ function Header({
                 style={{ textDecoration: "none", color: "white" }}
                 className={classes.title}
               >
-                G-Drive
+                F-Drive
               </Link>
             ) : (
-              "G-Drive"
+              "F-Drive"
             )}
           </Typography>
           {loc && (

@@ -217,16 +217,6 @@ export default function Profile() {
           >
             Submit
           </Button>
-          <Box>
-            <Typography variant="body2" color="textSecondary" align="center">
-              {"Copyright © "}
-              <Link color="inherit" to="https://g-drive-clone.com/">
-                G-Drive Clone
-              </Link>{" "}
-              {new Date().getFullYear()}
-              {"."}
-            </Typography>
-          </Box>
           {successSnack}
         </form>
       </div>
