@@ -124,10 +124,12 @@ function AutoComplete({
     if (itemID.foldername !== undefined)
       history.push(`/drive/folders/${itemID._id}`);
     else if (itemID.filename !== undefined) {
+      document.body.style.cursor = "wait";
       Axios.get(`/api/files/${itemID._id}`).then((d) => {
         setFileData(`/api/files/${itemID._id}`);
         setContentType(d.headers["content-type"]);
         setFileModalOpen(true);
+        document.body.style.cursor = "default";
       });
     }
   };

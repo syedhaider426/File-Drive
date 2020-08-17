@@ -47,6 +47,7 @@ export default function Register() {
     password: "",
     confirmPassword: "",
   });
+  const [registerError, setRegisterError] = useState("");
   let history = useHistory();
 
   const handleEmailChange = ({ target }) => {
@@ -86,8 +87,7 @@ export default function Register() {
     setErrors(errors);
   };
   const handleClose = () => {
-    delete errors.register;
-    setErrors(errors);
+    setRegisterError("");
   };
 
   const handleSubmit = (e) => {
@@ -105,9 +105,9 @@ export default function Register() {
           const { success } = data;
           if (success) history.push("/confirmRegistration");
           else {
-            err.register =
+            let register =
               "User already exists. Please login or try to register again.";
-            setErrors(err);
+            setRegisterError(register);
           }
         })
         .catch((err) => console.log("Error", err));
@@ -117,12 +117,12 @@ export default function Register() {
   const failRegister = (
     <Snackbar
       anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      open={errors.register?.length > 0}
+      open={registerError}
       autoHideDuration={3000}
       onClose={handleClose}
     >
       <Alert onClose={handleClose} severity="error">
-        {errors.register}
+        {registerError}
       </Alert>
     </Snackbar>
   );
