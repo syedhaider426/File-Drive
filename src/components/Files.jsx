@@ -291,10 +291,12 @@ export default function Files({ menu }) {
       selectedFiles[0]._id === file._id &&
       !e.ctrlKey
     ) {
+      document.body.style.cursor = "wait";
       axios.get(`/api/files/${file._id}`).then((d) => {
         setFileData(`/api/files/${file._id}`);
         setFileModalOpen(true);
         setContentType(d.headers["content-type"]);
+        document.body.style.cursor = "default";
       });
     } else if (
       selectedFiles.length === 1 &&
@@ -330,7 +332,6 @@ export default function Files({ menu }) {
     let urlParam = "";
     if (location.pathname !== "/drive/home") urlParam = `/${params.folder}`;
     const data = { selectedFiles };
-
     postData(`/api/files/copy${urlParam}`, data)
       .then((data) => {
         const { files } = { ...items };
