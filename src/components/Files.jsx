@@ -106,10 +106,11 @@ export default function Files({ menu }) {
   }, [location.pathname]);
 
   useEffect(() => {
-    let filesList = sortFiles(items?.files, sortColumn);
-    let foldersList = sortFolders(items?.folders, sortColumn);
+    const { files, folders } = { ...items };
+    let filesList = sortFiles(files, sortColumn);
+    let foldersList = sortFolders(folders, sortColumn);
     setItems({ files: filesList, folders: foldersList });
-  }, [items?.folders]);
+  }, [items?.files, items?.folders]);
 
   const filterItems = () => {
     let folders = items.folders.slice();
