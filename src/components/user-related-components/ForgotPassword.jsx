@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
 import CssBaseline from "@material-ui/core/CssBaseline";
@@ -9,7 +9,8 @@ import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import Typography from "@material-ui/core/Typography";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import Container from "@material-ui/core/Container";
-import patchData from "../../helpers/patchData";
+import postData from "../../helpers/postData";
+import Header from "../Header";
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -34,6 +35,8 @@ const useStyles = makeStyles((theme) => ({
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [errors, setErrors] = useState("");
+  const [disabledButton, setDisabledButton] = useState(false);
+  const history = useHistory();
 
   const handleEmailChange = ({ target }) => {
     if (target.value === "") setErrors("Email is required");
@@ -47,17 +50,25 @@ export default function ForgotPassword() {
       setErrors("Please enter your email address");
     } else {
       const data = { email };
-      patchData("/api/users/password-reset", data).then((data) => {
-        console.log(data);
-      });
+      setDisabledButton(true);
+      postData("/api/users/password-email", data)
+        .then((data) => {
+          history.push("/password-confirmation");
+        })
+        .catch((err) => {
+          setDisabledButton(false);
+          console.log("Err", err);
+        });
     }
   };
 
   const classes = useStyles();
+
   return (
     <Container component="main" maxWidth="xs">
       <CssBaseline />
       <div className={classes.paper}>
+        <Header />
         <Avatar className={classes.avatar}>
           <LockOutlinedIcon />
         </Avatar>
@@ -84,6 +95,7 @@ export default function ForgotPassword() {
             fullWidth
             variant="contained"
             color="primary"
+            disabled={disabledButton}
             className={classes.submit}
           >
             Submit

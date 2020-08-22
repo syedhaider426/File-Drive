@@ -26,4 +26,4 @@ yarn-error.log*
 src/components/ResponsiveDrawer.jsx
 src/components/user-related-components/ResendVerificationEmail.jsx
 
-src/components/user-related-components/ResetPassword.jsx
+
