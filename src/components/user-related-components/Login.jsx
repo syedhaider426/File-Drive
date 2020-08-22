@@ -61,6 +61,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({ email: "", password: "" });
+  const [loginError, setLoginError] = useState(false);
   let history = useHistory();
 
   const handleEmailChange = ({ target }) => {
@@ -102,6 +103,7 @@ export default function Login() {
         .then((data) => {
           if (data.error) {
             err.login = "Login failed. Please try again.";
+            setLoginError(true);
             setErrors(err);
           } else {
             history.push("/drive/home");
@@ -114,12 +116,15 @@ export default function Login() {
     }
   };
 
-  const handleClose = () => {};
+  const handleClose = () => {
+    setLoginError(false);
+  };
+
   const classes = useStyles();
   const failLogin = (
     <Snackbar
       anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      open={errors.login?.length > 0}
+      open={loginError}
       autoHideDuration={3000}
       onClose={handleClose}
     >
