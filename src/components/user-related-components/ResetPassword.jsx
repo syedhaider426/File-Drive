@@ -47,7 +47,7 @@ export default function ResetPassword() {
   });
   const [open, setOpen] = useState(false);
   const [passwordSuccess, setPasswordSuccess] = useState(false);
-
+  //
   const handleNewPasswordChange = ({ target }) => {
     if (target.value === "") errors.newPassword = "Please enter new password.";
     else if (confirmPassword !== "" && target.value !== confirmPassword)
