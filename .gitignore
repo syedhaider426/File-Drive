@@ -23,11 +23,7 @@ yarn-debug.log*
 yarn-error.log*
 
 
-PrimarySearchAppBar.jsx
-Chart.js
-Dashboard.jsx
-Deposits.js
-ListItems.js
-Orders.js
-Title.js
 src/components/ResponsiveDrawer.jsx
+src/components/user-related-components/ResendVerificationEmail.jsx
+
+src/components/user-related-components/ResetPassword.jsx

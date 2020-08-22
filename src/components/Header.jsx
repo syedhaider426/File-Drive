@@ -138,7 +138,13 @@ function Header({
                 F-Drive
               </Link>
             ) : (
-              "F-Drive"
+              <Link
+                to="/"
+                style={{ textDecoration: "none", color: "white" }}
+                className={classes.title}
+              >
+                F-Drive
+              </Link>
             )}
           </Typography>
           {loc && (

@@ -13,6 +13,8 @@ import Register from "../components/user-related-components/Register";
 import Confirmation from "../components/user-related-components/Confirmation";
 import Profile from "../components/user-related-components/Profile";
 import NotFound from "../components/NotFound";
+import Verification from "../components/user-related-components/Verification";
+import ResetPassword from "../components/user-related-components/ResetPassword";
 
 /***
  * If the same component is used as the child of multiple <Route>s at the
@@ -35,11 +37,19 @@ const Main = () => {
         <Route path="/register">
           <Register />
         </Route>
-        <Route path="/registration-confirmation">
-          <Confirmation
+        <Route path="/confirmation">
+          <Verification
             message={
               "Thank you for verifiying your email. You can now login to your account."
             }
+          />
+        </Route>
+        <Route path="/newPassword">
+          <ResetPassword />
+        </Route>
+        <Route path="/password-confirmation">
+          <Confirmation
+            message={"Please check your email to reset your password."}
           />
         </Route>
         <Route path="/confirmRegistration">
