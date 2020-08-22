@@ -30,7 +30,6 @@ const Main = () => {
   return (
     <Router>
       <Switch>
-        <Route path="/not-found" component={NotFound}></Route>
         <Route path="/" exact>
           <Login />
         </Route>
@@ -80,6 +79,7 @@ const Main = () => {
         <Route path="/user/profile">
           <Profile />
         </Route>
+        <Route path="/not-found" component={NotFound}></Route>
         <Redirect to="/not-found" />
       </Switch>
     </Router>
