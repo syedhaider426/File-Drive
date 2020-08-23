@@ -46,8 +46,7 @@ export default function ResetPassword() {
     confirmPassword: "",
   });
   const [open, setOpen] = useState(false);
-  const [passwordSuccess, setPasswordSuccess] = useState(false);
-  //
+
   const handleNewPasswordChange = ({ target }) => {
     if (target.value === "") errors.newPassword = "Please enter new password.";
     else if (confirmPassword !== "" && target.value !== confirmPassword)
@@ -79,27 +78,23 @@ export default function ResetPassword() {
       const data = { newPassword, confirmPassword };
       postData("/api/users/password-email", data)
         .then((data) => {
-          if (data.success) {
-            setConfirmPassword("");
-            setNewPassword("");
-            setOpen(true);
-            setPasswordSuccess(true);
-            setErrors({
-              newPassword: "",
-              confirmPassword: "",
-            });
-          } else {
-            setConfirmPassword("");
-            setNewPassword("");
-            setOpen(true);
-            setPasswordSuccess(false);
-            setErrors({
-              newPassword: "",
-              confirmPassword: "",
-            });
-          }
+          setConfirmPassword("");
+          setNewPassword("");
+          setOpen(true);
+          setErrors({
+            newPassword: "",
+            confirmPassword: "",
+          });
         })
-        .catch((err) => console.log("Err"));
+        .catch((err) => {
+          setConfirmPassword("");
+          setNewPassword("");
+          setOpen(true);
+          setErrors({
+            newPassword: "",
+            confirmPassword: "",
+          });
+        });
     }
   };
 
@@ -108,20 +103,11 @@ export default function ResetPassword() {
   };
 
   const classes = useStyles();
-  let res;
-  if (passwordSuccess)
-    res = {
-      severity: "success",
-      message: "Succesfully changed password!",
-      duration: 6000,
-    };
-  else
-    res = {
-      severity: "error",
-      message:
-        "Password entered does not match current password. Please try again!",
-      duration: 12000,
-    };
+  let res = {
+    severity: "success",
+    message: "Succesfully changed password!",
+    duration: 6000,
+  };
   const successSnack = (
     <Snackbar
       anchorOrigin={{
@@ -180,6 +166,7 @@ export default function ResetPassword() {
             variant="contained"
             color="primary"
             className={classes.submit}
+            disabled={confirmPassword !== newPassword}
           >
             Submit
           </Button>

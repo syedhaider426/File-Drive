@@ -103,6 +103,8 @@ export default function Login() {
         .then((data) => {
           if (data.error) {
             err.login = "Login failed. Please try again.";
+            setEmail("");
+            setPassword("");
             setLoginError(true);
             setErrors(err);
           } else {

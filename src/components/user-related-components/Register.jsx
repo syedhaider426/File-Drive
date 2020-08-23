@@ -112,6 +112,9 @@ export default function Register() {
             history.push("/confirmRegistration");
             return;
           } else {
+            setEmail("");
+            setPassword("");
+            setConfirmPassword("");
             let register =
               "User already exists. Please login or try to register again.";
             setRegisterError(register);

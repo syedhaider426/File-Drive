@@ -43,6 +43,7 @@ export default function Verification(props) {
       getData(`/registration-confirmation?token=${token}`)
         .then((d) => {
           setIsLoaded(true);
+          setError(false);
         })
         .catch((err) => setError(true));
     else setError(true);

@@ -110,8 +110,21 @@ function Header({
       <MenuItem onClick={handleLogOut}>Sign Out</MenuItem>
     </Menu>
   );
+  const path = location.pathname;
+  const loc = path.startsWith("/drive/");
+  const prof =
+    path.startsWith("/newPassword") || path.startsWith("/confirmation");
 
-  const loc = location.pathname.startsWith("/drive/");
+  const backButton = (
+    <Button color="inherit" onClick={history.goBack}>
+      Back
+    </Button>
+  );
+  const loginButton = (
+    <Button color="inherit" onClick={() => history.push("/")}>
+      Login
+    </Button>
+  );
 
   return (
     <Fragment>
@@ -169,11 +182,7 @@ function Header({
               </IconButton>
             </Fragment>
           )}
-          {!loc && (
-            <Button color="inherit" onClick={history.goBack}>
-              Back
-            </Button>
-          )}
+          {prof ? loginButton : !loc ? backButton : ""}
         </Toolbar>
       </AppBar>
       {profileMenu}
