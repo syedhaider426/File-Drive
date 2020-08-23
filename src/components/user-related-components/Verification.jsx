@@ -34,51 +34,93 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Verification(props) {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [error, setError] = useState(false);
   const location = useLocation();
   const token = location.search.substr(7);
+
   useEffect(() => {
-    getData(`/registration-confirmation?token=${token}`)
-      .then((d) => {
-        setIsLoaded(true);
-      })
-      .catch((err) => console.log(err));
+    if (token.length > 0)
+      getData(`/registration-confirmation?token=${token}`)
+        .then((d) => {
+          setIsLoaded(true);
+        })
+        .catch((err) => setError(true));
+    else setError(true);
   });
   const classes = useStyles(props);
+
   const LoginLink = React.forwardRef((props, ref) => (
     <Link to={"/login"} {...props} ref={ref} />
   ));
+
+  const ResendEmailLink = React.forwardRef((props, ref) => (
+    <Link to={"/resend"} {...props} ref={ref} />
+  ));
+
+  const verifiedUser = (
+    <Fragment>
+      <Avatar className={classes.avatar}>
+        <LockOutlinedIcon />
+      </Avatar>
+      <Typography component="h5" variant="h6">
+        {props.message}
+      </Typography>
+      <div className={classes.button}>
+        <Button
+          type="submit"
+          fullWidth
+          variant="contained"
+          color="primary"
+          component={LoginLink}
+        >
+          Login
+        </Button>
+      </div>
+    </Fragment>
+  );
+
+  const unVerifiedUser = (
+    <Fragment>
+      <CircularProgress />
+      <Typography>Verifying User.....</Typography>
+    </Fragment>
+  );
+
+  const errorUser = (
+    <Fragment>
+      <Avatar className={classes.avatar}>
+        <LockOutlinedIcon />
+      </Avatar>
+      <Typography component="h5" variant="h6">
+        {
+          "The confirmation link is not valid anymore. Please resend email verification"
+        }
+      </Typography>
+      <div className={classes.button}>
+        <Button
+          type="submit"
+          fullWidth
+          variant="contained"
+          color="primary"
+          component={ResendEmailLink}
+        >
+          Resend Email Verification
+        </Button>
+      </div>
+    </Fragment>
+  );
+
   return (
     <Container component="main" maxWidth="xs" border={1}>
       <CssBaseline />
       <Header></Header>
       <Box border={1}>
         <div className={classes.paper}>
-          {isLoaded ? (
-            <Fragment>
-              <Avatar className={classes.avatar}>
-                <LockOutlinedIcon />
-              </Avatar>
-              <Typography component="h5" variant="h6">
-                {props.message}
-              </Typography>
-              <div className={classes.button}>
-                <Button
-                  type="submit"
-                  fullWidth
-                  variant="contained"
-                  color="primary"
-                  component={LoginLink}
-                >
-                  Login
-                </Button>
-              </div>
-            </Fragment>
-          ) : (
-            <Fragment>
-              <CircularProgress />
-              <Typography>Verifying User.....</Typography>
-            </Fragment>
-          )}
+          {isLoaded && !error
+            ? verifiedUser
+            : !isLoaded && !error
+            ? unVerifiedUser
+            : errorUser}
         </div>
       </Box>
     </Container>

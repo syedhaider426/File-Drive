@@ -10,6 +10,7 @@ import Typography from "@material-ui/core/Typography";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import Container from "@material-ui/core/Container";
 import postData from "../../helpers/postData";
+import Header from "../Header";
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -58,11 +59,12 @@ export default function ResendVerificationEmail() {
     <Container component="main" maxWidth="xs">
       <CssBaseline />
       <div className={classes.paper}>
+        <Header />
         <Avatar className={classes.avatar}>
           <LockOutlinedIcon />
         </Avatar>
         <Typography component="h1" variant="h5">
-          Forgot Password
+          Resend Email Verification
         </Typography>
         <form className={classes.form} noValidate onSubmit={handleSubmit}>
           <TextField

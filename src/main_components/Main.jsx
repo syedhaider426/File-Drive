@@ -15,6 +15,7 @@ import Profile from "../components/user-related-components/Profile";
 import NotFound from "../components/NotFound";
 import Verification from "../components/user-related-components/Verification";
 import ResetPassword from "../components/user-related-components/ResetPassword";
+import ResendVerificationEmail from "../components/user-related-components/ResendVerificationEmail";
 
 /***
  * If the same component is used as the child of multiple <Route>s at the
@@ -57,6 +58,9 @@ const Main = () => {
               "Thank you for registering your account. Please check your email to confirm your account."
             }
           />
+        </Route>
+        <Route path="/resend">
+          <ResendVerificationEmail />
         </Route>
         <Route path="/login">
           <SignInSide />
