@@ -1,19 +1,19 @@
 import React, { Fragment } from "react";
+import { useLocation } from "react-router-dom";
+import moment from "moment";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
-import FileIcon from "@material-ui/icons/InsertDriveFile";
-import FolderIcon from "@material-ui/icons/Folder";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import TableContainer from "@material-ui/core/TableContainer";
 import makeStyles from "@material-ui/core/styles/makeStyles";
+import FileIcon from "@material-ui/icons/InsertDriveFile";
+import FolderIcon from "@material-ui/icons/Folder";
 import StarIcon from "@material-ui/icons/Star";
 import ArrowUpwardIcon from "@material-ui/icons/ArrowUpward";
 import ArrowDownwardIcon from "@material-ui/icons/ArrowDownward";
-import { useLocation } from "react-router-dom";
-import moment from "moment";
 
 const useStyles = makeStyles((theme) => ({
   tableRow: {
@@ -48,6 +48,11 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+/**
+ * Displays the sort icon (asc/desc) next to column header based on current sort column
+ * @param {*} sortColumn - Current sort column
+ * @param {*} column - Clicked sort column
+ */
 const renderSortIcon = (sortColumn, column) => {
   if (sortColumn.name === column && sortColumn.order === "asc")
     return <ArrowUpwardIcon fontSize="small" />;
@@ -55,12 +60,20 @@ const renderSortIcon = (sortColumn, column) => {
     return <ArrowDownwardIcon fontSize="small" />;
 };
 
+/**
+ * Converts the date into a readable date
+ * @param {*} d - Date file was uploaded
+ */
 const convertISODate = (d) => {
   let date = moment(d);
   date = date.utc().format("MMMM Do YYYY, h:mm:ss a");
   return date;
 };
 
+/**
+ * Converts the file size into a readable description
+ * @param {*} fileSize - Size of the file
+ */
 const returnFileSize = (fileSize) => {
   if (fileSize < 1024) return fileSize + " bytes";
   else if (fileSize >= 1024 && fileSize < 1048576)
@@ -71,6 +84,11 @@ const returnFileSize = (fileSize) => {
     return Math.ceil(fileSize / 1000000000) + " GB";
 };
 
+/**
+ * Highlights the selected folders/files
+ * @param {*} items - Files/folders
+ * @param {*} id - Currently clicked file._id or folder._id
+ */
 const selectedIndex = (items, id) => {
   if (items === undefined) return false;
   for (let i = 0; i < items.length; ++i) {
