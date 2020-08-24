@@ -1,14 +1,14 @@
 import React, { Fragment, useState, useEffect } from "react";
+import { useHistory } from "react-router-dom";
+import Axios from "axios";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import IconButton from "@material-ui/core/IconButton";
 import Typography from "@material-ui/core/Typography";
-import { useHistory } from "react-router-dom";
 import TextField from "@material-ui/core/TextField";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import SearchIcon from "@material-ui/icons/Search";
 import FileIcon from "@material-ui/icons/InsertDriveFile";
 import FolderIcon from "@material-ui/icons/Folder";
-import Axios from "axios";
 import sortFiles from "../../helpers/sortFiles";
 import sortFolders from "../../helpers/sortFolders";
 import getData from "../../helpers/getData";
@@ -64,6 +64,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+// Autocomplete textbox for user to search for items easily
 function AutoComplete({
   setFileData,
   setContentType,
@@ -76,6 +77,7 @@ function AutoComplete({
 
   const history = useHistory();
 
+  //Gets current files/folders and sorts them alphabetically
   const fetchData = () => {
     getData(`/api/drive/all`).then((data) => {
       let { files, folders } = { ...data };
@@ -106,10 +108,12 @@ function AutoComplete({
     });
   };
 
+  // Anytime there is changes in files/folders, call fetchData
   useEffect(() => {
     (async () => await fetchData())();
   }, [items]);
 
+  // Autocomplete button is disabled if there is no value
   const handleAutoComplete = (e, value) => {
     if (value === null) {
       setButtonDisabled(true);
@@ -120,6 +124,10 @@ function AutoComplete({
     }
   };
 
+  /**
+   * If the user enters a folder, take user to folder;
+   * Else, if its a file, show file or allow user to download file
+   */
   const handleSubmit = () => {
     if (itemID.foldername !== undefined)
       history.push(`/drive/folders/${itemID._id}`);

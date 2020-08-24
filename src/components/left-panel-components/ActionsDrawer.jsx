@@ -26,6 +26,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+// Drawer appears based off current width of device
 function ActionsDrawer({ actions, mobileOpen, handleDrawerToggle }) {
   const classes = useStyles();
 

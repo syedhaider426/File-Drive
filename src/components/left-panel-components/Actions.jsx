@@ -26,6 +26,7 @@ import postData from "../../helpers/postData";
 import sortFolders from "../../helpers/sortFolders";
 import sortFiles from "../../helpers/sortFiles";
 
+// User will utilize this drawer/panel to upload files, create new folders, and navigate between menus (Home, Favorites, Trash)
 function Actions({
   setItems,
   setSelectedItems,
@@ -35,53 +36,71 @@ function Actions({
   setDrawerMobileOpen,
   sortColumn,
 }) {
+  // When user clicks 'Upload', it opens a menu
   const [menuOpen, setMenuOpen] = useState(false);
-  const [newFolderOpen, setNewFolderOpen] = useState(false);
-  const [folder, setFolder] = useState("");
-  const [folderButtonDisabled, setFolderButtonDisabled] = useState(false);
+  // When the clicks the 'Upload', this anchors the menu at the button
   const [anchorEl, setAnchorEl] = useState(undefined);
+
+  // When user clicks 'New Folder', it opens a menu
+  const [newFolderOpen, setNewFolderOpen] = useState(false);
+
+  // When creating a new folder, this represents the new folder name
+  const [folder, setFolder] = useState("");
+
+  // When a user uploads a file, the accordion is displayed
   const [accordionOpen, setAccordionOpen] = useState(false);
+
+  // uploadfiles represents the list of files being uploaded
   const [uploadFiles, setUploadFiles] = useState([]);
+
+  // the title of the accordion
   const [accordionMsg, setAccordionMsg] = useState("");
+
+  // when all files are uploaded, set files status to true
   const [filesStatus, setFilesStatus] = useState(false);
   const params = useParams();
   const location = useLocation();
   const history = useHistory();
+
+  // User clicks 'Upload' and opens the 'Menu' at anchor location
   const handleClickOpen = (e) => {
     setMenuOpen(true);
     setAnchorEl(e.currentTarget);
   };
 
+  // Close 'Upload' menu
   const handleClose = (e) => {
     setMenuOpen(false);
   };
 
+  // User clicks 'New Folder' and opens the new folder dialog
   const handleCreateFolderOpen = () => {
     setMenuOpen(false);
     setNewFolderOpen(true);
   };
 
+  // Closes the new folder dialog
   const handleCreateFolderClose = () => {
     setNewFolderOpen(false);
   };
 
+  // When the value for the folder changes, update the folder hook
   const handleFolderOnChange = (e) => {
-    if (e.target.value === "") setFolderButtonDisabled(true);
-    else {
-      setFolder(e.target.value);
-      setFolderButtonDisabled(false);
-    }
+    setFolder(e.target.value);
   };
 
+  // Close the accordion
   const handleCloseAccordion = () => {
     setAccordionOpen(false);
   };
 
+  // When user selects 'New File', it closes current menu and opens user's file explorer
   const handleFileUploadOpen = () => {
     setMenuOpen(false);
     document.getElementById("upload-file").click();
   };
 
+  // Creates a folder based off name provided in specific directory or just in 'Home' if params is empty
   const handleCreateFolder = (e) => {
     e.preventDefault();
     const data = { folder: folder };
@@ -90,12 +109,17 @@ function Actions({
       .then((data) => {
         const { newFolder } = { ...data };
         const { folders } = { ...items };
+        // Adds new folder to list of folders
         folders.push(newFolder[0]);
+        // Actions drawer will be closed if it is open
         if (drawerMobileOpen) setDrawerMobileOpen(false);
+        // Closes 'Create Folder' dialog
         setNewFolderOpen(false);
+        // Sorts files
         let sortedFolders = sortFolders(folders, sortColumn);
         setItems({ ...items, folders: sortedFolders });
         setSelectedItems({ selectedFiles: [], selectedFolders: newFolder });
+        // If the current path is not in home or folders, go to home
         if (
           location.pathname !== "/drive/home" &&
           !location.pathname.startsWith("/drive/folders")
@@ -105,21 +129,23 @@ function Actions({
       .catch((err) => console.log("Err", err));
   };
 
+  // Uploads a file in a specific directory or just in 'Home' if params is empty
   const handleFileUpload = (e) => {
     const files = e.target.files;
     const form = new FormData();
     const uploadFiles = [];
+    // Append uploaded files to form and pass it to the request with content-type multipart/form-data
     for (let i = 0; i < files.length; i++) {
       form.append("files", files[i], files[i].name);
       uploadFiles.push(files[i].name);
     }
     const folder = params.folder ? `/${params.folder}` : "";
-    setAccordionOpen(true);
+    setAccordionOpen(true); //Open accordion
     setAccordionMsg(
       `Uploading ${files.length} file${files.length > 1 ? "s" : ""}...`
-    );
-    setUploadFiles(uploadFiles);
-    setFilesStatus(false);
+    ); // Title shown in Accordion
+    setUploadFiles(uploadFiles); // Files shown in accordion
+    setFilesStatus(false); // Files have not been uploaded
     Axios.post(`/api/files/upload${folder}`, form, {
       headers: {
         "Content-Type": "multipart/form-data",
@@ -129,14 +155,15 @@ function Actions({
         const { data } = { ...d };
         const { files, uploadedFiles } = { ...data };
         if (drawerMobileOpen) setDrawerMobileOpen(false);
-        setMenuOpen(false);
-        setFilesStatus(true);
+        setMenuOpen(false); // Close 'Upload' menu
+        setFilesStatus(true); // All files have been uploaded
         setAccordionMsg(
           `Uploaded ${uploadedFiles.length} file${files.length > 1 ? "s" : ""}`
-        );
-        let sortedFiles = sortFiles(files, sortColumn);
+        ); //Title shown in Accordion
+        let sortedFiles = sortFiles(files, sortColumn); // Sort files
         setItems({ ...items, files: sortedFiles });
         setSelectedItems({ selectedFiles: uploadedFiles, selectedFolders: [] });
+        // If the current path is not in home or folders, go to home
         if (
           location.pathname !== "/drive/home" &&
           !location.pathname.startsWith("/drive/folders")
@@ -182,7 +209,7 @@ function Actions({
             Cancel
           </Button>
           <Button
-            disabled={folderButtonDisabled}
+            disabled={folder.length === 0}
             onClick={handleCreateFolderClose}
             color="primary"
             type="submit"

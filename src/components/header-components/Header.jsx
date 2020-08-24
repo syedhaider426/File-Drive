@@ -58,6 +58,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+// Header includes the name of website, autcomplete textbox, and profile button.
 function Header({
   handleDrawerToggle,
   setFileData,
@@ -72,15 +73,18 @@ function Header({
   const history = useHistory();
   const location = useLocation();
 
+  // Open the 'Profile' menu at anchor location
   const handleProfileMenuOpen = (e) => {
     setProfileOpen(true);
     setProfileAnchorEl(e.currentTarget);
   };
 
+  // Close the 'Profile' menu
   const handleProfileMenuClose = () => {
     setProfileOpen(false);
   };
 
+  // Logout the user
   const handleLogOut = () => {
     postData("/logout")
       .then(() => {
@@ -89,6 +93,7 @@ function Header({
       .catch((err) => console.log(err));
   };
 
+  // Redirect user to /user/profile where they can reset their password
   const handleProfileClick = () => {
     setProfileOpen(false);
     history.push("/user/profile");
