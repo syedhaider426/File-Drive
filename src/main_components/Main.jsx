@@ -37,6 +37,9 @@ const Main = () => {
         <Route path="/register">
           <Register />
         </Route>
+        <Route path="/newPassword">
+          <ResetPassword />
+        </Route>
         <Route path="/confirmation">
           <Verification
             message={
@@ -44,15 +47,12 @@ const Main = () => {
             }
           />
         </Route>
-        <Route path="/newPassword">
-          <ResetPassword />
-        </Route>
         <Route path="/password-confirmation">
           <Confirmation
             message={"Please check your email to reset your password."}
           />
         </Route>
-        <Route path="/confirmRegistration">
+        <Route path="/verification">
           <Confirmation
             message={
               "Thank you for registering your account. Please check your email to confirm your account."

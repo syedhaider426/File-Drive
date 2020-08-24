@@ -201,7 +201,7 @@ export default function Login() {
             </Grid>
             <Grid item>
               <Link to="/resend" variant="body2">
-                {"Verify Email"}
+                {"Need to verify your email?"}
               </Link>
             </Grid>
           </form>

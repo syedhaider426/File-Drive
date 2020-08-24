@@ -109,7 +109,7 @@ export default function Register() {
           const { success } = data;
           if (success) {
             document.body.style.cursor = "default";
-            history.push("/confirmRegistration");
+            history.push("/verification");
             return;
           } else {
             setEmail("");

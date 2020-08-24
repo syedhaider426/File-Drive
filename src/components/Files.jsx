@@ -37,23 +37,37 @@ export default function Files({ menu }) {
   const history = useHistory();
   const location = useLocation();
   const params = useParams();
+
   const [items, setItems] = useState({ files: [], folders: [] });
+
+  // Hook is used when user selects one or more records in the table
   const [selectedItems, setSelectedItems] = useState({
     selectedFiles: [],
     selectedFolders: [],
-    isFavorited: false,
+    isFavorited: false, //if this is false, then show 'Add Favorites' button; else, show 'Remove Favorites'
   });
+
+  /***
+   *  This hook is used when a user completes an action and wants to undo that specific action
+   *  i.e. user favorites a file, and then decides to undo this action,
+   */
   const [tempItems, setTempItems] = useState({
     tempFiles: [],
     tempFolders: [],
   });
+
+  // This hook is used to reference the folder hierarchy
   const [currentFolder, setCurrentFolder] = useState([]);
   const [isLoaded, setIsLoaded] = useState(false);
+
+  // The actions panel on the left is a responsive drawer that opens based on screen width
   const [drawerMobileOpen, setDrawerMobileOpen] = useState(false);
+
   // FileData, FileModalOpen, and ContentType refer to viewing files in the browser
   const [fileData, setFileData] = useState(undefined);
   const [fileModalOpen, setFileModalOpen] = useState(false);
   const [contentType, setContentType] = useState("");
+
   // Refers to all the different snackbars used by specific actions
   const [snackOpen, setSnackOpen] = useState({
     copy: false,
@@ -65,13 +79,18 @@ export default function Files({ menu }) {
     favoritesTrash: false,
   });
 
+  // Currently sorted column
   const [sortColumn, setSortColumn] = useState({
     name: "Name",
     order: "asc",
   });
 
   const { selectedFiles, selectedFolders } = { ...selectedItems };
+
+  //temp files/folders references the recently selected files/folders
   const { tempFiles, tempFolders } = { ...tempItems };
+
+  // Destructuring of all snacks
   const {
     copy,
     trash,
@@ -84,6 +103,11 @@ export default function Files({ menu }) {
     ...snackOpen,
   };
 
+  /**
+   * Gets the files/folders based on specific pathname
+   * The pathname can be:
+   *  -Home, Favorites, Trash, or a Specific Folder
+   */
   const getFilesFolders = async () => {
     try {
       const data = await getData(`/api${location.pathname}`);
@@ -103,10 +127,15 @@ export default function Files({ menu }) {
     }
   };
 
+  //Whenever the pathname changes, call getFilesFolders
   useEffect(() => {
     (async () => await getFilesFolders())();
   }, [location.pathname]);
 
+  /**
+   * When a user does an action such as Move/Trash, we want to remove the item from the list
+   * of files and folders
+   */
   const filterItems = () => {
     let folders = items.folders.slice();
     let files = items.files.slice();
@@ -125,6 +154,10 @@ export default function Files({ menu }) {
     return { files, folders };
   };
 
+  /**
+   * When a user does an action such as Move/Trash and undoes the action,
+   * we want to add the item from the list of files and folders
+   */
   const addItems = () => {
     let { files, folders } = { ...items };
     if (tempFiles.length > 0) tempFiles.forEach((file) => files.push(file));
@@ -135,7 +168,10 @@ export default function Files({ menu }) {
     return { files, folders };
   };
 
-  //Favorites or unfavorites items
+  /**
+   * Favorites or unfavorites the selected items
+   * @param {*} favoriteFlag - true: favorites the items; false: unfavorites the items
+   */
   const favoriteItems = (favoriteFlag) => {
     let { folders, files } = { ...items };
     if (selectedFolders.length > 0) {
@@ -157,12 +193,20 @@ export default function Files({ menu }) {
     return { files, folders };
   };
 
+  /**
+   * When the snackbar closes, clear the values that are stored temporarily
+   */
   const handleSnackbarExit = () => {
     if (tempFiles || tempFolders) {
       setTempItems({ tempFiles: [], tempFolders: [] });
     }
   };
 
+  /**
+   * If the user selects any non-favorited item, then show "Add Favorites" button
+   * Else, if the user selects all favorited items, then show "Remove Favorites" button
+   * @param {*} items - items are the selected items (files/folders)
+   */
   const checkIsFavorited = (items) => {
     let isFavorited = 0;
     for (let i = 0; i < items.length; ++i) {
@@ -172,6 +216,10 @@ export default function Files({ menu }) {
     return false;
   };
 
+  /**
+   * Sorts the files/folders based off the column
+   * @param {*} column - Columnn is name, date, file-size
+   */
   const handleSort = (column) => {
     let sort = { ...sortColumn };
     sort.order = sort.name === column && sort.order === "asc" ? "desc" : "asc";
@@ -182,6 +230,11 @@ export default function Files({ menu }) {
     setSortColumn(sort);
   };
 
+  /**
+   * Selects the clicked folder
+   * @param {*} e - event to track ctrl click
+   * @param {*} folder - folder that has been selected
+   */
   const handleFolderClick = (e, folder) => {
     const folderLength = selectedFolders.length;
     // No folders selected
@@ -197,15 +250,12 @@ export default function Files({ menu }) {
         isFavorited,
       });
     } else if (
-      /***
-       * User double clicks the same folder and the current menu is not 'Trash',
-       * If the folder was clicked without the ctrlkey and there is only one
-       * value in the selectedfolders list, go to the next page
-       */
+      // User double clicks the same folder and the current menu is not 'Trash',
       location.pathname !== "/drive/trash" &&
       folderLength === 1 &&
       !e.ctrlKey
     ) {
+      // If the selected folder has already been selected, remove from selected folders
       if (selectedFolders[0]._id === folder._id) {
         setSelectedItems({
           selectedFiles: [],
@@ -213,7 +263,9 @@ export default function Files({ menu }) {
           isFavorited: false,
         });
         history.push(`/drive/folders/${folder._id}`);
-      } else {
+      }
+      // If the selected folder has not already been selected, add to selected folders
+      else {
         let folders = [];
         folders[0] = folder;
         const isFavorited = checkIsFavorited(folders);
@@ -233,6 +285,7 @@ export default function Files({ menu }) {
     ) {
       if (selectedFolders[0]._id === folder._id)
         setSelectedItems({ ...selectedItems, selectedFolders: [] });
+      // If the folder clicked is not the same, add folder to selected folders list
       else {
         selectedFolders.push(folder);
         const isFavorited = checkIsFavorited(selectedFolders);
@@ -242,15 +295,19 @@ export default function Files({ menu }) {
           isFavorited,
         });
       }
-    } else if (e.ctrlKey) {
+    }
+    //Ctrl key was pressed
+    else if (e.ctrlKey) {
       let folders = [];
       let count = 0;
+      //Check to see if folder already exists
       for (let i = 0; i < folderLength; ++i) {
         if (selectedFolders[i]._id !== folder._id) {
           folders.push(selectedFolders[i]);
           count++;
         }
       }
+      // If the folder has not been selected, add selected folder to selectedFolders list
       if (count === folderLength) folders.push(folder);
       const isFavorited = checkIsFavorited(folders);
       setSelectedItems({
@@ -259,6 +316,7 @@ export default function Files({ menu }) {
         isFavorited,
       });
     } else {
+      //If there are more than 1 selected folders, clear the list if ctrl is not pressed
       let folders = [];
       folders[0] = folder;
       const isFavorited = checkIsFavorited(folders);
@@ -270,7 +328,13 @@ export default function Files({ menu }) {
     }
   };
 
+  /**
+   * Selects the clicked file
+   * @param {*} e - event to track ctrl click
+   * @param {*} file - file that has been selected
+   */
   const handleFileClick = (e, file) => {
+    // User selects a file in the table (with no selected files and ctrl key not pressed)
     if (selectedFiles.length === 0 && !e.ctrlKey) {
       selectedFiles.push(file);
       const isFavorited = checkIsFavorited(selectedFiles);
@@ -279,10 +343,13 @@ export default function Files({ menu }) {
         selectedFolders: [],
         isFavorited,
       });
-    } else if (
+    }
+    // User double clicks a file in 'Home/Favorites'
+    else if (
       selectedFiles.length === 1 &&
       selectedFiles[0]._id === file._id &&
-      !e.ctrlKey
+      !e.ctrlKey &&
+      location.pathname !== "/drive/trash"
     ) {
       document.body.style.cursor = "wait";
       axios.get(`/api/files/${file._id}`).then((d) => {
@@ -291,25 +358,33 @@ export default function Files({ menu }) {
         setContentType(d.headers["content-type"]);
         document.body.style.cursor = "default";
       });
-    } else if (
+    }
+    // Clear out the selected files if the user presses 'ctrl' and the same item is selected
+    else if (
       selectedFiles.length === 1 &&
       selectedFiles[0]._id === file._id &&
       e.ctrlKey
     ) {
       setSelectedItems({ ...selectedItems, selectedFiles: [] });
-    } else if (e.ctrlKey) {
+    }
+    // Add file to selected items if ctrl key is pressed
+    else if (e.ctrlKey) {
       let files = [];
       let count = 0;
+      // Check that the item has not already been selected
       for (let i = 0; i < selectedFiles.length; ++i) {
         if (selectedFiles[i]._id !== file._id) {
           files.push(selectedFiles[i]);
           count++;
         }
       }
+      // If the item has not been selected, add to selected files
       if (count === selectedFiles.length) files.push(file);
       const isFavorited = checkIsFavorited(files);
       setSelectedItems({ ...selectedItems, selectedFiles: files, isFavorited });
-    } else {
+    }
+    // If the selected files > 1, and ctrl key is not pressed, clear out the selected files and add the clicked file
+    else {
       let files = [];
       files[0] = file;
       const isFavorited = checkIsFavorited(files);
@@ -321,6 +396,7 @@ export default function Files({ menu }) {
     }
   };
 
+  // Copies the selected files to specific directory or to "Home"
   const handleFileCopy = () => {
     let urlParam = "";
     if (location.pathname !== "/drive/home") urlParam = `/${params.folder}`;
@@ -329,10 +405,10 @@ export default function Files({ menu }) {
       .then((data) => {
         const { files } = { ...items };
         for (let file of data.files) {
-          files.push(file);
+          files.push(file); // Add the copied files
         }
         const tempFiles = data.newFiles.id.slice();
-        let sortedFiles = sortFiles(files, sortColumn);
+        let sortedFiles = sortFiles(files, sortColumn); //Sort all files
         setItems({ ...items, files: sortedFiles }); //updated files
         setSelectedItems({ ...selectedItems, selectedFiles: data.files });
         setTempItems({ ...tempItems, tempFiles }); //Reference to selected files (if user chooses to undo, reference the tempfiles)
@@ -341,6 +417,7 @@ export default function Files({ menu }) {
       .catch((err) => console.log("Err", err));
   };
 
+  // Deletes the copied files from specific directory or "Home"
   const handleUndoCopy = () => {
     const data = { selectedFiles: tempFiles };
     let urlParam = "";
@@ -350,6 +427,8 @@ export default function Files({ menu }) {
         const { files } = { ...data };
         let tempFilesIdList = [];
         tempFiles.forEach((file) => tempFilesIdList.push(file._id));
+
+        //Removes the copied files from the list of files
         let modifiedFiles = files.filter(
           (file) => !tempFilesIdList.includes(file._id)
         );
@@ -360,16 +439,16 @@ export default function Files({ menu }) {
       .catch((err) => console.log("Err", err));
   };
 
+  // Sends selected files/folders to trash
   const handleTrash = () => {
     const data = {
       selectedFolders,
       selectedFiles,
-      isFavorited: [false, true],
     };
     const folder = params.folder ? `/${params.folder}` : "";
     patchData(`/api/files/trash${folder}`, data)
       .then((data) => {
-        const { files, folders } = filterItems();
+        const { files, folders } = filterItems(); //Removes the selected items from the list of files/folders
         //Slice will clone the array and return reference to new array
         const tempFiles = selectedFiles.slice();
         const tempFolders = selectedFolders.slice();
@@ -385,11 +464,13 @@ export default function Files({ menu }) {
       .catch((err) => console.log("Err", err));
   };
 
+  // Restores selected files/folders that were initially in trash
   const handleUndoTrash = () => {
     const data = { selectedFolders: tempFolders, selectedFiles: tempFiles };
     const folder = params.folder ? `/${params.folder}` : "";
     patchData(`/api/files/undo-trash${folder}`, data)
       .then((data) => {
+        // Adds the tempfiles/folders back to the list of files/folders
         const { files, folders } = addItems();
         setSnackOpen({ ...snackOpen, trash: false });
         setItems({ files, folders });
@@ -398,14 +479,15 @@ export default function Files({ menu }) {
       .catch((err) => console.log("Err", err));
   };
 
+  // Sends selected files/folders to trash when current menu is "Favorites"
   const handleFavoritesTrash = () => {
     const data = {
       selectedFolders: selectedFolders,
       selectedFiles: selectedFiles,
-      isFavorited: [true],
     };
     patchData("/api/files/trash", data)
       .then((data) => {
+        // Removes the selectedfiles/folders from the list of files/folders
         const { files, folders } = filterItems();
         const tempFiles = selectedFiles.slice();
         const tempFolders = selectedFolders.slice();
@@ -421,6 +503,7 @@ export default function Files({ menu }) {
       .catch((err) => console.log("Err", err));
   };
 
+  // Restores selected files/folders initially in trash when current menu is "Favorites"
   const handleUndoFavoritesTrash = () => {
     const data = {
       selectedFolders: tempFolders,
@@ -428,6 +511,7 @@ export default function Files({ menu }) {
     };
     patchData("/api/files/selected/restore", data)
       .then((data) => {
+        // Adds the tempfiles/folders back to the list of files/folders
         const { files, folders } = addItems();
         setSnackOpen({ ...snackOpen, favoritesTrash: false });
         setItems({ files, folders });
@@ -436,6 +520,7 @@ export default function Files({ menu }) {
       .catch((err) => console.log("Err", err));
   };
 
+  // Restores the selected files/folders in 'Trash' menu
   const handleRestore = () => {
     const data = {
       selectedFolders,
@@ -443,6 +528,7 @@ export default function Files({ menu }) {
     };
     patchData("/api/files/selected/restore", data)
       .then((data) => {
+        // Removes files/folders from 'Trash' menu
         const { files, folders } = filterItems();
         //Slice will clone the array and return reference to new array
         const tempFiles = selectedFiles.slice();
@@ -459,15 +545,15 @@ export default function Files({ menu }) {
       .catch((err) => console.log("Err", err));
   };
 
+  // Trashes the selected files/folders that were initally restored in 'Trash' menu
   const handleUndoRestore = () => {
     const data = {
       selectedFolders: tempFolders,
       selectedFiles: tempFiles,
-      isFavorited: [false, true],
-      trashMenu: true,
     };
     patchData(`/api/files/trash`, data)
       .then((data) => {
+        // Adds files/folders to the 'Trash' menu
         const { files, folders } = addItems();
         setSnackOpen({ ...snackOpen, restore: false });
         setItems({ files, folders });
@@ -476,7 +562,7 @@ export default function Files({ menu }) {
       .catch((err) => console.log("Err", err));
   };
 
-  //When you favorite an item from Home
+  //When you favorite an item from 'Home' menu
   const handleFavorites = () => {
     const data = {
       selectedFolders,
@@ -484,6 +570,7 @@ export default function Files({ menu }) {
     };
     patchData("/api/files/favorites", data)
       .then((data) => {
+        // Favorites the selected files/folders
         const { files, folders } = favoriteItems(true);
         //Slice will clone the array and return reference to new array
         const tempFiles = selectedFiles.slice();
@@ -496,11 +583,12 @@ export default function Files({ menu }) {
       .catch((err) => console.log("Err", err));
   };
 
-  //When you unfavorite an item from 'Home', and then click undo
+  //When you favorite an item from 'Home', and then click undo
   const handleUndoFavorite = () => {
     const data = { selectedFolders: tempFolders, selectedFiles: tempFiles };
     patchData("/api/files/undo-favorites", data)
       .then((data) => {
+        // Unfavorites the selected files/folders
         const { files, folders } = favoriteItems(false);
         setItems({ files, folders });
         setTempItems({ tempFiles: [], tempFolders: [] });
@@ -509,6 +597,7 @@ export default function Files({ menu }) {
       .catch((err) => console.log("Err", err));
   };
 
+  // When you unfavorite an item from 'Home'
   const handleHomeUnfavorited = () => {
     const data = { selectedFolders, selectedFiles };
     patchData("/api/files/home-undo-favorite", data)
@@ -524,10 +613,12 @@ export default function Files({ menu }) {
       .catch((err) => console.log("Err", err));
   };
 
+  // When you unfavorite an item from 'Home' and then click undo
   const handleHomeUndoUnfavorite = () => {
     const data = { selectedFolders: tempFolders, selectedFiles: tempFiles };
     patchData("/api/files/favorites", data)
       .then((data) => {
+        // Favorites the selected files/folders
         const { files, folders } = favoriteItems(true);
         setItems({ files, folders });
         setTempItems({ tempFiles: [], tempFolders: [] });
@@ -541,7 +632,9 @@ export default function Files({ menu }) {
     const data = { selectedFolders, selectedFiles };
     patchData("/api/files/unfavorite", data)
       .then((data) => {
+        // Unfavorites the selected files/folders
         let { files, folders } = favoriteItems(false);
+        // Removes the unfavorited items from the list
         if (selectedFolders.length > 0) {
           let folderidList = [];
           selectedFolders.forEach((folder) => folderidList.push(folder._id));
@@ -554,7 +647,6 @@ export default function Files({ menu }) {
           selectedFiles.forEach((file) => fileidList.push(file._id));
           files = items.files.filter((file) => !fileidList.includes(file._id));
         }
-
         const tempFiles = selectedFiles.slice();
         const tempFolders = selectedFolders.slice();
         setItems({ files, folders });
@@ -564,7 +656,12 @@ export default function Files({ menu }) {
       .catch((err) => console.log("Err", err));
   };
 
-  //When you unfavorite an item in 'Favorites', and then click undo
+  /**
+   * Action is called  when 'Unfavorite' button in 'Favorites' is clicked
+   * and user clicks 'Undo' in the Snackbar.
+   * The selected folders/files are unfavorited temporarily and then are
+   * favorited again
+   */
   const handleUndoUnfavorite = () => {
     const data = {
       selectedFolders: tempFolders,
@@ -573,7 +670,9 @@ export default function Files({ menu }) {
     };
     patchData("/api/files/favorites", data)
       .then((data) => {
+        // Favorites the recently 'unfavorited' selected items
         let { files, folders } = favoriteItems(true);
+        // Add the items to the favorited list
         if (tempFiles.length > 0) tempFiles.forEach((file) => files.push(file));
         if (tempFolders.length > 0)
           tempFolders.forEach((folder) => folders.push(folder));
@@ -591,6 +690,11 @@ export default function Files({ menu }) {
       .catch((err) => console.log("Err", err));
   };
 
+  /**
+   * Action is called when 'Delete Forever' button in 'Trash' is clicked.
+   * The selected folders/files are deleted forever
+   * and cannot be restored
+   */
   const handleDeleteForever = () => {
     const data = { selectedFolders, selectedFiles };
     deleteData("/api/files/selected", data)
@@ -607,14 +711,17 @@ export default function Files({ menu }) {
       .catch((err) => console.log("Err", err));
   };
 
+  // When user double clicks a file, the modal will close when user clicks on background
   const handleFileClose = () => {
     setFileModalOpen(false);
   };
 
+  // Actions drawer on the left is opened/closed based on width of screen
   const handleDrawerToggle = () => {
     setDrawerMobileOpen((open) => !open);
   };
 
+  // Downloads the selected file
   const handleSingleDownload = (file) => {
     fetch(`/api/files/${file._id}`)
       .then((response) => response.blob())
@@ -629,45 +736,55 @@ export default function Files({ menu }) {
       });
   };
 
+  // Close the "Favorites" snack in 'Home' menu
   const handleFavoritesSnackClose = () => {
     setSnackOpen({ ...snackOpen, favorite: false });
   };
 
+  // Close the "Copy" snack in 'Home Menu'
   const handleCopySnackClose = () => {
     setSnackOpen({ ...snackOpen, copy: false });
   };
 
+  // Close the "Trash" snack in 'Home' menu
   const handleTrashSnackClose = () => {
     setSnackOpen({ ...snackOpen, trash: false });
   };
 
-  const handleRestoreSnackClose = () => {
-    setSnackOpen({ ...snackOpen, restore: false });
-  };
-
-  const handleUnFavoriteSnackClose = () => {
-    setSnackOpen({ ...snackOpen, unfavorite: false });
-  };
-
+  // Close the "Unfavorite" snack in 'Home' menu
   const handleHomeUnFavoriteSnackClose = () => {
     setSnackOpen({ ...snackOpen, homeUnfavorite: false });
   };
 
+  // Close the "Unfavorite" snack in 'Favorites' menu
+  const handleUnFavoriteSnackClose = () => {
+    setSnackOpen({ ...snackOpen, unfavorite: false });
+  };
+
+  // Close the "Trash" snack in 'Favorites' menu
   const handleFavoritesTrashSnackClose = () => {
     setSnackOpen({ ...snackOpen, favoritesTrash: false });
   };
 
-  let filesModified = selectedFiles?.length + selectedFolders?.length;
+  // Close the "Restore" snack in 'Trash' menu
+  const handleRestoreSnackClose = () => {
+    setSnackOpen({ ...snackOpen, restore: false });
+  };
 
-  if (filesModified === 0) {
-    filesModified = tempFiles?.length + tempFolders?.length;
+  // When an action (Move,Favorite,Trash,etc.), keep track of how many items were modified
+  let itemsModified = selectedFiles?.length + selectedFolders?.length;
+
+  // If the user undos a specific action, use the tempfiles/tempfolders length
+  if (itemsModified === 0) {
+    itemsModified = tempFiles?.length + tempFolders?.length;
   }
+
   const copySnack = (
     <Snack
       open={copy}
       onClose={handleCopySnackClose}
       onExited={handleSnackbarExit}
-      message={`Copied ${filesModified} file(s).`}
+      message={`Copied ${itemsModified} file(s).`}
       onClick={handleUndoCopy}
     />
   );
@@ -677,7 +794,7 @@ export default function Files({ menu }) {
       open={trash}
       onClose={handleTrashSnackClose}
       onExited={handleSnackbarExit}
-      message={`Trashed ${filesModified} item(s).`}
+      message={`Trashed ${itemsModified} item(s).`}
       onClick={handleUndoTrash}
     />
   );
@@ -687,7 +804,7 @@ export default function Files({ menu }) {
       open={favoritesTrash}
       onClose={handleFavoritesTrashSnackClose}
       onExited={handleSnackbarExit}
-      message={`Trashed ${filesModified} item(s).`}
+      message={`Trashed ${itemsModified} item(s).`}
       onClick={handleUndoFavoritesTrash}
     />
   );
@@ -697,7 +814,7 @@ export default function Files({ menu }) {
       open={favorite}
       onClose={handleFavoritesSnackClose}
       onExited={handleSnackbarExit}
-      message={`Favorited ${filesModified} item(s).`}
+      message={`Favorited ${itemsModified} item(s).`}
       onClick={handleUndoFavorite}
     />
   );
@@ -707,7 +824,7 @@ export default function Files({ menu }) {
       open={restore}
       onClose={handleRestoreSnackClose}
       onExited={handleSnackbarExit}
-      message={`Restored ${filesModified} item(s).`}
+      message={`Restored ${itemsModified} item(s).`}
       onClick={handleUndoRestore}
     />
   );
@@ -717,7 +834,7 @@ export default function Files({ menu }) {
       open={unfavorite}
       onClose={handleUnFavoriteSnackClose}
       onExited={handleSnackbarExit}
-      message={`Unfavorited ${filesModified} item(s).`}
+      message={`Unfavorited ${itemsModified} item(s).`}
       onClick={handleUndoUnfavorite}
     />
   );
@@ -727,7 +844,7 @@ export default function Files({ menu }) {
       open={homeUnfavorite}
       onClose={handleHomeUnFavoriteSnackClose}
       onExited={handleSnackbarExit}
-      message={`Unfavorited ${filesModified} item(s).`}
+      message={`Unfavorited ${itemsModified} item(s).`}
       onClick={handleHomeUndoUnfavorite}
     />
   );
@@ -755,6 +872,7 @@ export default function Files({ menu }) {
         )
       : "";
 
+  // If the user double clicks a file, it will show a download link or the original file
   const fileModal = (
     <Dialog
       open={fileModalOpen}
