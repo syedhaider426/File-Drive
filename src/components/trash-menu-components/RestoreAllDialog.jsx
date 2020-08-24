@@ -7,12 +7,14 @@ import Button from "@material-ui/core/Button";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import patchData from "../../helpers/patchData";
 
+// Dialog is shown when user clicks 'Restore All' button
 const RestoreAllDialog = ({
   restoreAllOpen,
   handleRestoreAllClose,
   setItems,
   setRestoreAllOpen,
 }) => {
+  // Restores all files/folders in 'Trash' back to respective directories
   const handleRestoreAll = (e) => {
     e.preventDefault();
     document.body.style.cursor = "wait";

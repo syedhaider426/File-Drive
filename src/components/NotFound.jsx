@@ -34,7 +34,9 @@ const useStyles = makeStyles((theme) => ({
 
 export default function NotFound(props) {
   const classes = useStyles(props);
-
+  const HomeLink = React.forwardRef((props, ref) => (
+    <Link to={"/"} {...props} ref={ref} />
+  ));
   return (
     <Container component="main" maxWidth="xs" border={1}>
       <CssBaseline />
@@ -47,6 +49,17 @@ export default function NotFound(props) {
           <Typography component="h5" variant="h6">
             {"Page not found!!!"}
           </Typography>
+          <div className={classes.button}>
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              color="primary"
+              component={HomeLink}
+            >
+              Login
+            </Button>
+          </div>
         </div>
       </Box>
     </Container>

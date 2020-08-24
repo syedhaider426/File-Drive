@@ -2,6 +2,9 @@ import React from "react";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 
+/* Menu is shown when user clicks 'Trash' in ActionHeader
+ * in 'Trash' menu
+ */
 const TrashMenu = ({
   trashAnchorEl,
   trashMenuOpen,

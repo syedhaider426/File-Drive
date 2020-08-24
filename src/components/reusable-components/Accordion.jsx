@@ -52,6 +52,7 @@ const AccordionDetails = withStyles((theme) => ({
   },
 }))(MuiAccordionDetails);
 
+// Accordion is displayed when user uploads 1 or more files
 export default function CustomizedAccordions({
   accordionOpen,
   handleCloseAccordion,
@@ -61,6 +62,7 @@ export default function CustomizedAccordions({
 }) {
   const [expanded, setExpanded] = React.useState("panel");
 
+  // Accordion can be expanded or unexpanded based on current status
   const handleChange = (panel) => (event, newExpanded) => {
     setExpanded(newExpanded ? panel : false);
   };
