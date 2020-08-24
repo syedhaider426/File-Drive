@@ -8,7 +8,7 @@ import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import Typography from "@material-ui/core/Typography";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import Container from "@material-ui/core/Container";
-import Header from "../Header";
+import Header from "../header-components/Header";
 import getData from "../../helpers/getData";
 import CircularProgress from "@material-ui/core/CircularProgress";
 const useStyles = makeStyles((theme) => ({
@@ -47,7 +47,7 @@ export default function Verification(props) {
         })
         .catch((err) => setError(true));
     else setError(true);
-  });
+  }, []);
   const classes = useStyles(props);
 
   const LoginLink = React.forwardRef((props, ref) => (

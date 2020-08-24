@@ -6,7 +6,7 @@ import makeStyles from "@material-ui/core/styles/makeStyles";
 import Snackbar from "@material-ui/core/Snackbar";
 import MuiAlert from "@material-ui/lab/Alert";
 import patchData from "../../helpers/patchData";
-import Header from "../Header";
+import Header from "../header-components/Header";
 
 const useStyles = makeStyles((theme) => ({
   paper: {

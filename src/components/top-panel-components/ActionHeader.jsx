@@ -21,12 +21,12 @@ import Box from "@material-ui/core/Box";
 import MoreIcon from "@material-ui/icons/MoreVert";
 import GetAppIcon from "@material-ui/icons/GetApp";
 
-import TrashMenu from "./trash-menu-components/TrashMenu";
-import DeleteAllDialog from "./trash-menu-components/DeleteAllDialog";
-import RestoreAllDialog from "./trash-menu-components/RestoreAllDialog";
-import getData from "../helpers/getData";
+import TrashMenu from "../trash-menu-components/TrashMenu";
+import DeleteAllDialog from "../trash-menu-components/DeleteAllDialog";
+import RestoreAllDialog from "../trash-menu-components/RestoreAllDialog";
+import getData from "../../helpers/getData";
 import MobileMenu from "./MobileMenu";
-import sortFolders from "../helpers/sortFolders";
+import sortFolders from "../../helpers/sortFolders";
 
 const useStyles = makeStyles((theme) => ({
   grow: {

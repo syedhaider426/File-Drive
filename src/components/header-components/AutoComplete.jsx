@@ -9,9 +9,9 @@ import SearchIcon from "@material-ui/icons/Search";
 import FileIcon from "@material-ui/icons/InsertDriveFile";
 import FolderIcon from "@material-ui/icons/Folder";
 import Axios from "axios";
-import sortFiles from "../helpers/sortFiles";
-import sortFolders from "../helpers/sortFolders";
-import getData from "../helpers/getData";
+import sortFiles from "../../helpers/sortFiles";
+import sortFolders from "../../helpers/sortFolders";
+import getData from "../../helpers/getData";
 
 const drawerWidth = 150;
 

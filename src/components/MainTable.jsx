@@ -1,5 +1,4 @@
 import React, { Fragment } from "react";
-import convertISODate from "../helpers/convertISODate";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
@@ -7,15 +6,14 @@ import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import FileIcon from "@material-ui/icons/InsertDriveFile";
 import FolderIcon from "@material-ui/icons/Folder";
-import returnFileSize from "../helpers/returnFileSize";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import TableContainer from "@material-ui/core/TableContainer";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import StarIcon from "@material-ui/icons/Star";
-import selectedIndex from "../helpers/selectedIndex";
 import ArrowUpwardIcon from "@material-ui/icons/ArrowUpward";
 import ArrowDownwardIcon from "@material-ui/icons/ArrowDownward";
 import { useLocation } from "react-router-dom";
+import moment from "moment";
 
 const useStyles = makeStyles((theme) => ({
   tableRow: {
@@ -55,6 +53,30 @@ const renderSortIcon = (sortColumn, column) => {
     return <ArrowUpwardIcon fontSize="small" />;
   else if (sortColumn.name === column && sortColumn.order === "desc")
     return <ArrowDownwardIcon fontSize="small" />;
+};
+
+const convertISODate = (d) => {
+  let date = moment(d);
+  date = date.utc().format("MMMM Do YYYY, h:mm:ss a");
+  return date;
+};
+
+const returnFileSize = (fileSize) => {
+  if (fileSize < 1024) return fileSize + " bytes";
+  else if (fileSize >= 1024 && fileSize < 1048576)
+    return Math.ceil(fileSize / 1000) + " KB";
+  else if (fileSize >= 1048576 && fileSize < 1073741824)
+    return Math.ceil(fileSize / 1000000) + " MB";
+  else if (fileSize >= 1073741824)
+    return Math.ceil(fileSize / 1000000000) + " GB";
+};
+
+const selectedIndex = (items, id) => {
+  if (items === undefined) return false;
+  for (let i = 0; i < items.length; ++i) {
+    if (items[i]?.id === id || items[i]?._id === id) return true;
+  }
+  return false;
 };
 
 function MainTable({

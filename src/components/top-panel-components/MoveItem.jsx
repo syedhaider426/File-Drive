@@ -6,13 +6,13 @@ import DialogActions from "@material-ui/core/DialogActions";
 import Button from "@material-ui/core/Button";
 import IconButton from "@material-ui/core/IconButton";
 import MenuItem from "@material-ui/core/MenuItem";
-import Snack from "./reusable-components/Snack";
+import Snack from "../reusable-components/Snack";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import FolderIcon from "@material-ui/icons/Folder";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import ArrowForwardIcon from "@material-ui/icons/ArrowForward";
-import patchData from "../helpers/patchData";
-import getData from "../helpers/getData";
+import patchData from "../../helpers/patchData";
+import getData from "../../helpers/getData";
 
 const useStyles = makeStyles((theme) => ({
   dialogPaper: {

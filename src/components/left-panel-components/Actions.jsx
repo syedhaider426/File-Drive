@@ -8,7 +8,7 @@ import DialogActions from "@material-ui/core/DialogActions";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import TextField from "@material-ui/core/TextField";
-import postData from "../helpers/postData";
+import postData from "../../helpers/postData";
 import StarIcon from "@material-ui/icons/Star";
 import HomeIcon from "@material-ui/icons/Home";
 import DeleteIcon from "@material-ui/icons/Delete";
@@ -21,10 +21,10 @@ import MenuItem from "@material-ui/core/MenuItem";
 import Typography from "@material-ui/core/Typography";
 import CreateNewFolderOutlinedIcon from "@material-ui/icons/CreateNewFolderOutlined";
 import FileIcon from "@material-ui/icons/InsertDriveFile";
-import CustomizedAccordions from "./reusable-components/Accordion";
+import CustomizedAccordions from "../reusable-components/Accordion";
 import Axios from "axios";
-import sortFolders from "../helpers/sortFolders";
-import sortFiles from "../helpers/sortFiles";
+import sortFolders from "../../helpers/sortFolders";
+import sortFiles from "../../helpers/sortFiles";
 
 function Actions({
   setItems,

@@ -11,7 +11,7 @@ import Container from "@material-ui/core/Container";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import MuiAlert from "@material-ui/lab/Alert";
 import Snackbar from "@material-ui/core/Snackbar";
-import Header from "../Header";
+import Header from "../header-components/Header";
 
 function Alert(props) {
   return <MuiAlert elevation={6} variant="filled" {...props} />;

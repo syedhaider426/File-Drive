@@ -5,7 +5,7 @@ import TextField from "@material-ui/core/TextField";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import Snackbar from "@material-ui/core/Snackbar";
 import MuiAlert from "@material-ui/lab/Alert";
-import Header from "../Header";
+import Header from "../header-components/Header";
 import postData from "../../helpers/postData";
 
 const useStyles = makeStyles((theme) => ({

@@ -10,7 +10,7 @@ import Typography from "@material-ui/core/Typography";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import Container from "@material-ui/core/Container";
 import postData from "../../helpers/postData";
-import Header from "../Header";
+import Header from "../header-components/Header";
 
 const useStyles = makeStyles((theme) => ({
   paper: {

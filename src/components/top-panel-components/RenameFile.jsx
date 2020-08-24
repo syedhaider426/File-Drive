@@ -6,8 +6,8 @@ import TextField from "@material-ui/core/TextField";
 import DialogActions from "@material-ui/core/DialogActions";
 import Button from "@material-ui/core/Button";
 import IconButton from "@material-ui/core/IconButton";
-import patchData from "../helpers/patchData";
-import Snack from "./reusable-components/Snack";
+import patchData from "../../helpers/patchData";
+import Snack from "../reusable-components/Snack";
 import makeStyles from "@material-ui/core/styles/makeStyles";
 import CloseIcon from "@material-ui/icons/Close";
 
