@@ -42,7 +42,8 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function MoveItem({
+// Move a file/folder to a new directory/folder
+export default function MoveItem({
   selectedFolders,
   selectedFiles,
   setItems,
@@ -60,23 +61,31 @@ function MoveItem({
   items,
   filterItems,
 }) {
+  // Highlights the selected row
   const [selectedIndex, setSelectedIndex] = useState(undefined);
+
+  // Snack is shown after a file/folder is moved
   const [movedSnack, setMovedSnack] = useState(false);
+
+  // Keeps track of moved files/folders in case the user wants to revert back to original directory
   const [tempItems, setTempItems] = useState({
     tempFiles: [],
     tempFolders: [],
   });
   const { tempFiles, tempFolders } = { ...tempItems };
 
+  // When the move dialog dialog has exited, clear the list of folders
   const onMoveExit = () => {
     setAllFolders([]);
     setHomeFolderStatus(false);
   };
 
+  // Close the snack
   const handleMoveSnackClose = (event, reason) => {
     if (reason !== "clickaway") setMovedSnack(false);
   };
 
+  // Move folder/files to specific folder/directory
   const handleMoveItem = (e) => {
     e.preventDefault();
     const data = {
@@ -104,6 +113,7 @@ function MoveItem({
     });
   };
 
+  // Move files/folders back to original folder/directory
   const handleUndoMoveItem = (e) => {
     e.preventDefault();
     let originalFolder = tempFolders[0]?.parent_id || tempFiles[0]?.folder_id;
@@ -126,6 +136,7 @@ function MoveItem({
     });
   };
 
+  // Clear the original files/folders if they still exist
   const handleSnackbarExit = () => {
     if (tempFolders || tempFiles) {
       setTempItems({
@@ -137,11 +148,13 @@ function MoveItem({
     return;
   };
 
+  // Selects the folder to move the file/folders to.
   const handleOnClick = (folder, selectedIndex) => {
     setSelectedIndex(selectedIndex);
     setFolderLocation({ id: folder._id, foldername: folder.foldername });
   };
 
+  // Folders can have multiple sub folders. Users can navigate through the sub folders
   const handleNextFolder = (folder) => {
     getData(`/api/drive/folders/${folder._id}`)
       .then((data) => {
@@ -158,8 +171,10 @@ function MoveItem({
       .catch((err) => console.log("Err", err));
   };
 
+  // Folders can have multiple sub folders. Users can navigate through the parent folders
   const handlePreviousFolder = () => {
     const folder_id = movedFolder.parent_id;
+    // folder_id is empty/undefined when the user's parent folder is the 'Home' folder
     const urlParam =
       folder_id === "" || folder_id === undefined
         ? "drive/home"
@@ -179,6 +194,7 @@ function MoveItem({
       .catch((err) => console.log("Err", err));
   };
 
+  // Close the Move File Dialog
   const handleMoveItemClose = () => {
     setSelectedIndex(undefined);
     setFolderLocation("");
@@ -197,7 +213,7 @@ function MoveItem({
     />
   );
   const classes = useStyles();
-  const moveFileDialog = (
+  const moveItemDialog = (
     <Dialog
       open={moveMenuOpen ? true : false}
       onClose={handleMoveItemClose}
@@ -264,10 +280,8 @@ function MoveItem({
 
   return (
     <Fragment>
-      {moveFileDialog}
+      {moveItemDialog}
       {moveSnack}
     </Fragment>
   );
 }
-
-export default MoveItem;

@@ -20,7 +20,8 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function RenameFile({
+// Rename a file
+export default function RenameFile({
   handleFocus,
   renameFileDialogOpen,
   files,
@@ -33,19 +34,23 @@ function RenameFile({
   const [renamedFile, setRenamedFile] = useState("");
   const [fileName, setFileName] = useState("");
 
+  // After a file is renamed, a snackbar will show. This function closes it.
   const handleRenameSnackClose = (event, reason) => {
     if (reason !== "clickaway") setRenamedSnack(false);
   };
 
+  // Closes the 'Rename File' dialog
   const handleRenameFileClose = () => {
     setFileName("");
     setRenameFileDialogOpen(false);
   };
 
+  // Sets the new name of the file
   const handleFileOnChange = (e) => {
     setFileName(e.target.value);
   };
 
+  // When user submits form, rename the file
   const handleRenameFile = (e) => {
     e.preventDefault();
     const oldName = selectedFiles[0].filename;
@@ -55,6 +60,7 @@ function RenameFile({
     };
     patchData("/api/files/name", data)
       .then((data) => {
+        // Updates file name in files
         files.find((o, i, arr) => {
           if (o._id === selectedFiles[0]._id) {
             arr[i].filename = fileName;
@@ -62,14 +68,15 @@ function RenameFile({
           }
           return false;
         });
-        setRenamedFile(oldName);
-        setRenamedSnack(true);
-        setRenameFileDialogOpen(false);
+        setRenamedFile(oldName); // set temp name
+        setRenamedSnack(true); // show snack
+        setRenameFileDialogOpen(false); // close 'rename file' dialog
         setItems({ folders, files });
       })
       .catch((err) => console.log("Err", err));
   };
 
+  // If user chooses to revert back to original name, this function will revert it back
   const handleUndoRenameFile = () => {
     const data = {
       id: selectedFiles[0]._id,
@@ -77,6 +84,7 @@ function RenameFile({
     };
     patchData("/api/files/name", data)
       .then((data) => {
+        // Updates file name in files
         files.find((o, i, arr) => {
           if (o._id === selectedFiles[0]._id) {
             arr[i].filename = selectedFiles[0].filename;
@@ -86,16 +94,17 @@ function RenameFile({
         });
 
         selectedFiles[0].filename = renamedFile;
-        setRenamedSnack(false);
-        setRenamedFile("");
-        setFileName("");
+        setRenamedSnack(false); // close snack
+        setRenamedFile(""); // empty temp name
+        setFileName(""); // clear any reference to "new" file name
         setItems({ folders, files });
       })
       .catch((err) => console.log("Err", err));
   };
 
+  // When the snackbar closes, remove old file name in temp
   const handleSnackbarExit = () => {
-    if (renamedFile) setRenamedFile({});
+    if (renamedFile) setRenamedFile("");
   };
 
   const classes = useStyles();
@@ -156,5 +165,3 @@ function RenameFile({
     </Fragment>
   );
 }
-
-export default RenameFile;

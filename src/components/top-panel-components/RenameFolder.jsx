@@ -20,7 +20,8 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function RenameFolder({
+// Rename a folder
+export default function RenameFolder({
   handleFocus,
   renameFolderDialogOpen,
   files,
@@ -33,6 +34,7 @@ function RenameFolder({
   const [renamedSnack, setRenamedSnack] = useState(false);
   const [folderName, setFolderName] = useState("");
 
+  // After a folder is renamed, a snackbar will show. This function closes it.
   const handleRenameSnackClose = (event, reason) => {
     if (reason === "clickaway") {
       return;
@@ -40,15 +42,18 @@ function RenameFolder({
     setRenamedSnack(false);
   };
 
+  // Closes the 'Rename Folder' dialog
   const handleRenameFolderClose = () => {
     setFolderName("");
     setRenameFolderDialogOpen(false);
   };
 
+  // Sets the new folder name
   const handleFolderOnChange = (e) => {
     setFolderName(e.target.value);
   };
 
+  // When user submits form, rename the folder
   const handleRenameFolderr = (e) => {
     e.preventDefault();
     const oldName = selectedFolders[0].foldername;
@@ -58,19 +63,21 @@ function RenameFolder({
     };
     patchData("/api/folders/name", data)
       .then((data) => {
+        // Updates folder in folders
         folders.forEach((o, i, arr) => {
           if (o._id === selectedFolders[0]._id) {
             arr[i].foldername = folderName;
           }
         });
-        setRenamedSnack(true);
-        setRenamedFolder(oldName);
-        setRenameFolderDialogOpen(false);
+        setRenamedSnack(true); // open snack
+        setRenamedFolder(oldName); // keep track of old name
+        setRenameFolderDialogOpen(false); // close dialog
         setItems({ files, folders });
       })
       .catch((err) => console.log("Err", err));
   };
 
+  // If user chooses to revert back to original name, this function will revert it back
   const handleUndoRenameFolder = () => {
     const data = {
       id: selectedFolders[0]._id,
@@ -78,6 +85,7 @@ function RenameFolder({
     };
     patchData("/api/folders/name", data)
       .then((data) => {
+        // Updates folder in folders
         folders.forEach((o, i, arr) => {
           if (o._id === selectedFolders[0]._id) {
             arr[i].foldername = renamedFolder;
@@ -85,16 +93,17 @@ function RenameFolder({
         });
         const selectFolders = selectedFolders;
         selectFolders[0].foldername = renamedFolder;
-        setRenamedSnack(false);
-        setRenamedFolder("");
-        setFolderName("");
+        setRenamedSnack(false); // close snack
+        setRenamedFolder(""); // remove old name from hook
+        setFolderName(""); // remove new name from hook
         setItems({ files, folders });
       })
       .catch((err) => console.log("Err", err));
   };
 
+  // When the snackbar closes, remove old file name in temp
   const handleSnackbarExit = () => {
-    if (renamedFolder) setRenamedFolder({});
+    if (renamedFolder) setRenamedFolder("");
   };
 
   const classes = useStyles();
@@ -155,5 +164,3 @@ function RenameFolder({
     </Fragment>
   );
 }
-
-export default RenameFolder;

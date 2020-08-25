@@ -11,6 +11,7 @@ import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import GetAppIcon from "@material-ui/icons/GetApp";
 
+// Mobile menu is rendered based on device width
 export default function MobileMenu({
   mobileAnchorEl,
   mobileMenuId,

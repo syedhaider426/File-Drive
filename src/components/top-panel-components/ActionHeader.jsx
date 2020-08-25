@@ -20,7 +20,6 @@ import Breadcrumbs from "@material-ui/core/Breadcrumbs";
 import Box from "@material-ui/core/Box";
 import MoreIcon from "@material-ui/icons/MoreVert";
 import GetAppIcon from "@material-ui/icons/GetApp";
-
 import TrashMenu from "../trash-menu-components/TrashMenu";
 import DeleteAllDialog from "../trash-menu-components/DeleteAllDialog";
 import RestoreAllDialog from "../trash-menu-components/RestoreAllDialog";
@@ -65,20 +64,28 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function ActionHeader(props) {
+  // Open/Close the Move Item dialog
   const [moveMenuOpen, setMoveMenuOpen] = useState(false);
+
+  // Open/Close the Mobile Menu
   const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
+  // Anchor location for mobile menu
+  const [mobileAnchorEl, setMobileAnchorEl] = useState(undefined);
+
+  // Open/Close the Rename File/Folder Dialog
   const [renameFileDialogOpen, setRenameFileDialogOpen] = useState(false);
   const [renameFolderDialogOpen, setRenameFolderDialogOpen] = useState(false);
-  const [mobileAnchorEl, setMobileAnchorEl] = useState(undefined);
 
   const [trashMenuOpen, setTrashMenuOpen] = useState(false);
   const [deleteAllOpen, setDeleteAllOpen] = useState(false);
   const [restoreAllOpen, setRestoreAllOpen] = useState(false);
-  const [trashAnchorEl, setTrashAnchorEl] = useState(undefined);
+  const [trashAnchorEl, setTrashAnchorEl] = useState(undefined); //anchor for trash menu
 
-  const [allFolders, setAllFolders] = useState([]);
-  const [homeFolderStatus, setHomeFolderStatus] = useState([]);
-  const [folderLocation, setFolderLocation] = useState("");
+  // Hooks related to moving an item to a specific menu
+  const [allFolders, setAllFolders] = useState([]); //all folders possible that user can move item to
+  const [homeFolderStatus, setHomeFolderStatus] = useState([]); // hides the 'previous' button if current folder is 'Home'/empty
+  const [folderLocation, setFolderLocation] = useState(""); // name of the folder being moved to
+  // when user navigates to the previous/next folder, the properties of current folder are stored in movedfolder
   const [movedFolder, setMovedFolder] = useState({});
 
   const location = useLocation();
@@ -99,15 +106,18 @@ export default function ActionHeader(props) {
     ...props,
   };
 
+  // Cloes the mobile menu if its open
   const closeMobileMenu = () => {
     if (isMobileMenuOpen) setMobileMenuOpen(false);
   };
 
+  // Opens the 'Rename File' dialog
   const handleRenameFileOpen = () => {
     closeMobileMenu();
     setRenameFileDialogOpen(true);
   };
 
+  // Opens the 'Rename Folder' dialog
   const handleRenameFolderOpen = () => {
     closeMobileMenu();
     setRenameFolderDialogOpen(true);
@@ -136,15 +146,18 @@ export default function ActionHeader(props) {
     });
   };
 
+  // Opens the menu (which shows the Delete/Restore All buttons)
   const handleTrashMenuOpen = (e) => {
     setTrashMenuOpen(true);
     setTrashAnchorEl(e.currentTarget);
   };
 
+  // Closes the 'Trash Menu'
   const handleTrashMenuClose = () => {
     setTrashMenuOpen(false);
   };
 
+  // When user opens 'Rename File/Folder', it will only focus on a specific part of the text
   const handleFocus = (event) => {
     event.preventDefault();
     const { target } = event;
@@ -156,34 +169,37 @@ export default function ActionHeader(props) {
     }
   };
 
+  // Opens the confirmation for 'Delete All'
   const handleDeleteAllDialog = (e) => {
     setTrashMenuOpen(false);
     setDeleteAllOpen(true);
     setTrashAnchorEl(e.currentTarget);
   };
 
+  // Closes the 'Delete All' dialog
   const handleDeleteAllClose = (e) => {
     setDeleteAllOpen(false);
   };
+
+  // Opens the confirmation for 'Restore All'
   const handleRestoreAllDialog = (e) => {
     setTrashMenuOpen(false);
     setRestoreAllOpen(true);
     setTrashAnchorEl(e.currentTarget);
   };
 
+  // Closes the 'Restore All' dialog
   const handleRestoreAllClose = (e) => {
     setRestoreAllOpen(false);
   };
 
+  // When the screen width is a certain size, it will show a button that can opens up the Mobile Menu
   const handleMobileMenuOpen = (e) => {
     setMobileMenuOpen(true);
     setMobileAnchorEl(e.currentTarget);
   };
 
-  const handleMobileMenuClose = () => {
-    setMobileMenuOpen(false);
-  };
-
+  // Create the 'Move Item' component
   const moveItem = (
     <MoveItem
       items={items}
@@ -205,6 +221,7 @@ export default function ActionHeader(props) {
     />
   );
 
+  // Create the 'Rename File' component
   const renameFile = (
     <RenameFile
       renameFileDialogOpen={renameFileDialogOpen}
@@ -217,6 +234,7 @@ export default function ActionHeader(props) {
     />
   );
 
+  // Create the 'Rename Folder' component
   const renameFolder = (
     <RenameFolder
       renameFolderDialogOpen={renameFolderDialogOpen}
@@ -229,6 +247,7 @@ export default function ActionHeader(props) {
     />
   );
 
+  // Create the 'Trash Menu' component
   const trashMenu = (
     <TrashMenu
       trashAnchorEl={trashAnchorEl}
@@ -241,6 +260,7 @@ export default function ActionHeader(props) {
     />
   );
 
+  // Create the 'Delete All' component
   const deleteAllDialog = (
     <DeleteAllDialog
       deleteAllOpen={deleteAllOpen}
@@ -250,6 +270,7 @@ export default function ActionHeader(props) {
     />
   );
 
+  // Create the 'Restore All' component
   const restoreAllDialog = (
     <RestoreAllDialog
       restoreAllOpen={restoreAllOpen}
@@ -271,7 +292,7 @@ export default function ActionHeader(props) {
       currentMenu={currentMenu}
       isFavorited={isFavorited}
       handleMove={handleMove}
-      handleMobileMenuClose={handleMobileMenuClose}
+      handleMobileMenuClose={closeMobileMenu}
       handleRenameFileOpen={handleRenameFileOpen}
       handleRenameFolderOpen={handleRenameFolderOpen}
       handleFavorites={props.handleFavorites}
