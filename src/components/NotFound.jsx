@@ -32,6 +32,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+// Component is displayed when an invalid url is entered in browser
 export default function NotFound(props) {
   const classes = useStyles(props);
   const HomeLink = React.forwardRef((props, ref) => (

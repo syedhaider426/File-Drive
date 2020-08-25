@@ -87,7 +87,7 @@ export default function Login() {
     return re.test(String(email).toLowerCase());
   };
 
-  // User types in password and updates the email hook
+  // User types in password and updates the password hook
   const handlePasswordChange = ({ target }) => {
     if (target.value === "") errors.password = "Password is required";
     else delete errors.password;
