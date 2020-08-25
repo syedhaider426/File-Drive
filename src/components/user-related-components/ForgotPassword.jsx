@@ -32,18 +32,27 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+// User is redirected to this page when they forgot their password
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [errors, setErrors] = useState("");
   const [disabledButton, setDisabledButton] = useState(false);
   const history = useHistory();
 
+  /**
+   * User types in email and updates the email hook
+   * @param {*} target - The value that is typed in
+   */
   const handleEmailChange = ({ target }) => {
     if (target.value === "") setErrors("Email is required");
     else setErrors("");
     setEmail(target.value);
   };
 
+  /**
+   * Submits the form and sends a link to email for user to reset their password
+   * @param {*} e - event
+   */
   const handleSubmit = (e) => {
     e.preventDefault();
     if (email === "") {

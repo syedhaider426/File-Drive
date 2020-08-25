@@ -5,7 +5,7 @@ import MenuItem from "@material-ui/core/MenuItem";
 /* Menu is shown when user clicks 'Trash' in ActionHeader
  * in 'Trash' menu
  */
-const TrashMenu = ({
+export default function TrashMenu({
   trashAnchorEl,
   trashMenuOpen,
   handleTrashMenuClose,
@@ -13,7 +13,7 @@ const TrashMenu = ({
   files,
   folders,
   handleRestoreAllDialog,
-}) => {
+}) {
   const disabled = files?.length === 0 && folders?.length === 0;
   return (
     <Menu
@@ -31,6 +31,4 @@ const TrashMenu = ({
       </MenuItem>
     </Menu>
   );
-};
-
-export default TrashMenu;
+}

@@ -37,6 +37,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+// User will register their account and be sent an email to confirm their identity
 export default function Register() {
   const classes = useStyles();
   const [email, setEmail] = useState("");
@@ -51,6 +52,7 @@ export default function Register() {
   const [disabledButton, setDisabledButton] = useState(false);
   let history = useHistory();
 
+  // User types in email and updates the email hook
   const handleEmailChange = ({ target }) => {
     if (target.value === "") errors.email = "Email is required";
     else delete errors.email;
@@ -58,6 +60,7 @@ export default function Register() {
     setErrors(errors);
   };
 
+  // When the email textbox loses focus, function checks to see if the email entered is valid
   const handleEmailBlur = ({ target }) => {
     if (!validateEmail(target.value) && !errors.email)
       errors.email = "Please enter a valid email";
@@ -65,11 +68,13 @@ export default function Register() {
     setErrors(errors);
   };
 
+  // Validate the syntax of the email
   const validateEmail = (email) => {
     const re = /\S+@\S+\.\S+/;
     return re.test(String(email).toLowerCase());
   };
 
+  // User types in password and updates the password hook
   const handlePasswordChange = ({ target }) => {
     if (target.value === "") errors.password = "Password is required";
     else if (target.value !== confirmPassword && confirmPassword !== "")
@@ -79,6 +84,7 @@ export default function Register() {
     setErrors(errors);
   };
 
+  // User types in password that should be the same previously typed password and updates the password hook
   const handleConfirmPasswordChange = ({ target }) => {
     if (target.value === "") errors.confirmPassword = "Please confirm password";
     if (target.value !== password)
@@ -87,10 +93,17 @@ export default function Register() {
     setConfirmPassword(target.value);
     setErrors(errors);
   };
+
+  // Closes the error snackbar
   const handleClose = () => {
     setRegisterError("");
   };
 
+  /**
+   * User submits user/password/confirmPassword to server
+   * If the user does not exist, create user
+   * Else, show error.
+   */
   const handleSubmit = (e) => {
     e.preventDefault();
     setDisabledButton(true);

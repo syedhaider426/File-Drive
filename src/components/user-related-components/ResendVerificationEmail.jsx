@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
 import CssBaseline from "@material-ui/core/CssBaseline";
@@ -32,25 +32,44 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+// This component handles the functionality for resending an email to verify the user if they did not verify it
 export default function ResendVerificationEmail() {
   const [email, setEmail] = useState("");
   const [errors, setErrors] = useState("");
-
+  const history = useHistory();
+  // User types in email and updates the email hook
   const handleEmailChange = ({ target }) => {
     if (target.value === "") setErrors("Email is required");
     else setErrors("");
     setEmail(target.value);
   };
 
+  // When the email textbox loses focus, function checks to see if the email entered is valid
+  const handleEmailBlur = ({ target }) => {
+    if (!validateEmail(target.value) && !errors.email)
+      errors.email = "Please enter a valid email";
+    else delete errors.email;
+    setErrors(errors);
+  };
+
+  // Validate the syntax of the email
+  const validateEmail = (email) => {
+    const re = /\S+@\S+\.\S+/;
+    return re.test(String(email).toLowerCase());
+  };
+
+  // Sends user an email to verify their account
   const handleSubmit = (e) => {
     e.preventDefault();
     if (email === "") {
       setErrors("Please enter your email address");
     } else {
       const data = { email };
-      postData("/api/users/confirmation", data).then((data) => {
-        console.log(data);
-      });
+      postData("/api/users/confirmation", data)
+        .then((data) => {
+          history.push("/verification-resend");
+        })
+        .catch((err) => console.log("Err", err));
     }
   };
 
@@ -78,6 +97,7 @@ export default function ResendVerificationEmail() {
             autoComplete="email"
             autoFocus
             onChange={handleEmailChange}
+            onBlur={handleEmailBlur}
             error={errors}
             helperText={errors}
           />

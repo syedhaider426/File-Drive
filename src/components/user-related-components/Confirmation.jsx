@@ -31,6 +31,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+// Confirmation screen that is redirected to for registration and password-reset
 export default function Confirmation(props) {
   const classes = useStyles(props);
   const LoginLink = React.forwardRef((props, ref) => (

@@ -17,16 +17,7 @@ import Verification from "../components/user-related-components/Verification";
 import ResetPassword from "../components/user-related-components/ResetPassword";
 import ResendVerificationEmail from "../components/user-related-components/ResendVerificationEmail";
 
-/***
- * If the same component is used as the child of multiple <Route>s at the
- * same point in the component tree, React will see this as the same
- * component instance and the component’s state will be preserved between
- * route changes. If this isn’t desired, a unique key prop added to each
- * route component will cause React to recreate the component
- * instance when the route changes.
- *
- */
-
+// Component represents all the possible URLs that can be navigated to
 const Main = () => {
   return (
     <Router>
@@ -57,6 +48,11 @@ const Main = () => {
             message={
               "Thank you for registering your account. Please check your email to confirm your account."
             }
+          />
+        </Route>
+        <Route path="/verification-resend">
+          <Confirmation
+            message={"Please check your email to confirm your account."}
           />
         </Route>
         <Route path="/resend">

@@ -57,6 +57,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+// This components handles all of the login functionality (entering user/pass and submitting it to server)
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -64,6 +65,7 @@ export default function Login() {
   const [loginError, setLoginError] = useState(false);
   let history = useHistory();
 
+  // User types in email and updates the email hook
   const handleEmailChange = ({ target }) => {
     if (target.value === "") errors.email = "Email is required";
     else delete errors.email;
@@ -71,6 +73,7 @@ export default function Login() {
     setErrors(errors);
   };
 
+  // When the email textbox loses focus, function checks to see if the email entered is valid
   const handleEmailBlur = ({ target }) => {
     if (!validateEmail(target.value) && !errors.email)
       errors.email = "Please enter a valid email";
@@ -78,11 +81,13 @@ export default function Login() {
     setErrors(errors);
   };
 
+  // Validate the syntax of the email
   const validateEmail = (email) => {
     const re = /\S+@\S+\.\S+/;
     return re.test(String(email).toLowerCase());
   };
 
+  // User types in password and updates the email hook
   const handlePasswordChange = ({ target }) => {
     if (target.value === "") errors.password = "Password is required";
     else delete errors.password;
@@ -90,6 +95,11 @@ export default function Login() {
     setErrors(errors);
   };
 
+  /**
+   * User clicks 'Login', submits the user/pass, and sends it to the server to validate.
+   * Successful login: Redirects user to home page
+   * Failed login: Shows an alert notifying user that they cannot login
+   */
   const handleLogin = (e) => {
     e.preventDefault();
     let err = {};
@@ -118,6 +128,7 @@ export default function Login() {
     }
   };
 
+  // When the user is unable to login, an alert snackbar is shown. This function closes it.
   const handleClose = () => {
     setLoginError(false);
   };

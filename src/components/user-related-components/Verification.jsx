@@ -32,6 +32,10 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+/** User will be redirected to this page from their email.
+ *  If a valid token is provided, it will verify the user's email.
+ *  If the token is not valid, it will show an error on the screen.
+ */
 export default function Verification(props) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState(false);

@@ -50,6 +50,7 @@ export default function Profile() {
   const [open, setOpen] = useState(false);
   const [passwordSuccess, setPasswordSuccess] = useState(false);
 
+  // User types in current password and updates the currentPassword hook
   const handleCurrentPasswordChange = ({ target }) => {
     if (target.value === "")
       errors.currentPassword = "Please enter current password.";
@@ -58,6 +59,7 @@ export default function Profile() {
     setErrors(errors);
   };
 
+  // User types in new password and updates the newPassword hook
   const handleNewPasswordChange = ({ target }) => {
     if (target.value === "") errors.newPassword = "Please enter new password.";
     else if (confirmPassword !== "" && target.value !== confirmPassword)
@@ -67,6 +69,10 @@ export default function Profile() {
     setErrors(errors);
   };
 
+  /*
+   * User types in the password that they entered in the new password textbox
+   * and updates confirmPassword hook
+   */
   const handleConfirmPasswordChange = ({ target }) => {
     if (target.value === "")
       errors.confirmPassword = "Please confirm password.";
@@ -77,6 +83,11 @@ export default function Profile() {
     setErrors(errors);
   };
 
+  /**
+   * User clicks 'Submit', submits password details, and sends it to the server.
+   * If the current password matches up, then it will update the password.
+   * Else, it will throw an error on the screen.
+   */
   const handleSubmit = (e) => {
     e.preventDefault();
     const err = {};

@@ -8,12 +8,12 @@ import DialogContentText from "@material-ui/core/DialogContentText";
 import deleteData from "../../helpers/deleteData";
 
 // Dialog is shown when user clicks 'Delete All' button
-const DeleteAllDialog = ({
+export default function DeleteAllDialog({
   deleteAllOpen,
   handleDeleteAllClose,
   setItems,
   setDeleteAllOpen,
-}) => {
+}) {
   // Deletes all files/folders in 'Trash' menu
   const handleDeleteAll = (e) => {
     e.preventDefault();
@@ -52,6 +52,4 @@ const DeleteAllDialog = ({
       </DialogContent>
     </Dialog>
   );
-};
-
-export default DeleteAllDialog;
+}

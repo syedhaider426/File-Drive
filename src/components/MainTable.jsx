@@ -97,6 +97,7 @@ const selectedIndex = (items, id) => {
   return false;
 };
 
+// File/folders are used to populate this sortable table.
 function MainTable({
   handleFolderClick,
   handleFileClick,

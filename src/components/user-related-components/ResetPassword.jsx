@@ -38,6 +38,10 @@ function Alert(props) {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
 }
 
+/** User will be redirected to this page from their email.
+ *  If a valid token is provided, it will allow the user to reset their password.
+ *  If the token is not valid, it will show an error on the screen.
+ */
 export default function ResetPassword() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -47,6 +51,7 @@ export default function ResetPassword() {
   });
   const [open, setOpen] = useState(false);
 
+  // User types in new password and updates the new password hook
   const handleNewPasswordChange = ({ target }) => {
     if (target.value === "") errors.newPassword = "Please enter new password.";
     else if (confirmPassword !== "" && target.value !== confirmPassword)
@@ -56,6 +61,7 @@ export default function ResetPassword() {
     setErrors(errors);
   };
 
+  // User types in confirm password and updates the confirm password hook
   const handleConfirmPasswordChange = ({ target }) => {
     if (target.value === "")
       errors.confirmPassword = "Please confirm password.";
@@ -66,6 +72,7 @@ export default function ResetPassword() {
     setErrors(errors);
   };
 
+  // User submits their new password and updates it.
   const handleSubmit = (e) => {
     e.preventDefault();
     const err = {};
@@ -98,6 +105,7 @@ export default function ResetPassword() {
     }
   };
 
+  // Closes the error snackbar
   const handleClose = () => {
     setOpen(false);
   };

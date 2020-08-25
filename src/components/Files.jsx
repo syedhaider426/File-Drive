@@ -33,6 +33,16 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+/**
+ * Files is responsible for getting the files/folders
+ * based on the specific url path.
+ * /drive/home - Returns files/folders that are not in any specific directory
+ * /drive/folders/:folderid - Returns files/folders that are in a specific directory
+ * /drive/favorites - Returns favorited files/folders
+ * /drive/trash - Returns files/folders that are currently in the trash
+ *
+ * @param menu - Used to identify the current menu (Home,Favorites,Trash)
+ */
 export default function Files({ menu }) {
   const history = useHistory();
   const location = useLocation();
