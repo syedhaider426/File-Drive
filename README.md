@@ -1,5 +1,5 @@
-# Google Drive Clone Frontend
-Google Drive Clone Frontend (https://file-drive.xyz/) was developed in ReactJS. It was designed with MaterialUI. This website replicates many of the features that are available in Google Drive. Users can upload files, create folders, download files, and view media files (pictures, music, videos) in the browser. In addition, users are able to rename their files/folders and move them between different directories. When users sign up for an account, they will need to verify their account by clicking the verification link in their email. If they do not verify their email, they cannot login.
+# File Drive
+File Drive (https://file-drive.xyz/) was developed in ReactJS and designed with MaterialUI. This website replicates many of the features that are available in Google Drive. Users can upload files, create folders, download files, and view media files (pictures, music, videos) in the browser. In addition, users are able to rename their files/folders and move them between different directories. When users sign up for an account, they will need to verify their account by clicking the verification link in their email. If they do not verify their email, they cannot login.
 
 # Features
 Users can - 
