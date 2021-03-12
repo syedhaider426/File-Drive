@@ -35,7 +35,7 @@ const useStyles = makeStyles((theme) => ({
 // This component handles the functionality for resending an email to verify the user if they did not verify it
 export default function ResendVerificationEmail() {
   const [email, setEmail] = useState("");
-  const [errors, setErrors] = useState("");
+  const [errors, setErrors] = useState();
   const history = useHistory();
   // User types in email and updates the email hook
   const handleEmailChange = ({ target }) => {
@@ -46,10 +46,9 @@ export default function ResendVerificationEmail() {
 
   // When the email textbox loses focus, function checks to see if the email entered is valid
   const handleEmailBlur = ({ target }) => {
-    if (!validateEmail(target.value) && !errors.email)
-      errors.email = "Please enter a valid email";
-    else delete errors.email;
-    setErrors(errors);
+    if (!validateEmail(target.value) && !errors)
+      setErrors("Please enter a valid email");
+    else setErrors("");
   };
 
   // Validate the syntax of the email
@@ -67,7 +66,8 @@ export default function ResendVerificationEmail() {
       const data = { email };
       postData("/api/users/confirmation", data)
         .then((data) => {
-          history.push("/verification-resend");
+          if (data.success.isVerified) history.push("/verified");
+          else history.push("/verification-resend");
         })
         .catch((err) => console.log("Err", err));
     }

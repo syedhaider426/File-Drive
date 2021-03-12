@@ -50,6 +50,11 @@ const Main = () => {
             }
           />
         </Route>
+        <Route path="/verified">
+          <Confirmation
+            message={"Your account has already been verified. Please login."}
+          />
+        </Route>
         <Route path="/verification-resend">
           <Confirmation
             message={"Please check your email to confirm your account."}
